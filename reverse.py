@@ -92,7 +92,7 @@ con = sqlite3.connect("reverse_state.sqlite3")
 cur = con.cursor()
 
 cur.executescript(
-"""
+    """
 -- https://briandouglas.ie/sqlite-defaults/
 PRAGMA journal_mode = WAL;
 PRAGMA busy_timeout = 5000;
@@ -105,7 +105,7 @@ PRAGMA page_size = 8192;
 PRAGMA synchronous = NORMAL;
 
 CREATE TABLE IF NOT EXISTS files (path TEXT NOT NULL UNIQUE, status TEXT NOT NULL);
-CREATE UNIQUE INDEX IF NOT EXISTS "files_todo" ON "files" ("path"	ASC) WHERE status = 'TODO';
+CREATE UNIQUE INDEX IF NOT EXISTS "files_todo" ON "files" ("path" ASC) WHERE status = 'TODO';
 """
 )
 
@@ -216,7 +216,12 @@ def process(path):
         else:
             archive.extractall(extract_path, names)
         return True
-    if path.name in ("boot.img", "init_boot.img", "vendor_boot.img", "vendor_kernel_boot.img"):
+    if path.name in (
+        "boot.img",
+        "init_boot.img",
+        "vendor_boot.img",
+        "vendor_kernel_boot.img",
+    ):
         proc = subprocess.Popen(
             ["unpack_bootimg", "--boot_img", str(path), "--out", str(extract_path)],
             stdout=subprocess.PIPE,
