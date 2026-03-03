@@ -91,8 +91,7 @@ BINARY_FILES = [
 con = sqlite3.connect("reverse_state.sqlite3")
 cur = con.cursor()
 
-cur.executescript(
-    """
+cur.executescript("""
 -- https://briandouglas.ie/sqlite-defaults/
 PRAGMA journal_mode = WAL;
 PRAGMA busy_timeout = 5000;
@@ -106,8 +105,7 @@ PRAGMA synchronous = NORMAL;
 
 CREATE TABLE IF NOT EXISTS files (path TEXT NOT NULL UNIQUE, status TEXT NOT NULL);
 CREATE UNIQUE INDEX IF NOT EXISTS "files_todo" ON "files" ("path" ASC) WHERE status = 'TODO';
-"""
-)
+""")
 
 
 def add_paths(paths):
@@ -191,7 +189,7 @@ def process(path):
         # webassembly
         add_paths([extract_path])
         proc = subprocess.Popen(
-            ["jadx", "--show-bad-code", "-d", extract_path, path],
+            ["jadx", "-j", "1", "--show-bad-code", "-d", extract_path, path],
             stdout=subprocess.PIPE,
         )
         proc.communicate()
