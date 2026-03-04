@@ -29,7 +29,13 @@ def similar_zip(zipname1, zipname2):
         elif file1.CRC == file2.CRC:
             logger.debug(f"ZIP/CRCEQUAL {zipname1} {zipname2} {name}")
             continue
-        elif name in ("META-INF/CERT.SF", "META-INF/CERT.RSA", "META-INF/MANIFEST.MF", "keys/releasekey.x509.pem", "apex_pubkey"):
+        elif name in (
+            "META-INF/CERT.SF",
+            "META-INF/CERT.RSA",
+            "META-INF/MANIFEST.MF",
+            "keys/releasekey.x509.pem",
+            "apex_pubkey",
+        ):
             logger.debug(f"ZIP/IGNORE {zipname1} {zipname2} {name}")
         else:
             logger.debug(f"ZIP/CRCDIFF {zipname1} {zipname2} {name}")
@@ -93,7 +99,16 @@ def diff(file1: Path | str, file2: Path | str):
     if crc1 == crc2:
         logger.debug(f"EQUAL {file1} {file2}")
         return
-    if name in ("CERT.SF", "CERT.RSA", "MANIFEST.MF", "releasekey.x509.pem", "apex_pubkey", "microdroid_vbmeta.img") or file1.suffix in (".png"):
+    if name in (
+        "CERT.SF",
+        "CERT.RSA",
+        "MANIFEST.MF",
+        "releasekey.x509.pem",
+        "apex_pubkey",
+        "microdroid_vbmeta.img",
+        "vendor_mac_permissions.xml",
+        "plat_mac_permissions.xml",
+    ) or file1.suffix in (".png",):
         logger.debug(f"IGNORE {file1} {file2}")
         return
     if name == "microdroid_super.img":
@@ -222,8 +237,12 @@ def diff(file1: Path | str, file2: Path | str):
         # cpio archive (plaintext)
         os.makedirs(extractdir1, exist_ok=True)
         os.makedirs(extractdir2, exist_ok=True)
-        proc1 = Popen(["cpio", "-i", "-F", file1.absolute()], cwd=extractdir1).communicate()
-        proc2 = Popen(["cpio", "-i", "-F", file2.absolute()], cwd=extractdir2).communicate()
+        proc1 = Popen(
+            ["cpio", "-i", "-F", file1.absolute()], cwd=extractdir1
+        ).communicate()
+        proc2 = Popen(
+            ["cpio", "-i", "-F", file2.absolute()], cwd=extractdir2
+        ).communicate()
 
         logger.debug(f"EXTRACT {file1} {file2}")
         diff(extractdir1, extractdir2)
