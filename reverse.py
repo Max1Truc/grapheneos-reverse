@@ -103,7 +103,7 @@ PRAGMA mmap_size = 2147483648;
 PRAGMA page_size = 8192;
 PRAGMA synchronous = NORMAL;
 
-CREATE TABLE IF NOT EXISTS files (path TEXT NOT NULL UNIQUE, status TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS files (path TEXT NOT NULL UNIQUE, status TEXT NOT NULL, b3sum TEXT);
 CREATE UNIQUE INDEX IF NOT EXISTS "files_todo" ON "files" ("path" ASC) WHERE status = 'TODO';
 """)
 
