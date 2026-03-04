@@ -22,7 +22,7 @@ fi
 echo "[INFO] Fetching OS tree..."
 mkdir -p "/opt/build/grapheneos/grapheneos-${GOS_BUILD_NUMBER}"
 cd "/opt/build/grapheneos/grapheneos-${GOS_BUILD_NUMBER}"
-repo init --depth=1 -u https://github.com/GrapheneOS/platform_manifest.git -b "refs/tags/${GOS_BUILD_NUMBER}"
+repo init --partial-clone --depth=1 -u https://github.com/GrapheneOS/platform_manifest.git -b "refs/tags/${GOS_BUILD_NUMBER}"
 cd .repo/manifests
 git config gpg.ssh.allowedSignersFile ~/.ssh/grapheneos_allowed_signers
 git verify-tag $(git describe)
