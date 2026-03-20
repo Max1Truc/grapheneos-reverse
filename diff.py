@@ -48,11 +48,11 @@ def extract_zip(zipname1, zipname2):
     extractdir2 = zipname2.with_suffix(".d")
     if zipname1.suffix in (".apex", ".apk", ".jar"):
         proc1 = Popen(
-            ["jadx", "-j", "1", "--show-bad-code", "-d", extractdir1, zipname1],
+            ["jadx", "-j", "2", "--show-bad-code", "-d", extractdir1, zipname1],
             stdout=PIPE,
         )
         proc2 = Popen(
-            ["jadx", "-j", "1", "--show-bad-code", "-d", extractdir2, zipname2],
+            ["jadx", "-j", "2", "--show-bad-code", "-d", extractdir2, zipname2],
             stdout=PIPE,
         )
         proc1.communicate()
@@ -289,6 +289,16 @@ def diff(file1: Path | str, file2: Path | str):
         logger.debug(f"EXTRACT {file1} {file2}")
         diff(extractdir1, extractdir2)
         return
+
+    if file1.suffix == ".java":
+        # try to ignore files if there is this useless string that changes
+        content1 = file1.read_bytes()
+        content2 = file2.read_bytes()
+        contentclean1 = re.sub(rb"go/retraceme [a-z0-9]{64}", b"go/retraceme", content1)
+        contentclean2 = re.sub(rb"go/retraceme [a-z0-9]{64}", b"go/retraceme", content2)
+        if contentclean1 == contentclean2:
+            logger.debug(f"SIMILAR {file1} {file2}")
+            return
 
     logger.info(f"DIFF {file1} {file2}")
 
