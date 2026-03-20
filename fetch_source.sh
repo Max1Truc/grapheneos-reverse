@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eo pipefail
+set -euo pipefail
 
 if [ -z "${GOS_BUILD_NUMBER}" ]
 then
@@ -27,4 +27,8 @@ cd .repo/manifests
 git config gpg.ssh.allowedSignersFile ~/.ssh/grapheneos_allowed_signers
 git verify-tag $(git describe)
 cd ../..
-repo sync -j8 --retry-fetches=6 --force-sync --no-clone-bundle --no-tags
+repo sync -j8 --retry-fetches=6 --force-sync --no-clone-bundle --no-tags || ( \
+ echo sync failed, retrying in 1 mn && \
+ sleep 60 && \
+ repo sync --retry-fetches=6 --force-sync --no-clone-bundle --no-tags \
+)
