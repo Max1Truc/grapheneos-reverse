@@ -108,7 +108,15 @@ def diff(file1: Path | str, file2: Path | str):
         "microdroid_vbmeta.img",
         "vendor_mac_permissions.xml",
         "plat_mac_permissions.xml",
-    ) or file1.suffix in (".png",):
+    ) or file1.suffix in (
+        ".art",  # optimization stuff
+        ".fsv_meta",  # signature stuff
+        ".idsig",  # signature stuff
+        ".oat",  # optimization stuff
+        ".odex",  # optimization stuff
+        ".png",  # png file, we don't care I think
+        ".vdex",  # optimization stuff
+    ):
         logger.debug(f"IGNORE {file1} {file2}")
         return
     if name == "microdroid_super.img":
@@ -319,7 +327,14 @@ def diff_release_zips(filename1: str, filename2: str):
 
     super_filenames = []
 
-    for file1, file2 in zip(zip1.infolist(), zip2.infolist(), strict=True):
+    # we sort the lists of filenames just in case they're
+    # not in the same order in the zip file
+    filenamelist1 = sorted(zip1.namelist())
+    filenamelist2 = sorted(zip2.namelist())
+    for filename1, filename2 in zip(filenamelist1, filenamelist2, strict=True):
+        file1 = zip1.getinfo(filename1)
+        file2 = zip2.getinfo(filename2)
+
         name = file1.filename.split("/", maxsplit=1)[1]
         assert name == file2.filename.split("/", maxsplit=1)[1]
 
