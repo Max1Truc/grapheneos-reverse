@@ -1,3 +1,4 @@
+#!/bin/sh
 from pathlib import Path
 from subprocess import Popen, PIPE
 from zipfile import ZipFile

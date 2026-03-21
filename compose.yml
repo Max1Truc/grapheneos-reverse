@@ -4,11 +4,22 @@ services:
       context: .
       dockerfile: build.Dockerfile
     environment:
-      - "GOS_BUILD_NUMBER=${GOS_BUILD_NUMBER:?error}"
+      - GOS_BUILD_NUMBER
     volumes:
       - ./build:/opt/build/grapheneos
     privileged: true
     stdin_open: true
     tty: true
     user: reprobuilder
+    restart: "no"
+
+  diff:
+    build:
+      context: .
+      dockerfile: diff.Dockerfile
+    volumes:
+      - ./releases:/work/releases
+    stdin_open: true
+    tty: true
+    user: reprodiffer
     restart: "no"

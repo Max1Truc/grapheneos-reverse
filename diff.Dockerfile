@@ -1,5 +1,6 @@
 FROM alpine:edge
 RUN echo https://dl-cdn.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories
+RUN adduser -D reprodiffer
 RUN apk add \
   android-tools \
   cpio \
@@ -11,3 +12,10 @@ RUN apk add \
   wabt \
   xxd \
   --no-cache
+
+COPY ./diff.py /usr/local/bin
+RUN chmod a+rx /usr/local/bin/diff.py
+
+WORKDIR /work
+
+USER reprodiffer
