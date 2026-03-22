@@ -13,7 +13,7 @@ fi
 
 echo '[..] BUILDING'
 
-source build/envsetup.s
+source build/envsetup.sh
 yarn --cwd vendor/adevtool/ install
 adevtool generate-all -d tegu
 lunch tegu-cur-user
