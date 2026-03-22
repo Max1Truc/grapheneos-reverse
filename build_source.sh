@@ -25,15 +25,15 @@ echo '[..] Creating key files'
 mkdir -p keys/tegu
 cd keys/tegu
 CN=GrapheneOS
-echo "" | ../../development/tools/make_key releasekey "/CN=$CN/"
-echo "" | ../../development/tools/make_key platform "/CN=$CN/"
-echo "" | ../../development/tools/make_key shared "/CN=$CN/"
-echo "" | ../../development/tools/make_key media "/CN=$CN/"
-echo "" | ../../development/tools/make_key networkstack "/CN=$CN/"
-echo "" | ../../development/tools/make_key bluetooth "/CN=$CN/"
-echo "" | ../../development/tools/make_key sdk_sandbox "/CN=$CN/"
-echo "" | ../../development/tools/make_key gmscompat_lib "/CN=$CN/"
-echo "" | ../../development/tools/make_key nfc "/CN=$CN/"
+echo "" | ../../development/tools/make_key releasekey "/CN=$CN/" || true
+echo "" | ../../development/tools/make_key platform "/CN=$CN/" || true
+echo "" | ../../development/tools/make_key shared "/CN=$CN/" || true
+echo "" | ../../development/tools/make_key media "/CN=$CN/" || true
+echo "" | ../../development/tools/make_key networkstack "/CN=$CN/" || true
+echo "" | ../../development/tools/make_key bluetooth "/CN=$CN/" || true
+echo "" | ../../development/tools/make_key sdk_sandbox "/CN=$CN/" || true
+echo "" | ../../development/tools/make_key gmscompat_lib "/CN=$CN/" || true
+echo "" | ../../development/tools/make_key nfc "/CN=$CN/" || true
 openssl genrsa 4096 | openssl pkcs8 -topk8 -scrypt -out avb.pem -passout pass:
 echo "" | python -c "import pty; pty.spawn('../../external/avb/avbtool.py extract_public_key --key avb.pem --output avb_pkmd.bin'.split(' '))"
 cd ../..
