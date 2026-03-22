@@ -12,6 +12,7 @@ We'll build it with the security preview version number (2026032001).
 This way we can diff the official version (deemed tegu-install-2026032001.zip) and the reproduced version (deemed tegu-install-2026032001-reproduced.zip).
 
 ```
+$ mkdir -m777 ./build/ # fix a permissions issue
 $ docker compose run --build --rm build
 [a new shell opens]
 reprobuilder@build:$ fetch_source.sh 2026032000
