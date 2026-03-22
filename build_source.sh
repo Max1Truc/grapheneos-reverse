@@ -15,7 +15,7 @@ echo '[..] BUILDING'
 
 source build/envsetup.sh
 yarn --cwd vendor/adevtool/ install
-adevtool generate-all -d tegu
+vendor/adevtool/bin/run generate-all -d tegu
 lunch tegu-cur-user
 m vendorbootimage vendorkernelbootimage target-files-package
 
