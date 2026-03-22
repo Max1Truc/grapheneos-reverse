@@ -6,7 +6,7 @@ RUN useradd -ms /bin/bash reprobuilder && \
     mkdir -pv /opt/build/grapheneos/ && chown -R reprobuilder:reprobuilder /opt/build/ && \
     ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime;
 
-COPY ./*.sh /usr/local/bin
+COPY ./fetch_source.sh ./build_source.sh /usr/local/bin
 RUN chmod a+rx /usr/local/bin/*.sh
 
 WORKDIR /opt/build/grapheneos

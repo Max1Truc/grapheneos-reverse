@@ -12,17 +12,16 @@ We'll build it with the security preview version number (2026032001).
 This way we can diff the official version (deemed tegu-install-2026032001.zip) and the reproduced version (deemed tegu-install-2026032001-reproduced.zip).
 
 ```
-$ GOS_BUILD_NUMBER=2026032000 docker compose run --build --rm build
+$ docker compose run --build --rm build
 [a new shell opens]
-reprobuilder@build:$ fetch_source.sh
+reprobuilder@build:$ fetch_source.sh 2026032000
 [...]
 sync failed, retrying in 1 mn
 Syncing: 100% (1032/1032), done in 1m10.703s
 Checking for bloat: 100% (131/131), done in 19.209s
 repo sync has finished successfully.
 reprobuilder@build:$ # get the build values from https://releases.grapheneos.org/tegu-testing-security-preview for example
-reprobuilder@build:$ export BUILD_DATETIME=1773969441 BUILD_NUMBER=2026032001
-reprobuilder@build:$ # then follow the instructions at https://grapheneos.org/build#setting-up-the-os-build-environment
+reprobuilder@build:$ build_source.sh 2026032001 1773969441
 ```
 
 ## Diff GrapheneOS
