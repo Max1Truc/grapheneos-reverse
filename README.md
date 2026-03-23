@@ -35,7 +35,7 @@ Only files that differ will be unpacked, and then their content will be diffed, 
 ```
 $ docker compose run --build --rm diff
 [a new shell opens]
-reprodiffer@build:$ diff.py releases/tegu-install-2026032001.zip releases/tegu-install-2026032001-reproduced.zip | tee releases/diff.txt
+reprodiffer@build:$ diff.py releases/tegu-install-2026032001.zip releases/tegu-install-2026032001-reproduced.zip 2>&1 | tee releases/diff.txt
 reprodiffer@build:$ exit
 ```
 

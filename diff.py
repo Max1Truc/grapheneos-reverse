@@ -49,14 +49,14 @@ def extract_zip(zipname1, zipname2):
     extractdir2 = zipname2.with_suffix(".d")
     if zipname1.suffix in (".apex", ".apk", ".jar"):
         proc1 = Popen(
-            ["jadx", "-j", "1", "--show-bad-code", "-d", extractdir1, zipname1],
-            stdout=PIPE,
-        )
-        proc2 = Popen(
-            ["jadx", "-j", "1", "--show-bad-code", "-d", extractdir2, zipname2],
+            ["jadx", "--show-bad-code", "-d", extractdir1, zipname1],
             stdout=PIPE,
         )
         proc1.communicate()
+        proc2 = Popen(
+            ["jadx", "--show-bad-code", "-d", extractdir2, zipname2],
+            stdout=PIPE,
+        )
         proc2.communicate()
     else:
         ZipFile(zipname1).extractall(extractdir1)
