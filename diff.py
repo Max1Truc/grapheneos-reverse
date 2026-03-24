@@ -111,11 +111,13 @@ def diff(file1: Path | str, file2: Path | str):
         "plat_mac_permissions.xml",
     ) or file1.suffix in (
         ".art",  # optimization stuff
+        ".bprod", # optimization stuff, probably
         ".fsv_meta",  # signature stuff
         ".idsig",  # signature stuff
         ".oat",  # optimization stuff
         ".odex",  # optimization stuff
-        ".png",  # png file, we don't care I think
+        ".png",  # png file, we don't care, probably
+        ".prod", # optimization stuff, probably
         ".vdex",  # optimization stuff
     ):
         logger.debug(f"IGNORE {file1} {file2}")

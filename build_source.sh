@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eo pipefail
+set -exo pipefail
 
 export BUILD_NUMBER="$1"
 export BUILD_DATETIME="$2"
