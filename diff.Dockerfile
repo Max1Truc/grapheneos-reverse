@@ -14,7 +14,6 @@ RUN apk add \
   --no-cache
 
 COPY ./diff.py /usr/local/bin
-RUN chmod a+rx /usr/local/bin/diff.py
 
 WORKDIR /work
 
