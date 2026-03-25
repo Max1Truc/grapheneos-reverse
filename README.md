@@ -13,16 +13,14 @@ This way we can diff the official version (deemed tegu-install-2026032001.zip) a
 
 ```
 $ mkdir -m777 ./build/ # fix a permissions issue
-$ docker compose run --build --rm build
-[a new shell opens]
-reprobuilder@build:$ fetch_source.sh 2026032000
+$ docker compose run --build --rm build fetch_source.sh 2026032000
 [...]
 sync failed, retrying in 1 mn
 Syncing: 100% (1032/1032), done in 1m10.703s
 Checking for bloat: 100% (131/131), done in 19.209s
 repo sync has finished successfully.
-reprobuilder@build:$ # get the build values from https://releases.grapheneos.org/tegu-testing-security-preview for example
-reprobuilder@build:$ build_source.sh 2026032001 1773969441
+$ # get the build values from https://releases.grapheneos.org/tegu-testing-security-preview for example
+$ docker compose run --build --rm build build_source.sh 2026032001 1773969441
 ```
 
 ## Diff GrapheneOS
@@ -33,10 +31,7 @@ Then you can diff both files.
 Only files that differ will be unpacked, and then their content will be diffed, recursively.
 
 ```
-$ docker compose run --build --rm diff
-[a new shell opens]
-reprodiffer@build:$ diff.py releases/tegu-install-2026032001.zip releases/tegu-install-2026032001-reproduced.zip 2>&1 | tee releases/diff.txt
-reprodiffer@build:$ exit
+$ docker compose run --build --rm diff diff.py releases/tegu-install-2026032001.zip releases/tegu-install-2026032001-reproduced.zip 2>&1 | tee diff.txt
 ```
 
 This will create a `diff.txt` file with the list of all files that changed, in the format `DIFF [file1] [file2]`
