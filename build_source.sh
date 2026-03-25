@@ -45,4 +45,4 @@ echo '[..] Creating release files'
 
 m otatools-package
 script/finalize.sh
-script/generate-release.sh tegu "$BUILD_NUMBER"
+printf "\n\n" | python -c "import pty; pty.spawn('script/generate-release.sh tegu $BUILD_NUMBER'.split(' '))"
