@@ -38,6 +38,7 @@ openssl genrsa 4096 | openssl pkcs8 -topk8 -scrypt -out avb.pem -passout pass:
 echo "" | python -c "import pty; pty.spawn('../../external/avb/avbtool.py extract_public_key --key avb.pem --output avb_pkmd.bin'.split(' '))"
 cd ../..
 
+rm -f keys/tegu/id_ed25519
 ssh-keygen -t ed25519 -f keys/tegu/id_ed25519 -N ""
 
 echo '[OK] key files'
