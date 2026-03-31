@@ -192,6 +192,9 @@ def diff(file1: Path | str, file2: Path | str):
             logger.debug(f"EXTRACT {file1} {file2}")
         else:
             logger.info(f"DIFF {file1} {file2}")
+        if name.endswith(".apk"):
+            # don't extract apk files, we'll diff them ourselves
+            return
         extract_zip(file1, file2)
         return
     if magic == b"\x02\x21\x4c\x18":
