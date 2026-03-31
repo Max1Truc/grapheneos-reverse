@@ -14,7 +14,6 @@ fi
 echo '[..] BUILDING'
 
 source build/envsetup.sh
-yarn --cwd vendor/adevtool/ install
 lunch tegu-cur-user
 m
 
