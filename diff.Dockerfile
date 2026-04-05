@@ -9,6 +9,7 @@ RUN apk add \
   file \
   jadx \
   lz4 \
+  py3-elftools \
   wabt \
   xxd \
   --no-cache
