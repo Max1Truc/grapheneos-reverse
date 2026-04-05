@@ -197,7 +197,7 @@ def diff(file1: Path | str, file2: Path | str):
     if magic == b"PK\x03\x04":
         # zip, jar, apk
         if similar_zip(file1, file2):
-            logger.debug(f"SIMILAR {file1} {file2}")
+            logger.debug(f"SIMILAR/PKZIP {file1} {file2}")
             return
         if name.endswith(".apex"):
             # .apex files may contain
@@ -284,7 +284,9 @@ def diff(file1: Path | str, file2: Path | str):
         assert buildid2
         data1 = file1.read_bytes().split(buildid1, maxsplit=1)
         data2 = file2.read_bytes().split(buildid2, maxsplit=1)
-        return data1 == data2
+        if data1 == data2:
+            logger.debug(f"SIMILAR/ELF {file1} {file2}")
+            return
 
     f = file1.open("rb")
     f.seek(0x438)
@@ -327,7 +329,7 @@ def diff(file1: Path | str, file2: Path | str):
         contentclean1 = re.sub(rb"go/retraceme [a-z0-9]{64}", b"go/retraceme", content1)
         contentclean2 = re.sub(rb"go/retraceme [a-z0-9]{64}", b"go/retraceme", content2)
         if contentclean1 == contentclean2:
-            logger.debug(f"SIMILAR {file1} {file2}")
+            logger.debug(f"SIMILAR/java {file1} {file2}")
             return
 
     logger.info(f"DIFF {file1} {file2}")
