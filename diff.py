@@ -9,7 +9,21 @@ import shutil
 import sys
 import zlib
 
+from elftools.elf.elffile import ELFFile
+from elftools.elf.sections import NoteSection
+
 logger = logging.getLogger(__name__)
+
+
+def get_elf_buildid(fileobj):
+    file = ELFFile(fileobj)
+    for section in file.iter_sections():
+        if not isinstance(section, NoteSection):
+            continue
+        for note in section.iter_notes():
+            if note["n_type"] == "NT_GNU_BUILD_ID":
+                return n["n_descdata"]
+    return None
 
 
 def get_file_crc(f):
@@ -261,6 +275,16 @@ def diff(file1: Path | str, file2: Path | str):
         logger.debug(f"EXTRACT {file1} {file2}")
         diff(extractdir1, extractdir2)
         return True
+    if magic == b"\x7fELF":
+        # ELF file
+        # Compare content, but ignore the build id
+        buildid1 = get_elf_buildid(file1.open("rb"))
+        assert buildid1
+        buildid2 = get_elf_buildid(file2.open("rb"))
+        assert buildid2
+        data1 = file1.read_bytes().split(buildid1, maxsplit=1)
+        data2 = file2.read_bytes().split(buildid2, maxsplit=1)
+        return data1 == data2
 
     f = file1.open("rb")
     f.seek(0x438)
