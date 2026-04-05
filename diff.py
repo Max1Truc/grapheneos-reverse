@@ -22,7 +22,7 @@ def get_elf_buildid(fileobj):
             continue
         for note in section.iter_notes():
             if note["n_type"] == "NT_GNU_BUILD_ID":
-                return n["n_descdata"]
+                return note["n_descdata"]
     return None
 
 
