@@ -1,0 +1,1147 @@
+
+project frameworks/base/
+diff --git a/frameworks/base/core/java/com/android/internal/widget/LocalImageResolver.java b/frameworks/base/core/java/com/android/internal/widget/LocalImageResolver.java
+index 6351c0e63..f4f166238 100644
+--- a/frameworks/base/core/java/com/android/internal/widget/LocalImageResolver.java
++++ b/frameworks/base/core/java/com/android/internal/widget/LocalImageResolver.java
+@@ -34,6 +34,7 @@ import android.util.Size;
+ import com.android.internal.annotations.VisibleForTesting;
+ 
+ import java.io.IOException;
++import java.util.Locale;
+ 
+ /** A class to extract Drawables from a MessagingStyle/ConversationStyle message. */
+ public class LocalImageResolver {
+@@ -259,6 +260,28 @@ public class LocalImageResolver {
+             int maxWidth, int maxHeight) {
+         final Size size = info.getSize();
+ 
++        String mimeType = info.getMimeType();
++        boolean isAllowedCodec = false;
++        if (mimeType != null) {
++            switch (mimeType.toLowerCase(Locale.US)) {
++                case "image/png":
++                case "image/jpeg":
++                case "image/webp":
++                case "image/gif":
++                case "image/bmp":
++                case "image/x-ico":
++                case "image/vnd.wap.wbmp":
++                case "image/heif":
++                case "image/heic":
++                case "image/avif":
++                    isAllowedCodec = true;
++                    break;
++            }
++        }
++        if (!isAllowedCodec) {
++            throw new RuntimeException("Image mime type (" + mimeType + ") is not allowed.");
++        }
++
+         if (size.getWidth() > DEFAULT_DECODE_HARD_LIMIT_PX
+                 || size.getHeight() > DEFAULT_DECODE_HARD_LIMIT_PX) {
+             // The image is larger than what we can reasonably expect to decode without filling up
+diff --git a/frameworks/base/core/res/res/values/arrays.xml b/frameworks/base/core/res/res/values/arrays.xml
+index 655c4637b..ae13341c5 100644
+--- a/frameworks/base/core/res/res/values/arrays.xml
++++ b/frameworks/base/core/res/res/values/arrays.xml
+@@ -268,4 +268,10 @@
+         <item>60%</item>
+         <item>50%</item>
+     </string-array>
++
++     <string-array name="application_hidden_policy_exempt_apps">
++        <item>com.android.nfc</item>
++        <item>com.android.settings</item>
++        <item>com.android.providers.settings</item>
++    </string-array>
+ </resources>
+diff --git a/frameworks/base/core/res/res/values/symbols.xml b/frameworks/base/core/res/res/values/symbols.xml
+index da03e9fb7..b357e3b5b 100644
+--- a/frameworks/base/core/res/res/values/symbols.xml
++++ b/frameworks/base/core/res/res/values/symbols.xml
+@@ -6353,4 +6353,6 @@
+ 
+   <!-- Action for opening trusted location settings page -->
+   <java-symbol type="string" name="trusted_location_settings_action" />
++
++  <java-symbol type="array" name="application_hidden_policy_exempt_apps" />
+ </resources>
+diff --git a/frameworks/base/graphics/java/android/graphics/ImageDecoder.java b/frameworks/base/graphics/java/android/graphics/ImageDecoder.java
+index 419929a39..b532b9562 100644
+--- a/frameworks/base/graphics/java/android/graphics/ImageDecoder.java
++++ b/frameworks/base/graphics/java/android/graphics/ImageDecoder.java
+@@ -1680,13 +1680,98 @@ public final class ImageDecoder implements AutoCloseable {
+                 checkForExtended());
+     }
+ 
+-    private void callHeaderDecoded(@Nullable OnHeaderDecodedListener listener,
+-            @NonNull Source src) {
+-        if (listener != null) {
+-            ImageInfo info =
+-                    new ImageInfo(
+-                            new Size(mWidth, mHeight), mAnimated, getMimeType(), getColorSpace());
+-            listener.onHeaderDecoded(this, info, src);
++    private static OnHeaderDecodedListener sDefaultProcessListener = null;
++    private static ThreadLocal<OnHeaderDecodedListener> sDefaultThreadListener = new ThreadLocal<>();
++
++
++
++    private static final Object sListenerLock = new Object();
++
++
++
++
++
++
++
++
++
++
++
++
++    /**
++     * @hide
++     */
++    @NonNull
++    public static void setDefaultThreadListener(@NonNull OnHeaderDecodedListener listener) {
++        sDefaultThreadListener.set(listener);
++    }
++
++
++
++    /**
++     * @hide
++     */
++    @NonNull
++    public static OnHeaderDecodedListener getDefaultThreadListener() {
++        return sDefaultThreadListener.get();
++    }
++
++
++
++
++
++
++
++
++
++
++
++
++
++    /**
++     * @hide
++     */
++    @NonNull
++    public static void setDefaultProcessListener(@NonNull OnHeaderDecodedListener listener) {
++        synchronized (sListenerLock) {
++            sDefaultProcessListener = listener;
++        }
++    }
++
++
++
++    /**
++     * @hide
++     */
++    @NonNull
++    public static OnHeaderDecodedListener getDefaultProcessListener() {
++        synchronized (sListenerLock) {
++            return sDefaultProcessListener;
++        }
++    }
++
++
++
++    private void callHeaderDecoded(OnHeaderDecodedListener listener, Source src) {
++        OnHeaderDecodedListener threadListener = getDefaultThreadListener();
++        OnHeaderDecodedListener processListener = getDefaultProcessListener();
++
++        if (listener != null || threadListener != null || processListener != null) {
++            ImageInfo info = new ImageInfo(new Size(mWidth, mHeight), mAnimated,
++
++			    getMimeType(), getColorSpace());
++
++
++            if (threadListener != null) {
++                threadListener.onHeaderDecoded(this, info, src);
++            } else if (processListener != null) {
++                processListener.onHeaderDecoded(this, info, src);
++            }
++
++
++            if (listener != null) {
++                listener.onHeaderDecoded(this, info, src);
++            }
+         }
+     }
+ 
+diff --git a/frameworks/base/libs/WindowManager/Shell/src/com/android/wm/shell/splitscreen/StageCoordinator.java b/frameworks/base/libs/WindowManager/Shell/src/com/android/wm/shell/splitscreen/StageCoordinator.java
+index caa277baf..cce3bfa3e 100644
+--- a/frameworks/base/libs/WindowManager/Shell/src/com/android/wm/shell/splitscreen/StageCoordinator.java
++++ b/frameworks/base/libs/WindowManager/Shell/src/com/android/wm/shell/splitscreen/StageCoordinator.java
+@@ -3682,9 +3682,35 @@ public class StageCoordinator extends StageCoordinatorAbstract {
+             // Not entering or exiting, so just do some house-keeping and validation.
+ 
+             // If we're not in split-mode, just abort so something else can handle it.
+-            if (!isSplitActive()) return false;
++            ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "startAnimation: transition=%d isSplitActive=%b", info.getDebugId(), isSplitActive());
++            if (!isSplitActive()) {
++		WindowContainerTransaction windowContainerTransaction;
++                ArrayList<RunningTaskInfo> arrayList = new ArrayList();
++                HashSet hashSet = new HashSet();
++                for (int i9 = 0; i9 < info.getChanges().size(); i9++) {
++                    TransitionInfo.Change change = info.getChanges().get(i9);
++                    RunningTaskInfo taskInfo = change.getTaskInfo();
++                    StageTaskListener stageOfTask = taskInfo != null ? getStageOfTask(taskInfo) : null;
++                    if (stageOfTask != null && TransitionUtil.isOpeningMode(change.getMode())) {
++                        hashSet.add(stageOfTask);
++                        arrayList.add(taskInfo);
++                    }
++                }
++                if (arrayList.isEmpty() || hashSet.size() > 1) {
++                    windowContainerTransaction = null;
++                } else {
++                    ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "Malformed enter transition=%d detected", info.getDebugId());
++                    windowContainerTransaction = new WindowContainerTransaction();
++		    for (int i10 = 0; i10 < arrayList.size(); i10++) {
++                        windowContainerTransaction.reparent(((RunningTaskInfo) arrayList.get(i10)).token, (WindowContainerToken) null, true);
++                    }
++                }
++                if (windowContainerTransaction != null) {
++                    mTransitions.startTransition(2, windowContainerTransaction, null);
++                }
++                return false;
++	    }
+ 
+-            ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "startAnimation: transition=%d", info.getDebugId());
+             mSplitLayout.setFreezeDividerWindow(false);
+             final StageChangeRecord record = new StageChangeRecord();
+             final int transitType = info.getType();
+diff --git a/frameworks/base/libs/androidfw/ResourceTypes.cpp b/frameworks/base/libs/androidfw/ResourceTypes.cpp
+index f12966341..7f3d99c4b 100644
+--- a/frameworks/base/libs/androidfw/ResourceTypes.cpp
++++ b/frameworks/base/libs/androidfw/ResourceTypes.cpp
+@@ -667,12 +667,25 @@ status_t ResStringPool::setTo(incfs::map_ptr<void> data, size_t size, bool copyD
+                     (int)size);
+             return (mError=BAD_TYPE);
+         }
++
+         mStyles = data.offset(mHeader->stylesStart).convert<uint32_t>();
+         if (mHeader->stylesStart >= mHeader->header.size) {
+             ALOGW("Bad string block: style pool starts %d, after total size %d\n",
+                     (int)mHeader->stylesStart, (int)mHeader->header.size);
+             return (mError=BAD_TYPE);
+         }
++
++        if ((mHeader->styleCount >> 30) != 0) {
++            ALOGW("Bad string block: potential integer overflow when finding style entries\n");
++            return (mError=BAD_TYPE);
++        }
++
++        if ((mHeader->stringsStart - (mEntryStyles.convert<uint8_t>() - mHeader.convert<uint8_t>()))
++                < (mHeader->styleCount * sizeof(uint32_t))) {
++            ALOGW("Bad string block: style offsets extend past style data start\n");
++            return (mError=BAD_TYPE);
++        }
++
+         mStylePoolSize =
+             (mHeader->header.size-mHeader->stylesStart)/sizeof(uint32_t);
+ 
+@@ -1992,24 +2005,30 @@ status_t ResXMLTree::validateNode(const ResXMLTree_node* node) const
+ 
+         const uint16_t headerSize = dtohs(node->header.headerSize);
+         const uint32_t size = dtohl(node->header.size);
+-        const ResXMLTree_attrExt* attrExt = (const ResXMLTree_attrExt*)
+-            (((const uint8_t*)node) + headerSize);
+         // check for sensical values pulled out of the stream so far...
+-        if ((size >= headerSize + sizeof(ResXMLTree_attrExt))
+-                && ((void*)attrExt > (void*)node)) {
+-            const size_t attrSize = ((size_t)dtohs(attrExt->attributeSize))
++        if (headerSize != 0 && (size >= headerSize + sizeof(ResXMLTree_attrExt))) {
++            const ResXMLTree_attrExt* attrExt = (const ResXMLTree_attrExt*)
++                (((const uint8_t*)node) + headerSize);
++            uint32_t attributeSize = attrExt->attributeSize;
++
++            if (attributeSize < sizeof(ResXMLTree_attrExt)) {
++                ALOGW("Bad XML block: attribute size %d is smaller than min expected %d\n", attributeSize, (uint32_t) sizeof(ResXMLTree_attrExt));
++	        return BAD_TYPE;
++            }
++
++            const size_t attrSize = ((size_t)dtohs(attributeSize))
+                 * dtohs(attrExt->attributeCount);
+-            if ((dtohs(attrExt->attributeStart)+attrSize) <= (size-headerSize)) {
++	    const size_t expected = dtohs(attrExt->attributeStart) + attrSize;
++	    const size_t actual = size - headerSize;
++            if (expected <= actual) {
+                 return NO_ERROR;
+             }
+-            ALOGW("Bad XML block: node attributes use 0x%x bytes, only have 0x%x bytes\n",
+-                    (unsigned int)(dtohs(attrExt->attributeStart)+attrSize),
+-                    (unsigned int)(size-headerSize));
+-        }
+-        else {
+-            ALOGW("Bad XML start block: node header size 0x%x, size 0x%x\n",
+-                (unsigned int)headerSize, (unsigned int)size);
++
++	    ALOGW("Bad XML block: node attributes use 0x%x bytes, only have 0x%x bytes\n", (uint32_t) expected, (uint32_t) actual);
++            return BAD_TYPE;
+         }
++
++        ALOGW("Bad XML start block: node header size 0x%x, size 0x%x\n", headerSize, size);
+         return BAD_TYPE;
+     }
+ 
+diff --git a/frameworks/base/packages/SystemUI/src/com/android/systemui/deviceentry/data/repository/DeviceEntryFaceAuthRepository.kt b/frameworks/base/packages/SystemUI/src/com/android/systemui/deviceentry/data/repository/DeviceEntryFaceAuthRepository.kt
+index 48a062c8c..95d93d1e8 100644
+--- a/frameworks/base/packages/SystemUI/src/com/android/systemui/deviceentry/data/repository/DeviceEntryFaceAuthRepository.kt
++++ b/frameworks/base/packages/SystemUI/src/com/android/systemui/deviceentry/data/repository/DeviceEntryFaceAuthRepository.kt
+@@ -539,7 +539,7 @@ constructor(
+                 // boolean is updated to new value before the event is propagated.
+                 // TODO (b/310592822): once all consumers can use the new system directly, we don't
+                 //  have to worry about this ordering.
+-                _isAuthenticated.value = true
++                _isAuthenticated.value = result.getUserId() == currentUserId;
+                 _authenticationStatus.value = SuccessFaceAuthenticationStatus(result)
+                 faceAuthLogger.faceAuthSuccess(result)
+                 onFaceAuthRequestCompleted()
+diff --git a/frameworks/base/services/core/java/com/android/server/infra/AbstractMasterSystemService.java b/frameworks/base/services/core/java/com/android/server/infra/AbstractMasterSystemService.java
+index 88d027300..83b8f67ef 100644
+--- a/frameworks/base/services/core/java/com/android/server/infra/AbstractMasterSystemService.java
++++ b/frameworks/base/services/core/java/com/android/server/infra/AbstractMasterSystemService.java
+@@ -1279,8 +1279,9 @@ public abstract class AbstractMasterSystemService<M extends AbstractMasterSystem
+         visitServicesLocked((s) -> {
+             ComponentName serviceComponentName = s
+                     .getServiceComponentName();
+-            if (serviceComponentName != null && serviceComponentName
+-                    .getPackageName().equals(packageName)) {
++	    int targetUserId = s.getUserId();
++            if (serviceComponentName != null && targetUserId == userId
++		    && serviceComponentName.getPackageName().equals(packageName)) {
+                 if (!serviceInValidServiceList(serviceComponentName,
+                         validServices)) {
+                     handleServiceRemovedMultiModeLocked(
+diff --git a/frameworks/base/services/core/java/com/android/server/pm/ComputerEngine.java b/frameworks/base/services/core/java/com/android/server/pm/ComputerEngine.java
+index 81c201002..231577e8f 100644
+--- a/frameworks/base/services/core/java/com/android/server/pm/ComputerEngine.java
++++ b/frameworks/base/services/core/java/com/android/server/pm/ComputerEngine.java
+@@ -4771,14 +4771,14 @@ public class ComputerEngine implements Computer {
+     public ProviderInfo resolveContentProvider(@NonNull String name,
+             @PackageManager.ResolveInfoFlagsBits long flags, @UserIdInt int userId,
+             int callingUid) {
+-        if (!mUserManager.exists(userId)) return null;
+-        flags = updateFlagsForComponent(flags, userId);
+-
+         // Callers of this API may not always separate the userID and authority. Let's parse it
+         // before resolving
+         String authorityWithoutUserId = ContentProvider.getAuthorityWithoutUserId(name);
+         userId = ContentProvider.getUserIdFromAuthority(name, userId);
+ 
++        if (!mUserManager.exists(userId)) return null;
++        flags = updateFlagsForComponent(flags, userId);
++
+         final ProviderInfo providerInfo = mComponentResolver.queryProvider(this,
+                 authorityWithoutUserId, flags, userId);
+         boolean checkedGrants = false;
+diff --git a/frameworks/base/services/core/java/com/android/server/pm/PackageInstallerService.java b/frameworks/base/services/core/java/com/android/server/pm/PackageInstallerService.java
+index c77db4fad..405bf2979 100644
+--- a/frameworks/base/services/core/java/com/android/server/pm/PackageInstallerService.java
++++ b/frameworks/base/services/core/java/com/android/server/pm/PackageInstallerService.java
+@@ -1036,7 +1036,15 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
+                 // For now, installs to adopted media are treated as internal from
+                 // an install flag point-of-view.
+                 params.installFlags |= PackageManager.INSTALL_INTERNAL;
++                try {
++
++                    StorageManager.convert(params.volumeUuid);
++                } catch (IllegalArgumentException unused) {
++                    throw new IllegalArgumentException("Invalid volumeUuid value in session params: " + params.volumeUuid);
++                }
+             } else {
++
++
+                 params.installFlags |= PackageManager.INSTALL_INTERNAL;
+ 
+                 // Resolve best location for install, based on combination of
+diff --git a/frameworks/base/services/core/java/com/android/server/wm/ActivityTaskManagerService.java b/frameworks/base/services/core/java/com/android/server/wm/ActivityTaskManagerService.java
+index ae3f85b76..4ea4c8a16 100644
+--- a/frameworks/base/services/core/java/com/android/server/wm/ActivityTaskManagerService.java
++++ b/frameworks/base/services/core/java/com/android/server/wm/ActivityTaskManagerService.java
+@@ -6178,6 +6178,15 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
+         return mActiveUids.hasNonAppVisibleWindow(uid);
+     }
+ 
++
++
++    public boolean hasActiveVisibleNotPinnedWindow(int uid) {
++        if (mVisibleActivityProcessTracker.hasVisibleNotPinnedActivity(uid)) {
++            return true;
++        }
++        return mActiveUids.hasNonAppVisibleWindow(uid);
++    }
++
+     boolean isDeviceOwner(int uid) {
+         return uid >= 0 && mDeviceOwnerUid == uid;
+     }
+diff --git a/frameworks/base/services/core/java/com/android/server/wm/BackgroundLaunchProcessController.java b/frameworks/base/services/core/java/com/android/server/wm/BackgroundLaunchProcessController.java
+index bf0df158a..78915f9c3 100644
+--- a/frameworks/base/services/core/java/com/android/server/wm/BackgroundLaunchProcessController.java
++++ b/frameworks/base/services/core/java/com/android/server/wm/BackgroundLaunchProcessController.java
+@@ -74,6 +74,8 @@ class BackgroundLaunchProcessController {
+     /** It is {@link ActivityTaskManagerService#hasActiveVisibleWindow(int)}. */
+     private final IntPredicate mUidHasActiveVisibleWindowPredicate;
+ 
++    private final IntPredicate mUidHasActiveVisibleNotPinnedWindowPredicate;
++
+     private final @Nullable BackgroundActivityStartCallback mBackgroundActivityStartCallback;
+ 
+     /**
+@@ -90,9 +92,12 @@ class BackgroundLaunchProcessController {
+     @GuardedBy("this")
+     private @Nullable IntArray mBalOptInBoundClientUids;
+ 
++
+     BackgroundLaunchProcessController(@NonNull IntPredicate uidHasActiveVisibleWindowPredicate,
++            @NonNull IntPredicate uidHasActiveVisibleNotPinnedWindowPredicate,
+             @Nullable BackgroundActivityStartCallback callback) {
+         mUidHasActiveVisibleWindowPredicate = uidHasActiveVisibleWindowPredicate;
++	mUidHasActiveVisibleNotPinnedWindowPredicate = uidHasActiveVisibleNotPinnedWindowPredicate;
+         mBackgroundActivityStartCallback = callback;
+     }
+ 
+@@ -139,13 +144,15 @@ class BackgroundLaunchProcessController {
+         }
+         // Allow if the caller is bound by a UID that's currently foreground.
+         // But still respect the appSwitchState.
+-        if (checkConfiguration.checkVisibility && appSwitchState != APP_SWITCH_DISALLOW
+-                && isBoundByForegroundUid()) {
+-            return new BalVerdict(BAL_ALLOW_BOUND_BY_FOREGROUND, "process bound by foreground uid")
+-                    .allowNewTask().setVisibleOrForeground();
++        if (checkConfiguration.checkVisibility && appSwitchState != APP_SWITCH_DISALLOW) {
++            if (isBoundByForegroundUid(checkConfiguration.isCheckingForFgsStart?
++                    mUidHasActiveVisibleWindowPredicate
++                    : mUidHasActiveVisibleNotPinnedWindowPredicate)) {
++                return new BalVerdict(BAL_ALLOW_BOUND_BY_FOREGROUND, "process bound by foreground uid")
++                        .allowNewTask().setVisibleOrForeground();
++            }
+         }
+-        // Allow if the caller has an activity in any foreground task, unless it's a pinned window
+-        // and not a foreground service start.
++        // Allow if the caller has an activity in any foreground task, unless it's a pinned window and not a foreground service start.
+         if ((checkConfiguration.isCheckingForFgsStart || !inPinnedWindow)
+                 && checkConfiguration.checkOtherExemptions
+                 && hasActivityInVisibleTask && appSwitchState != APP_SWITCH_DISALLOW) {
+@@ -242,11 +249,11 @@ class BackgroundLaunchProcessController {
+         return originatingTokens;
+     }
+ 
+-    private boolean isBoundByForegroundUid() {
++    private boolean isBoundByForegroundUid(IntPredicate intPredicate) {
+         synchronized (this) {
+             if (mBalOptInBoundClientUids != null) {
+                 for (int i = mBalOptInBoundClientUids.size() - 1; i >= 0; i--) {
+-                    if (mUidHasActiveVisibleWindowPredicate.test(mBalOptInBoundClientUids.get(i))) {
++                    if (intPredicate.test(mBalOptInBoundClientUids.get(i))) {
+                         return true;
+                     }
+                 }
+diff --git a/frameworks/base/services/core/java/com/android/server/wm/WindowProcessController.java b/frameworks/base/services/core/java/com/android/server/wm/WindowProcessController.java
+index 347b30266..5219541ab 100644
+--- a/frameworks/base/services/core/java/com/android/server/wm/WindowProcessController.java
++++ b/frameworks/base/services/core/java/com/android/server/wm/WindowProcessController.java
+@@ -375,7 +375,8 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
+         mListener = listener;
+         mAtm = atm;
+         mBgLaunchController = new BackgroundLaunchProcessController(
+-                atm::hasActiveVisibleWindow, atm.getBackgroundActivityStartCallback());
++                atm::hasActiveVisibleWindow, atm::hasActiveVisibleNotPinnedWindow,
++                atm.getBackgroundActivityStartCallback());
+ 
+         boolean isSysUiPackage = info.packageName.equals(
+                 mAtm.getSysUiServiceComponentLocked().getPackageName());
+diff --git a/frameworks/base/services/core/java/com/android/server/wm/WindowState.java b/frameworks/base/services/core/java/com/android/server/wm/WindowState.java
+index 2f25587ee..1eb9ebd87 100644
+--- a/frameworks/base/services/core/java/com/android/server/wm/WindowState.java
++++ b/frameworks/base/services/core/java/com/android/server/wm/WindowState.java
+@@ -2772,6 +2772,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
+             }
+             if (!isVisibleByPolicy()) {
+                 mWinAnimator.hide(getPendingTransaction(), "checkPolicyVisibilityChange");
++                if (mSurfaceControl != null) {
++                    getPendingTransaction().hide(mSurfaceControl);
++                }
+                 if (isFocused()) {
+                     ProtoLog.i(WM_DEBUG_FOCUS_LIGHT,
+                             "setAnimationLocked: setting mFocusMayChange true");
+@@ -3040,6 +3043,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
+         }
+         setPolicyVisibilityFlag(LEGACY_POLICY_VISIBILITY);
+         mLegacyPolicyVisibilityAfterAnim = true;
++        if (mSurfaceControl != null) {
++            getPendingTransaction().show(mSurfaceControl);
++        }
+         if (doAnimation) {
+             mWinAnimator.applyAnimationLocked(TRANSIT_ENTER, true);
+         }
+@@ -3061,8 +3067,18 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
+             if (!mToken.okToAnimate()) {
+                 doAnimation = false;
+             }
++            if ((mIsForceHiddenNonSystemOverlayWindow || mHiddenWhileSuspended
++                    || !mAppOpVisibility || mPermanentlyHidden)
++                    && isAnimating()) {
++                if (mAnimatingExit) {
++                    doAnimation = false;
++                }
++
++                cancelAnimation();
++            }
+         }
+         boolean current =
++
+                 doAnimation ? mLegacyPolicyVisibilityAfterAnim : isLegacyPolicyVisibility();
+         if (!current) {
+             // Already hiding.
+@@ -3090,6 +3106,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
+                         "WindowState.hideLw: setting mFocusMayChange true");
+                 mWmService.mFocusMayChange = true;
+             }
++            if (mSurfaceControl != null) {
++                getPendingTransaction().hide(mSurfaceControl);
++            }
+         }
+         if (mControllableInsetProvider != null) {
+             mDisplayContent.pendingLayoutChanges |= FINISH_LAYOUT_REDO_LAYOUT;
+diff --git a/frameworks/base/services/credentials/java/com/android/server/credentials/CredentialManagerService.java b/frameworks/base/services/credentials/java/com/android/server/credentials/CredentialManagerService.java
+index bc5c427e3..c550fd906 100644
+--- a/frameworks/base/services/credentials/java/com/android/server/credentials/CredentialManagerService.java
++++ b/frameworks/base/services/credentials/java/com/android/server/credentials/CredentialManagerService.java
+@@ -1238,7 +1238,7 @@ public final class CredentialManagerService
+             if (!settingsWrapper.putStringForUser(
+                     Settings.Secure.CREDENTIAL_SERVICE_PRIMARY,
+                     String.join(":", filteredPrimaryProviders),
+-                    UserHandle.myUserId(),
++                    userId,
+                     /* overrideableByRestore= */ true)) {
+                 Slog.e(TAG, "Failed to remove primary service: " + componentName);
+                 return;
+@@ -1246,9 +1246,8 @@ public final class CredentialManagerService
+         }
+ 
+         // Read the credential providers to remove any reference of the removed service.
+-        String rawCredentialProviders =
+-                settingsWrapper.getStringForUser(
+-                        Settings.Secure.CREDENTIAL_SERVICE, UserHandle.myUserId());
++        String rawCredentialProviders = settingsWrapper.getStringForUser(
++                        Settings.Secure.CREDENTIAL_SERVICE, userId);
+ 
+         // Remove any provider services that are same as the one being removed.
+         Set<String> filteredCredentialProviders = getStoredProvidersExceptService(
+@@ -1256,7 +1255,7 @@ public final class CredentialManagerService
+         if (!settingsWrapper.putStringForUser(
+                 Settings.Secure.CREDENTIAL_SERVICE,
+                 String.join(":", filteredCredentialProviders),
+-                UserHandle.myUserId(),
++                userId,
+                 /* overrideableByRestore= */ true)) {
+             Slog.e(TAG, "Failed to remove secondary service: " + componentName);
+         }
+diff --git a/frameworks/base/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java b/frameworks/base/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java
+index 941e2b60d..52e5bed0d 100644
+--- a/frameworks/base/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java
++++ b/frameworks/base/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java
+@@ -11817,6 +11817,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
+                 R.array.config_packagesExemptFromSuspension);
+         dumpResources(pw, mContext, "policy_exempt_apps", R.array.policy_exempt_apps);
+         dumpResources(pw, mContext, "vendor_policy_exempt_apps", R.array.vendor_policy_exempt_apps);
++        dumpResources(pw, mContext, "application_hidden_policy_exempt_apps", R.array.application_hidden_policy_exempt_apps);
++
+         pw.decreaseIndent();
+         pw.println();
+     }
+@@ -13932,6 +13934,17 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
+         return new ArrayList<>(apps);
+     }
+ 
++    public final boolean isPackageExemptFromHiding(String str) {
++        String[] exempt_apps = mContext.getResources().getStringArray(
++            R.array.application_hidden_policy_exempt_apps);
++        for (String str2: exempt_apps) {
++            if (str.equals(str2)) {
++                return true;
++            }
++        }
++        return false;
++    }
++
+     @Override
+     public void setUserRestriction(
+             ComponentName who, String callerPackage, String key, boolean enabledFromThisOwner,
+@@ -14275,7 +14288,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
+         mPermissions.enforce(MANAGE_DEVICE_POLICY_PACKAGE_STATE, caller, targetUser);
+ 
+         List<String> exemptApps = listPolicyExemptAppsUnchecked(mContext);
+-        if (exemptApps.contains(packageName)) {
++        if (exemptApps.contains(packageName) || isPackageExemptFromHiding(packageName)) {
+             Slogf.d(LOG_TAG, "setApplicationHidden(): ignoring %s as it's on policy-exempt list",
+                     packageName);
+             return false;
+
+project packages/apps/Launcher3/
+diff --git a/packages/apps/Launcher3/quickstep/src/com/android/quickstep/LauncherProcessImageListener.kt b/packages/apps/Launcher3/quickstep/src/com/android/quickstep/LauncherProcessImageListener.kt
+new file mode 100644
+index 0000000..0238eb4
+--- /dev/null
++++ b/packages/apps/Launcher3/quickstep/src/com/android/quickstep/LauncherProcessImageListener.kt
+@@ -0,0 +1,136 @@
++package com.android.quickstep
++
++import android.graphics.ImageDecoder
++import android.util.Size
++import java.io.IOException
++import java.util.Locale
++import kotlin.math.max
++import kotlin.math.sqrt
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++class LauncherProcessImageListener(
++
++
++
++
++
++    private val maxMemoryBytes: Long,
++
++
++
++
++
++    private val allowedMimeTypes: Set<String>,
++) : ImageDecoder.OnHeaderDecodedListener {
++
++    override fun onHeaderDecoded(decoder: ImageDecoder, info: ImageDecoder.ImageInfo, source: ImageDecoder.Source) {
++        onHeaderDecoded(AndroidImageDecoderWrapper(decoder, info))
++    }
++
++
++
++    fun onHeaderDecoded(wrapper: ImageDecoderWrapper) {
++	val mimetype = wrapper.mimeType;
++	if (mimetype == null || !allowedMimeTypes.contains(mimetype.lowercase(Locale.US))) {
++            throw IOException("Image mime type ($mimetype) is not allowed.")
++        }
++
++
++
++        val preferredSize = getPreferredSize(wrapper.size.width, wrapper.size.height, maxMemoryBytes)
++        if (preferredSize != null) {
++            wrapper.setTargetSize(preferredSize.width, preferredSize.height)
++        }
++        return
++    }
++
++    interface ImageDecoderWrapper {
++        val mimeType: String?
++        val size: Size
++        fun setTargetSize(width: Int, height: Int)
++    }
++
++
++
++
++
++
++
++
++
++
++
++
++    private class AndroidImageDecoderWrapper(
++        private val decoder: ImageDecoder,
++        private val info: ImageDecoder.ImageInfo,
++    ) : ImageDecoderWrapper {
++        override val size: Size
++            get() = info.size
++
++        override val mimeType: String?
++            get() = info.mimeType
++
++        override fun setTargetSize(width: Int, height: Int) {
++            decoder.setTargetSize(width, height)
++        }
++    }
++
++    companion object {
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++        @JvmStatic
++        fun getPreferredSize(width: Int, height: Int, threshold: Long): Size? {
++            val scalefactor = 8;
++            val area = width.toLong() * height.toLong();
++            if (area * scalefactor > threshold) {
++                val ratio = (threshold / scalefactor).toDouble() / area.toDouble()
++
++                val dSqrt = Math.sqrt(ratio); val scaledWidth = (width * dSqrt + 0.5).toInt()
++
++
++                val finalWidth = Math.max(1, scaledWidth); val scaledHeight = (height * dSqrt + 0.5).toInt()
++                val finalHeight = Math.max(1, scaledHeight)
++                return Size(finalWidth, finalHeight)
++            }
++            return null
++        }
++    }
++}
+diff --git a/packages/apps/Launcher3/quickstep/src/com/android/quickstep/QuickstepProcessInitializer.java b/packages/apps/Launcher3/quickstep/src/com/android/quickstep/QuickstepProcessInitializer.java
+index 7fb6857..b3736ac 100644
+--- a/packages/apps/Launcher3/quickstep/src/com/android/quickstep/QuickstepProcessInitializer.java
++++ b/packages/apps/Launcher3/quickstep/src/com/android/quickstep/QuickstepProcessInitializer.java
+@@ -16,6 +16,7 @@
+ package com.android.quickstep;
+ 
+ import android.content.Context;
++import android.graphics.ImageDecoder;
+ import android.content.pm.PackageManager;
+ import android.os.Looper;
+ import android.os.Trace;
+@@ -25,6 +26,7 @@ import android.view.ThreadedRenderer;
+ 
+ import com.android.launcher3.BuildConfig;
+ import com.android.launcher3.MainProcessInitializer;
++import com.android.launcher3.R;
+ import com.android.quickstep.util.QuickstepProtoLogGroup;
+ import com.android.systemui.shared.system.InteractionJankMonitorWrapper;
+ 
+@@ -96,5 +98,17 @@ public class QuickstepProcessInitializer extends MainProcessInitializer {
+         }
+ 
+         QuickstepProtoLogGroup.initProtoLog();
++
++        setupImageDecoder(context);
++    }
++
++    private void setupImageDecoder(Context context) {
++
++        long max_memory = (long) context.getResources().getInteger(R.integer.max_launcher_memory_mb)
++                        * 1048576L;
++
++        Set mime_types = Set.of(context.getResources().getStringArray(
++                        R.array.allowed_image_mime_types));
++        ImageDecoder.setDefaultProcessListener(new LauncherProcessImageListener(max_memory, mime_types));
+     }
+ }
+diff --git a/packages/apps/Launcher3/res/values/arrays.xml b/packages/apps/Launcher3/res/values/arrays.xml
+new file mode 100644
+index 0000000..1675381
+--- /dev/null
++++ b/packages/apps/Launcher3/res/values/arrays.xml
+@@ -0,0 +1,29 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2024 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++        http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<resources>
++    <array name="allowed_image_mime_types">
++        <item>image/png</item>
++        <item>image/jpeg</item>
++        <item>image/webp</item>
++        <item>image/gif</item>
++        <item>image/bmp</item>
++        <item>image/x-ico</item>
++        <item>image/vnd.wap.wbmp</item>
++        <item>image/heif</item>
++        <item>image/heic</item>
++        <item>image/avif</item>
++    </array>
++</resources>
+diff --git a/packages/apps/Launcher3/res/values/integers.xml b/packages/apps/Launcher3/res/values/integers.xml
+new file mode 100644
+index 0000000..a65c1cb
+--- /dev/null
++++ b/packages/apps/Launcher3/res/values/integers.xml
+@@ -0,0 +1,19 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2024 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++        http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<resources>
++    <!-- Rough upper bound on decoded image memory (ImageDecoder) for the launcher process. -->
++    <integer name="max_launcher_memory_mb">300</integer>
++</resources>
+
+project packages/modules/Bluetooth/
+diff --git a/packages/modules/Bluetooth/android/app/src/com/android/bluetooth/btservice/AdapterService.java b/packages/modules/Bluetooth/android/app/src/com/android/bluetooth/btservice/AdapterService.java
+index 721d514..aefb849 100644
+--- a/packages/modules/Bluetooth/android/app/src/com/android/bluetooth/btservice/AdapterService.java
++++ b/packages/modules/Bluetooth/android/app/src/com/android/bluetooth/btservice/AdapterService.java
+@@ -4160,8 +4160,7 @@ public class AdapterService extends Service {
+         handleBondStateChange(BluetoothProfile.CSIP_SET_COORDINATOR, device, fromState, toState);
+         mDatabaseManager.handleBondStateChanged(device, fromState, toState);
+ 
+-        if (toState == BOND_NONE
+-                || (Flags.rebokePermissionOnUnbond() && fromState == BOND_BONDED)) {
++        if (toState == BOND_NONE || fromState == BOND_BONDED) {
+             // Remove the permissions for unbonded devices
+             setMessageAccessPermission(device, BluetoothDevice.ACCESS_UNKNOWN);
+             setPhonebookAccessPermission(device, BluetoothDevice.ACCESS_UNKNOWN);
+diff --git a/packages/modules/Bluetooth/android/app/tests/unit/src/com/android/bluetooth/btservice/AdapterServiceTest.java b/packages/modules/Bluetooth/android/app/tests/unit/src/com/android/bluetooth/btservice/AdapterServiceTest.java
+index 6921ba3..d2afdf7 100644
+--- a/packages/modules/Bluetooth/android/app/tests/unit/src/com/android/bluetooth/btservice/AdapterServiceTest.java
++++ b/packages/modules/Bluetooth/android/app/tests/unit/src/com/android/bluetooth/btservice/AdapterServiceTest.java
+@@ -1362,22 +1362,6 @@ public class AdapterServiceTest {
+         assertThat(mAdapterService.mLeGattClientsControllingAutoActiveMode).isEmpty();
+     }
+ 
+-    @Test
+-    @EnableFlags(Flags.FLAG_REBOKE_PERMISSION_ON_UNBOND)
+-    public void testRemovePermissionBondedToBonding() {
+-        initTest();
+-        SharedPreferences mockPreferences = mock(SharedPreferences.class);
+-        SharedPreferences.Editor mockEditor = mock(SharedPreferences.Editor.class);
+-
+-        when(mMockContext.getSharedPreferences(anyString(), anyInt())).thenReturn(mockPreferences);
+-        when(mockPreferences.edit()).thenReturn(mockEditor);
+-
+-        mAdapterService.handleBondStateChanged(
+-                mDevice1, BluetoothDevice.BOND_BONDED, BluetoothDevice.BOND_BONDING);
+-
+-        verify(mockEditor, times(3)).remove(anyString());
+-    }
+-
+     @Test
+     @DisableFlags(Flags.FLAG_ON_TO_BLE_ON_VIA_OFF)
+     public void onToBleOn_afterUpdatingSnoopLogValue_forceTurnOffBluetooth() {
+diff --git a/packages/modules/Bluetooth/flags/security.aconfig b/packages/modules/Bluetooth/flags/security.aconfig
+index 4d2eb8e..8aca6f9 100644
+--- a/packages/modules/Bluetooth/flags/security.aconfig
++++ b/packages/modules/Bluetooth/flags/security.aconfig
+@@ -40,13 +40,3 @@ flag {
+         purpose: PURPOSE_BUGFIX
+     }
+ }
+-
+-flag {
+-    name: "reboke_permission_on_unbond"
+-    namespace: "bluetooth"
+-    description: "Remove permissions for message phonebookand sim access when unbonded"
+-    bug: "405333875"
+-    metadata {
+-        purpose: PURPOSE_BUGFIX
+-    }
+-}
+
+project packages/modules/Nfc/
+diff --git a/packages/modules/Nfc/NfcNci/src/com/android/nfc/DeviceConfigFacade.java b/packages/modules/Nfc/NfcNci/src/com/android/nfc/DeviceConfigFacade.java
+index e229291..c6b32ba 100644
+--- a/packages/modules/Nfc/NfcNci/src/com/android/nfc/DeviceConfigFacade.java
++++ b/packages/modules/Nfc/NfcNci/src/com/android/nfc/DeviceConfigFacade.java
+@@ -248,6 +248,9 @@ public class DeviceConfigFacade {
+     public boolean getDefaultSecureNfcState() {
+         return mSecureNfcDefault;
+     }
++    public void setDefaultSecureNfcState(boolean defaultSecureNfcState) {
++        mSecureNfcDefault = defaultSecureNfcState;
++    }
+     public boolean getEnableAutoPlay() { return mEnableAutoPlay; }
+     public boolean getPollingDisableAllowed() { return mPollingDisableAllowed; }
+     public boolean getNfccAlwaysOnAllowed() { return mNfccAlwaysOnAllowed; }
+diff --git a/packages/modules/Nfc/NfcNci/src/com/android/nfc/NfcBackupAgent.java b/packages/modules/Nfc/NfcNci/src/com/android/nfc/NfcBackupAgent.java
+index d56dfee..b28b970 100644
+--- a/packages/modules/Nfc/NfcNci/src/com/android/nfc/NfcBackupAgent.java
++++ b/packages/modules/Nfc/NfcNci/src/com/android/nfc/NfcBackupAgent.java
+@@ -16,6 +16,7 @@
+ 
+ package com.android.nfc;
+ 
++import android.app.ActivityManager;
+ import android.app.backup.BackupAgentHelper;
+ import android.app.backup.SharedPreferencesBackupHelper;
+ import android.content.Context;
+@@ -57,7 +58,7 @@ public class NfcBackupAgent extends BackupAgentHelper {
+                 nfcAdapter.enableReaderOption(false);
+             }
+ 
+-            if (prefs.getBoolean(NfcService.PREF_SECURE_NFC_ON, deviceConfigFacade.getDefaultSecureNfcState())
++            if (prefs.getBoolean(NfcService.PREF_SECURE_NFC_ON + ActivityManager.getCurrentUser(), deviceConfigFacade.getDefaultSecureNfcState())
+                     && nfcAdapter.isSecureNfcSupported()) {
+                 nfcAdapter.enableSecureNfc(true);
+             } else {
+diff --git a/packages/modules/Nfc/NfcNci/src/com/android/nfc/NfcService.java b/packages/modules/Nfc/NfcNci/src/com/android/nfc/NfcService.java
+index 3a95329..2f2aeb8 100644
+--- a/packages/modules/Nfc/NfcNci/src/com/android/nfc/NfcService.java
++++ b/packages/modules/Nfc/NfcNci/src/com/android/nfc/NfcService.java
+@@ -201,7 +201,7 @@ public class NfcService implements DeviceHostListener, ForegroundUtils.Callback
+     static final boolean NFC_CHARGING_ON_DEFAULT = true;
+ 
+     static final String PREF_MIGRATE_TO_DE_COMPLETE = "migrate_to_de_complete";
+-    static final String PREF_SECURE_NFC_ON = "secure_nfc_on";
++    static final String PREF_SECURE_NFC_ON = "secure_nfc_on_";
+     static final String PREF_FIRST_BOOT = "first_boot";
+ 
+     static final String PREF_ANTENNA_BLOCKED_MESSAGE_SHOWN = "antenna_blocked_message_shown";
+@@ -1089,6 +1089,15 @@ public class NfcService implements DeviceHostListener, ForegroundUtils.Callback
+         }
+     }
+ 
++    public String getSecureNfcPreferenceKeyForUser(int i) {
++        return "secure_nfc_on_" + i;
++    }
++
++    public void loadSecureNfcSettings(int i) {
++        mIsSecureNfcEnabled = mPrefs.getBoolean(getSecureNfcPreferenceKeyForUser(i), mDeviceConfigFacade.getDefaultSecureNfcState()) && mIsSecureNfcCapable;
++        Log.i("NfcService", "Reloaded Secure NFC setting for user " + i + ". Enabled: " + mIsSecureNfcEnabled);
++        this.mDeviceHost.setNfcSecure(mIsSecureNfcEnabled);
++    }
+ 
+     /** Returns true if NFC has user restriction set. */
+     private boolean isNfcUserRestricted() {
+@@ -1298,8 +1307,8 @@ public class NfcService implements DeviceHostListener, ForegroundUtils.Callback
+         mIsEuiccCapable = mContext.getResources().getBoolean(R.bool.enable_euicc_support)
+                 && NfcInjector.NfcProperties.isEuiccSupported();
+         mForegroundUtils = mNfcInjector.getForegroundUtils();
+-        mIsSecureNfcCapable = mDeviceConfigFacade.isSecureNfcCapable();
+-        mIsSecureNfcEnabled = mPrefs.getBoolean(PREF_SECURE_NFC_ON,
++        mIsSecureNfcCapable = mIsHceCapable && mDeviceConfigFacade.isSecureNfcCapable();
++        mIsSecureNfcEnabled = mPrefs.getBoolean(getSecureNfcPreferenceKeyForUser(mUserId),
+             mDeviceConfigFacade.getDefaultSecureNfcState())
+             && mIsSecureNfcCapable;
+         mDeviceHost.setNfcSecure(mIsSecureNfcEnabled);
+@@ -2668,7 +2677,12 @@ public class NfcService implements DeviceHostListener, ForegroundUtils.Callback
+                     return false;
+                 }
+                 Log.i(TAG, "setNfcSecure: " + enable);
+-                mPrefsEditor.putBoolean(PREF_SECURE_NFC_ON, enable);
++		int userId = getUserId();
++                mPrefsEditor.putBoolean(getSecureNfcPreferenceKeyForUser(userId), enable);
++                Log.i("NfcService", "currentUserId: " + userId);
++                if (userId == UserHandle.SYSTEM.getIdentifier()) {
++                    mDeviceConfigFacade.setDefaultSecureNfcState(enable);
++                }
+                 mPrefsEditor.apply();
+                 mIsSecureNfcEnabled = enable;
+                 mBackupManager.dataChanged();
+@@ -6186,6 +6200,7 @@ public class NfcService implements DeviceHostListener, ForegroundUtils.Callback
+                 if (DBG) Log.d(TAG, action + "mReceiver.onReceive: UserId: " + userId);
+                 if (mIsHceCapable) {
+                     mCardEmulationManager.onUserSwitched(getUserId());
++                    loadSecureNfcSettings(userId);
+                 }
+ 
+                 mNfcInjector.onUserSwitched();
+@@ -6273,7 +6288,9 @@ public class NfcService implements DeviceHostListener, ForegroundUtils.Callback
+             } else {
+                 new EnableDisableTask().execute(TASK_DISABLE);
+             }
+-            mIsSecureNfcEnabled = mPrefs.getBoolean(PREF_SECURE_NFC_ON,
++            String prefkey = getSecureNfcPreferenceKeyForUser(mUserId);
++            mIsSecureNfcEnabled = mPrefs.getBoolean(
++                    prefkey,
+                     mDeviceConfigFacade.getDefaultSecureNfcState())
+                     && mIsSecureNfcCapable;
+             mDeviceHost.setNfcSecure(mIsSecureNfcEnabled);
+
+project packages/modules/adb/
+diff --git a/packages/modules/adb/daemon/auth.cpp b/packages/modules/adb/daemon/auth.cpp
+index c59d044..dce690d 100644
+--- a/packages/modules/adb/daemon/auth.cpp
++++ b/packages/modules/adb/daemon/auth.cpp
+@@ -362,12 +362,14 @@ int adbd_tls_verify_cert(X509_STORE_CTX* ctx, std::string* auth_key) {
+         bool verified = false;
+         bssl::UniquePtr<EVP_PKEY> known_evp(EVP_PKEY_new());
+         EVP_PKEY_set1_RSA(known_evp.get(), key);
+-        if (EVP_PKEY_cmp(known_evp.get(), evp_pkey.get())) {
++        uint32_t evp_pkey_cmp = EVP_PKEY_cmp(known_evp.get(), evp_pkey.get());
++        if (evp_pkey_cmp == 1) {
+             VLOG(AUTH) << "Matched auth_key=" << public_key;
+             verified = true;
+         } else {
+-            VLOG(AUTH) << "auth_key doesn't match [" << public_key << "]";
++            VLOG(AUTH) << "auth_key doesn't match [" << public_key << "] EVP_PKEY_cmp returned " << (int)evp_pkey_cmp;
+         }
++
+         RSA_free(key);
+         if (verified) {
+             *auth_key = public_key;
+
+project packages/providers/ContactsProvider/
+diff --git a/packages/providers/ContactsProvider/src/com/android/providers/contacts/ContactsProvider2.java b/packages/providers/ContactsProvider/src/com/android/providers/contacts/ContactsProvider2.java
+index 30fafa2..83e3667 100644
+--- a/packages/providers/ContactsProvider/src/com/android/providers/contacts/ContactsProvider2.java
++++ b/packages/providers/ContactsProvider/src/com/android/providers/contacts/ContactsProvider2.java
+@@ -20,6 +20,7 @@ import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
+ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+ import static android.provider.Flags.newDefaultAccountApiEnabled;
+ import static android.provider.Flags.newAccountAttributesApiEnabled;
++import android.database.sqlite.SQLiteException;
+ 
+ import static com.android.providers.contacts.flags.Flags.cp2SyncSearchIndexFlag;
+ import static com.android.providers.contacts.flags.Flags.disableCp2AccountMoveFlag;
+@@ -2447,6 +2448,26 @@ public class ContactsProvider2 extends AbstractContactsProvider
+         mInProfileMode.set(false);
+     }
+ 
++
++
++
++
++
++
++
++
++    private void maybeStripAndThrowSQLiteExceptionWithJson(Exception exc, String str, LogFields.Builder builder) {
++        if ((exc instanceof SQLiteException) &&
++			getContext().checkCallingPermission(str) != 0) {
++            String message = exc.getMessage();
++            if (message != null && message.toLowerCase(Locale.ROOT).contains("json")) {
++                SQLiteException sQLiteException = new SQLiteException("Stripped exception message");
++                builder.setException(sQLiteException);
++                throw sQLiteException;
++            }
++        }
++    }
++
+     @Override
+     public Uri insert(Uri uri, ContentValues values) {
+         LogFields.Builder logBuilder = LogFields.Builder.aLogFields()
+@@ -2482,6 +2503,7 @@ public class ContactsProvider2 extends AbstractContactsProvider
+             resultUri = super.insert(uri, values);
+             return resultUri;
+         } catch (Exception e) {
++            maybeStripAndThrowSQLiteExceptionWithJson(e, "android.permission.WRITE_CONTACTS", logBuilder);
+             logBuilder.setException(e);
+             throw e;
+         } finally {
+@@ -2528,6 +2550,7 @@ public class ContactsProvider2 extends AbstractContactsProvider
+             updates = super.update(uri, values, selection, selectionArgs);
+             return updates;
+         } catch (Exception e) {
++            maybeStripAndThrowSQLiteExceptionWithJson(e, "android.permission.WRITE_CONTACTS", logBuilder);
+             logBuilder.setException(e);
+             throw e;
+         } finally {
+@@ -2566,6 +2589,7 @@ public class ContactsProvider2 extends AbstractContactsProvider
+             deletes = super.delete(uri, selection, selectionArgs);
+             return deletes;
+         } catch (Exception e) {
++            maybeStripAndThrowSQLiteExceptionWithJson(e, "android.permission.WRITE_CONTACTS", logBuilder);
+             logBuilder.setException(e);
+             throw e;
+         } finally {
+@@ -6209,23 +6233,28 @@ public class ContactsProvider2 extends AbstractContactsProvider
+                         uri, ContactsContract.CALLER_IS_SYNCADAPTER, false))
+                 .setStartNanos(SystemClock.elapsedRealtimeNanos())
+                 .setUid(Binder.getCallingUid());
+-
+         Cursor cursor = null;
+-        try {
++	try {
++
+             cursor = queryInternal(uri, projection, selection, selectionArgs, sortOrder,
+-                    cancellationSignal);
+-            return cursor;
++                cancellationSignal);
++            if (cursor != null) {
++
++
++                logBuilder.setResultCount(cursor.getCount());
++            }
+         } catch (Exception e) {
++
++            maybeStripAndThrowSQLiteExceptionWithJson(e, "android.permission.READ_CONTACTS", logBuilder);
+             logBuilder.setException(e);
+             throw e;
+         } finally {
+-            LogUtils.log(
+-                    logBuilder.setResultCount(cursor == null ? 0 : cursor.getCount()).build());
+-        }
++            LogUtils.log(logBuilder.build());
++	}
++        return cursor;
+     }
+ 
+-    private Cursor queryInternal(Uri uri, String[] projection, String selection,
+-            String[] selectionArgs, String sortOrder, CancellationSignal cancellationSignal) {
++    private Cursor queryInternal(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder, CancellationSignal cancellationSignal) {
+         if (VERBOSE_LOGGING) {
+             Log.v(TAG, "query: uri=" + uri + "  projection=" + Arrays.toString(projection) +
+                     "  selection=[" + selection + "]  args=" + Arrays.toString(selectionArgs) +
+
+project packages/services/Telephony/
+diff --git a/packages/services/Telephony/src/com/android/phone/PhoneInterfaceManager.java b/packages/services/Telephony/src/com/android/phone/PhoneInterfaceManager.java
+index 43e8c84..ef0d6e0 100644
+--- a/packages/services/Telephony/src/com/android/phone/PhoneInterfaceManager.java
++++ b/packages/services/Telephony/src/com/android/phone/PhoneInterfaceManager.java
+@@ -8686,6 +8686,11 @@ public class PhoneInterfaceManager extends ITelephony.Stub {
+     @Override
+     @TelephonyManager.SetCarrierRestrictionResult
+     public int setAllowedCarriers(CarrierRestrictionRules carrierRestrictionRules) {
++	// PADDING LINE
++	// PADDING LINE
++        if (TelephonyPermissions.isShell(Binder.getCallingUid())) {
++            throw new SecurityException("setAllowedCarriers cannot be invoked by shell");
++        }
+         enforceModifyPermission();
+ 
+         enforceTelephonyFeatureWithException(getCurrentPackageName(),
+
