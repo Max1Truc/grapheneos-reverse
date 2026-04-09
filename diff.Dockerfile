@@ -3,11 +3,11 @@ RUN echo https://dl-cdn.alpinelinux.org/alpine/edge/testing >> /etc/apk/reposito
 RUN adduser -D reprodiffer
 RUN apk add \
   android-tools \
+  apktool \
   cpio \
   dtc \
   e2fsprogs-extra \
   file \
-  jadx \
   lz4 \
   py3-elftools \
   wabt \
