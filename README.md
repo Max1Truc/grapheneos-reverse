@@ -1,5 +1,13 @@
 # grapheneos-reverse
 
+This project aims to open source the security patches applied to the GrapheneOS "security preview" version.
+
+The code is ugly but for now as long as it produces the right binary files, it's ok.
+
+This project is divided in two parts:
+- Build: helper container to build the open source version, apply patches, and produce a release file (e.g. `tegu-install-2026030701.zip`)
+- Diff: script that extracts two releases and lists everything that differs. The goal is to identify the security patches.
+
 ## Build GrapheneOS
 
 > [Baseline build dependencies:](https://grapheneos.org/build#build-dependencies)

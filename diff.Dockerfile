@@ -14,7 +14,7 @@ RUN apk add \
   xxd \
   --no-cache
 
-COPY ./diff.py /usr/local/bin
+COPY ./scripts/diff.py /usr/local/bin
 
 WORKDIR /work
 
