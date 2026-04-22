@@ -2,7 +2,9 @@
 
 This project aims to open source the security patches applied to the GrapheneOS "security preview" version.
 
-The code is ugly but for now as long as it produces the right binary files, it's ok.
+Please pardon the ugly code but for now as long as it produces the right binary files it's ok.
+
+For now the goal is to reproduce the 2026030701 "security preview" patches. Future work involves keeping up with the future releases and a lot of refactoring (as always).
 
 This project is divided in two parts:
 - Build: helper container to build the open source version, apply patches, and produce a release file (e.g. `tegu-install-2026030701.zip`)
@@ -44,3 +46,11 @@ $ docker compose run --build --rm diff diff.py releases/tegu-install-2026032001.
 
 This will create a `diff.txt` file with the list of all files that changed, in the format `DIFF [file1] [file2]`
 All these files will be in `releases/tegu-install-2026032001.d` and `releases/tegu-install-2026032001-reproduced.d`.
+
+## Contributing
+
+Anyone willing to help could:
+- refactor diff.py (currently big ugly pasta code) to make it in-memory, as for now it extracts a lot of things to the local filesystem
+  - this could maybe be achieved with [Kaitai Struct](https://formats.kaitai.io/) which seems to support all the file formats we need
+- contribute patches that they reversed. please run diff.py between your built version and the official release and send the output along with your pull request
+- figure out a way to guide an AI (buzzwords yay!) into reproducing the patches. a cool feedback loop can be used to that the AI checks its work (build -> diff -> reverse -> start again)
