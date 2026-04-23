@@ -1,5 +1,29 @@
 
 project external/dng_sdk/
+diff --git a/external/dng_sdk/Android.bp b/external/dng_sdk/Android.bp
+index 4aa330e..7ce47a1 100644
+--- a/external/dng_sdk/Android.bp
++++ b/external/dng_sdk/Android.bp
+@@ -74,6 +74,12 @@ cc_defaults {
+             "unsigned-integer-overflow",
+             "signed-integer-overflow",
+         ],
++        diag: {
++            misc_undefined: [
++                "unsigned-integer-overflow",
++                "signed-integer-overflow",
++            ],
++        }
+     },
+ 
+     target: {
+@@ -281,4 +287,4 @@ cc_binary {
+         "libdng_sdk",
+     ]
+ }
+-*/
+\ No newline at end of file
++*/
 diff --git a/external/dng_sdk/source/dng_misc_opcodes.cpp b/external/dng_sdk/source/dng_misc_opcodes.cpp
 index 38ee103..49e63a8 100644
 --- a/external/dng_sdk/source/dng_misc_opcodes.cpp
