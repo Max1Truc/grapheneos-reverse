@@ -266,10 +266,10 @@ def diff(file1: Path | str, file2: Path | str):
         os.makedirs(extractdir1, exist_ok=True)
         os.makedirs(extractdir2, exist_ok=True)
         proc1 = Popen(
-            ["cpio", "-i", "-F", file1.absolute()], cwd=extractdir1
+            ["cpio", "--quiet", "-i", "-F", file1.absolute()], cwd=extractdir1
         ).communicate()
         proc2 = Popen(
-            ["cpio", "-i", "-F", file2.absolute()], cwd=extractdir2
+            ["cpio", "--quiet", "-i", "-F", file2.absolute()], cwd=extractdir2
         ).communicate()
 
         logger.debug(f"EXTRACT {file1} {file2}")
