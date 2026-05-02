@@ -891,6 +891,1336 @@ index 0000000..a65c1cb
 +    <integer name="max_launcher_memory_mb">300</integer>
 +</resources>
 
+project packages/apps/Settings/
+diff --git a/packages/apps/Settings/res/values-af/strings.xml b/packages/apps/Settings/res/values-af/strings.xml
+index 34ab30f..2c24173 100644
+--- a/packages/apps/Settings/res/values-af/strings.xml
++++ b/packages/apps/Settings/res/values-af/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Eksperimenteel: aktiveer ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Waarskuwing: aktiveer ANGLE as verstek-OpenGL ES-drywer. Hierdie kenmerk is eksperimenteel en sal dalk nie met sommige kamera- en videoapps versoenbaar wees nie."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"’n Herselflaai word vereis om die stelsel-OpenGL ES-drywer te verander"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Waarskuwing: aktiveer ANGLE as verstek-OpenGL ES-drywer. Hierdie kenmerk is eksperimenteel en sal dalk nie met sommige kamera- en videoapps versoenbaar wees nie. Rugsteun jou toesteldata voordat jy die skakelaar aanskakel</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">’n Herselflaai word vereis om die stelsel-OpenGL ES-drywer te verander. Rugsteun asseblief jou toesteldata voordat jy herlaai. In geval die herlaai misluk het, het jy ’n fabriekterugstelling nodig om die toestel terug te stel</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Veranderinge aan appversoenbaarheid"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Wissel veranderinge aan appversoenbaarheid"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Veranderinge aan by verstek geaktiveer"</string>
+diff --git a/packages/apps/Settings/res/values-am/strings.xml b/packages/apps/Settings/res/values-am/strings.xml
+index 941a194..385741c 100644
+--- a/packages/apps/Settings/res/values-am/strings.xml
++++ b/packages/apps/Settings/res/values-am/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"የሙከራ፦ ANGLE ያንቁ"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"ማስጠንቀቂያ፦ ANGLE እንደ ነባሪ OpenGL ES ነጂ ያንቁ። ይህ ባህሪ ሙከራ ነው እና ከአንዳንድ የካሜራ እና ቪድዮ መተግበሪያዎች ጋር ተኳዃኝ ላይሆን ይችላል።"</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"የሥርዓት OpenGL ES ነጂን ለመለወጥ ዳግም ማስነሳት ያስፈልጋል"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">ማስጠንቀቂያ፦ ANGLE እንደ ነባሪ OpenGL ES ነጂ ያንቁ። ይህ ባህሪ በሙከራ ውስጥ ነው እና ከአንዳንድ የካሜራ እና የቪድዮ መተግበሪያዎች ጋር ተኳኋኝ ላይሆን ይችላል። እባክዎ መቀያየሪያውን ከማብራትዎ በፊት የመሣሪያዎን ውሂብ ምትኬ ያስቀምጡ</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">የሥርዓት OpenGL ES ነጂን ለመለወጥ ዳግም ማስነሳት ያስፈልጋል። እባክዎ ዳግም ከማስነሳትዎ በፊት የመሣሪያዎን ውሂብ ምትኬ ያስቀምጡ። ዳግም ማስነሳቱ ካልተሳካ መሣሪያውን ወደነበረበት ለመመለስ የፋብሪካ ዳግም ማስጀመር ያስፈልግዎታል</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"የመተግበሪያ ተኳኋኝነት ለውጦች"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"የመተግበሪያ ተኳኋኝነት ለውጦችን ይቀያይሩ"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"ነባሪ የነቁ ለውጦች"</string>
+diff --git a/packages/apps/Settings/res/values-ar/strings.xml b/packages/apps/Settings/res/values-ar/strings.xml
+index cf9dc37..e629b2b 100644
+--- a/packages/apps/Settings/res/values-ar/strings.xml
++++ b/packages/apps/Settings/res/values-ar/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"‏ميزة تجريبية: تفعيل محرِّك ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"‏تحذير: عليك تفعيل محرِّك ANGLE على أنّه برنامج التشغيل التلقائي OpenGL ES. هذه الميزة تجريبية وقد لا تكون متوافقة مع بعض تطبيقات الكاميرا والفيديو."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"‏يجب إعادة التشغيل لتغيير برنامج تشغيل OpenGL ES الخاص بالنظام."</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">‏تحذير: عليك تفعيل محرِّك ANGLE على أنّه برنامج التشغيل التلقائي OpenGL ES. هذه الميزة تجريبية وقد لا تكون متوافقة مع بعض تطبيقات الكاميرا والفيديو. يُرجى الاحتفاظ بنسخة احتياطية من بيانات جهازك قبل التفعيل</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">‏يجب إعادة التشغيل لتغيير برنامج تشغيل OpenGL ES الخاص بالنظام. يُرجى الاحتفاظ بنسخة احتياطية من بيانات جهازك قبل إعادة التشغيل. في حال تعذُّر إعادة التشغيل، عليك إعادة ضبط الجهاز على الإعدادات الأصلية لاستعادته</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"التغييرات في توافق التطبيقات"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"التبديل بين تغييرات توافق التطبيقات"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"التغييرات التي يتم تفعيلها تلقائيًا"</string>
+diff --git a/packages/apps/Settings/res/values-as/strings.xml b/packages/apps/Settings/res/values-as/strings.xml
+index 7362db4..73778c1 100644
+--- a/packages/apps/Settings/res/values-as/strings.xml
++++ b/packages/apps/Settings/res/values-as/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"পৰীক্ষামূলক: ANGLE সক্ষম কৰক"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"সকীয়নি: ডিফ’ল্ট OpenGL ES ড্ৰাইভাৰ হিচাপে ANGLE সক্ষম কৰক। এই সুবিধাটো পৰীক্ষা কৰি থকা হৈছে আৰু কিছুমান কেমেৰা আৰু ভিডিঅ’ এপৰ সৈতে এইটো সমিল নহ’বও পাৰে।"</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"ছিষ্টেমৰ OpenGL ES ড্ৰাইভাৰ সলনি কৰিবলৈ ৰিবুট কৰাৰ আৱশ্যক"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">সকীয়নি: ডিফ’ল্ট OpenGL ES ড্ৰাইভাৰ হিচাপে ANGLE সক্ষম কৰক। এই সুবিধাটো পৰীক্ষা কৰি থকা হৈছে আৰু কিছুমান কেমেৰা আৰু ভিডিঅ’ এপৰ সৈতে এইটো সমিল নহ’বও পাৰে। অনুগ্ৰহ কৰি ছুইচটো অন কৰাৰ আগতে আপোনাৰ ডিভাইচৰ ডেটাৰ বেকআপ লওক</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">ছিষ্টেমৰ OpenGL ES ড্ৰাইভাৰ সলনি কৰিবলৈ ৰিবুট কৰাৰ আৱশ্যক। ৰিবুট কৰাৰ আগতে অনুগ্ৰহ কৰি আপোনাৰ ডিভাইচৰ ডেটাৰ বেক আপ লওক। যদি ৰিবুট কৰাটো বিফল হয়, ডিভাইচটো পুনৰুদ্ধাৰ কৰিবলৈ আপোনাক ফেক্টৰী ৰিছেটৰ প্ৰয়োজন</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"এপৰ সুসমতা সম্পৰ্কীয় সালসলনিসমূহ"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"এপৰ সুসংগতাৰ সালসলনিসমূহ ট’গল কৰক"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"সক্ষম কৰা ডিফ’ল্ট সালসলনিসমূহ"</string>
+diff --git a/packages/apps/Settings/res/values-az/strings.xml b/packages/apps/Settings/res/values-az/strings.xml
+index a983725..b6ff7b9 100644
+--- a/packages/apps/Settings/res/values-az/strings.xml
++++ b/packages/apps/Settings/res/values-az/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Təcrübi: ANGLE-ı aktivləşdirin"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Xəbərdarlıq: ANGLE-ı defolt OpenGL ES drayveri kimi aktivləşdirin. Bu funksiya təcrübidir. Bəzi kamera və video tətbiqləri ilə uyğun olmaya bilər."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Sistemin OpenGL ES drayverini dəyişmək üçün yenidən başlatma tələb edilir"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Xəbərdarlıq: ANGLE-ı defolt OpenGL ES drayveri kimi aktivləşdirin. Bu funksiya təcrübidir. Bəzi kamera və video tətbiqləri ilə uyğun olmaya bilər. Keçiricini yandırmazdan əvvəl cihaz datasını yedəkləyin</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Sistemin OpenGL ES drayverini dəyişmək üçün yenidən başlatma tələb edilir. Yenidən başlatmazdan əvvəl cihaz datasını yedəkləyin. Yenidən başlatma alınmadıqda cihazı bərpa etmək üçün zavod sıfırlaması tələb olunur</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Tətbiq uyğunluğu dəyişiklikləri"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Tətbiq uyğunluğu ayarlarına dəyişiklik göstərilsin"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Dəyişikliklər standart olaraq aktivdir"</string>
+diff --git a/packages/apps/Settings/res/values-b+sr+Latn/strings.xml b/packages/apps/Settings/res/values-b+sr+Latn/strings.xml
+index 876d082..be203c9 100644
+--- a/packages/apps/Settings/res/values-b+sr+Latn/strings.xml
++++ b/packages/apps/Settings/res/values-b+sr+Latn/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Eksperimentalno: Omogući ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Upozorenje: Omogućava ANGLE kao podrazumevani OpenGL ES upravljački program. Ova funkcija je u eksperimentalnoj fazi i možda nije kompatibilna sa nekim aplikacijama za kameru i video snimke."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Morate da restartujete da biste promenili OpenGL ES upravljački program sistema"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Upozorenje: Omogućava ANGLE kao podrazumevani OpenGL ES upravljački program. Ova funkcija je u eksperimentalnoj fazi i možda nije kompatibilna sa nekim aplikacijama za kameru i video snimke. Napravite rezervnu kopiju podataka sa uređaja pre nego što uključite prekidač</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Morate da restartujete da biste promenili OpenGL ES upravljački program sistema. Napravite rezervnu kopiju podataka sa uređaja pre restartovanja. Ako restartovanje nije uspelo, treba da resetujete uređaj na fabrička podešavanja da biste ga vratili u prethodno stanje</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Promene kompatibilnosti aplikacije"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Uključite/isključite promene kompatibilnosti aplikacije"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Podrazumevane omogućene promene"</string>
+diff --git a/packages/apps/Settings/res/values-be/strings.xml b/packages/apps/Settings/res/values-be/strings.xml
+index 6f68d2e..68a4793 100644
+--- a/packages/apps/Settings/res/values-be/strings.xml
++++ b/packages/apps/Settings/res/values-be/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Уключыць ANGLE (эксперыментальная функцыя)"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Папярэджанне. Уключыце ANGLE як стандартны драйвер OpenGL ES. Гэта функцыя з’яўляецца эксперыментальнай і можа быць несумяшчальнай з некаторымі праграмамі для камер і відэа."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Каб змяніць сістэмны драйвер OpenGL ES, патрабуецца перазагрузка"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Папярэджанне. Уключыце ANGLE як стандартны драйвер OpenGL ES. Гэта функцыя з’яўляецца эксперыментальнай і можа быць несумяшчальнай з некаторымі праграмамі для камер і відэа. Перш чым уключыць пераключальнік, стварыце рэзервовую копію даных прылады.</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Каб змяніць сістэмны драйвер OpenGL ES, патрабуецца перазагрузка. Перад перазагрузкай стварыце рэзервовую копію даных прылады. Калі перазагрузка не ўдалася, для аднаўлення прылады трэба будзе скінуць налады да заводскіх значэнняў.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Змяненні ў сумяшчальнасці праграм"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Пераключыць на змяненні ў сумяшчальнасці праграм"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Стандартныя ўключаныя змяненні"</string>
+diff --git a/packages/apps/Settings/res/values-bg/strings.xml b/packages/apps/Settings/res/values-bg/strings.xml
+index 1d55112..977aa1b 100644
+--- a/packages/apps/Settings/res/values-bg/strings.xml
++++ b/packages/apps/Settings/res/values-bg/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Експеримент: Активиране на ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Предупреждение: Активиране на ANGLE като стандартен OpenGL ES драйвер. Тази функция е експериментална и може да не е съвместима с някои приложения за камера и видео."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"За промяна на системния OpenGL ES драйвер се изисква рестартиране"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Предупреждение: Активиране на ANGLE като стандартен OpenGL ES драйвер. Тази функция е експериментална и може да не е съвместима с някои приложения за камера и видео. Създайте резервно копие на данните на устройството си, преди да включите превключвателя</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">За промяна на системния OpenGL ES драйвер се изисква рестартиране. Моля, създайте резервно копие на данните на устройството си, преди да го рестартирате. В случай че рестартирането не е успешно, трябва да възстановите фабричните настройки, за да възстановите устройството</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Промени в съвместимостта на приложенията"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Включване/изключване на промените в съвместимостта на приложенията"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Промени, свързани с активирането по подразбиране"</string>
+diff --git a/packages/apps/Settings/res/values-bn/strings.xml b/packages/apps/Settings/res/values-bn/strings.xml
+index f5103fe..2c3e0f7 100644
+--- a/packages/apps/Settings/res/values-bn/strings.xml
++++ b/packages/apps/Settings/res/values-bn/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"এক্সপেরিমেন্ট হিসেবে উপলভ্য: ANGLE চালু করুন"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"সতর্কতা: ডিফল্ট OpenGL ES ড্রাইভার হিসেবে ANGLE চালু করুন। এই ফিচার এক্সপেরিমেন্ট হিসেবে উপলভ্য। এটি কিছু ক্যামেরা ও ভিডিও অ্যাপে ব্যবহার নাও করা যেতে পারে।"</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"সিস্টেম OpenGL ES ড্রাইভার পরিবর্তন করার জন্য, রিবুট করতে হবে"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">সতর্কতা: ডিফল্ট OpenGL ES ড্রাইভার হিসেবে ANGLE চালু করুন। এই ফিচারটি এক্সপেরিমেন্ট পর্যায়ে থাকায় এটি কিছু ক্যামেরা ও ভিডিও অ্যাপে ব্যবহারের উপযুক্ত নাও হতে পারে। সুইচ চালু করার আগে আপনার ডিভাইস ডেটার ব্যাক-আপ নিন</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">সিস্টেম OpenGL ES ড্রাইভার পরিবর্তন করার জন্য রিবুট করতে হবে। রিবুট করার আগে আপনার ডিভাইস ডেটার ব্যাক-আপ নিন। কোনও কারণে রিবুট কাজ না করলে, ডিভাইস আগের অবস্থায় ফেরাতে আপনাকে ফ্যাক্টরি রিসেট করতে হবে</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"ডিভাইসে অ্যাপ মানানসই করা সম্পর্কিত পরিবর্তন"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"অ্যাপ মানানসই করা সম্পর্কিত পরিবর্তন টগল করুন"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"ডিফল্ট হিসেবে চালু করা পরিবর্তন"</string>
+diff --git a/packages/apps/Settings/res/values-bs/strings.xml b/packages/apps/Settings/res/values-bs/strings.xml
+index ffad8a9..f489351 100644
+--- a/packages/apps/Settings/res/values-bs/strings.xml
++++ b/packages/apps/Settings/res/values-bs/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Eksperimentalno: omogući ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Upozorenje: omogućava ANGLE kao zadani drajver OpenGL ES-a. Ova funkcija je eksperimentalna i možda neće biti kompatibilna s određenim aplikacijama za kameru i videozapise."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Ponovno pokretanje je potrebno za promjenu sistemskog drajvera OpenGL ES"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Upozorenje: omogućite ANGLE kao zadani drajver OpenGL ES-a. Ova funkcija je eksperimentalna i možda neće biti kompatibilna s određenim aplikacijama za kameru i videozapise. Napravite sigurnosnu kopiju podataka uređaja prije nego što uključite prekidač</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Ponovno pokretanje je potrebno za promjenu sistemskog drajvera OpenGL ES-a. Napravite sigurnosnu kopiju podataka uređaja prije ponovnog pokretanja. U slučaju da ponovno pokretanje ne uspije, trebate vratiti uređaj na fabričke postavke</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Izmjene kompatibilnosti aplikacije"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Uključivanje/isključivanje izmjena kompatibilnosti aplikacije"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Zadano omogućene izmjene"</string>
+diff --git a/packages/apps/Settings/res/values-ca/strings.xml b/packages/apps/Settings/res/values-ca/strings.xml
+index 173c9cc..cea0833 100644
+--- a/packages/apps/Settings/res/values-ca/strings.xml
++++ b/packages/apps/Settings/res/values-ca/strings.xml
+@@ -5084,8 +5084,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Experimental: activa ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Advertiment: activa ANGLE com a controlador OpenGL ES predeterminat. Aquesta funció està en fase d\'experimentació i és possible que no sigui compatible amb algunes aplicacions de càmera i vídeo."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Cal reiniciar per canviar el controlador OpenGL ES del sistema"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Advertiment: activa ANGLE com a controlador OpenGL ES predeterminat. Aquesta funció està en fase d'experimentació i és possible que no sigui compatible amb algunes aplicacions de càmera i vídeo. Crea una còpia de seguretat de les dades del dispositiu abans d'activar l'interruptor."</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Cal reiniciar per canviar el controlador OpenGL ES del sistema. Crea una còpia de seguretat de les dades del dispositiu abans de reiniciar-lo. Si el reinici ha fallat, has de restablir les dades de fàbrica per restaurar el dispositiu.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Canvis en la compatibilitat de les aplicacions"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Commuta els canvis en la compatibilitat de les aplicacions"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Canvis activats de manera predeterminada"</string>
+diff --git a/packages/apps/Settings/res/values-cs/strings.xml b/packages/apps/Settings/res/values-cs/strings.xml
+index aa6f048..010f3b2 100644
+--- a/packages/apps/Settings/res/values-cs/strings.xml
++++ b/packages/apps/Settings/res/values-cs/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Experimentální: Povolit ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Upozornění: Povolte ANGLE jako výchozí ovladač OpenGL ES. Tato funkce je experimentální a nemusí být kompatibilní s některými aplikacemi na ovládání kamery a tvorbu videa."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Změna systémového ovladače OpenGL ES vyžaduje restart"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Upozornění: Povolte ANGLE jako výchozí ovladač OpenGL ES. Tato funkce je experimentální a nemusí být kompatibilní s některými aplikacemi na ovládání kamery a tvorbu videa. Před zapnutím přepínače si zálohujte data ze zařízení</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Změna systémového ovladače OpenGL ES vyžaduje restart. Před restartováním zařízení si zálohujte data. Pokud se restart nezdaří, budete muset zařízení obnovit resetováním do továrního nastavení.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Změny kompatibility aplikací"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Přepínat změny kompatibility aplikací"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Změny, které jsou ve výchozím nastavení povoleny"</string>
+diff --git a/packages/apps/Settings/res/values-da/strings.xml b/packages/apps/Settings/res/values-da/strings.xml
+index bc43875..a3de706 100644
+--- a/packages/apps/Settings/res/values-da/strings.xml
++++ b/packages/apps/Settings/res/values-da/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Eksperimentel: Aktivér ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Advarsel! Aktivér ANGLE som OpenGL ES-standarddriver. Denne funktion er under udvikling og er muligvis ikke kompatibel med visse kamera- og videoapps."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Du skal genstarte for at ændre OpenGL ES-systemdriveren"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Advarsel! Aktivér ANGLE som OpenGL ES-standarddriver. Denne funktion er under udvikling og er muligvis ikke kompatibel med visse kamera- og videoapps. Sikkerhedskopiér dine enhedsdata, før du slår kontakten til</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Du skal genstarte for at ændre OpenGL ES-systemdriveren. Sikkerhedskopiér dine enhedsdata, før du genstarter. Hvis genstarten mislykkes, skal du gendanne fabriksindstillingerne for at gendanne enheden</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Ændringer i appkompatibilitet"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Skift appens kompatibilitetsændringer"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Ændringer i standardvalg for aktiveret"</string>
+diff --git a/packages/apps/Settings/res/values-de/strings.xml b/packages/apps/Settings/res/values-de/strings.xml
+index b94a8a2..7505616 100644
+--- a/packages/apps/Settings/res/values-de/strings.xml
++++ b/packages/apps/Settings/res/values-de/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Experimentelle Funktion: ANGLE aktivieren"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Achtung: Aktiviere ANGLE als standardmäßigen OpenGL ES-Treiber. Dies ist eine experimentelle Funktion, die möglicherweise mit einigen Kamera- und Video-Apps nicht kompatibel ist."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Ein Neustart ist erforderlich, um den OpenGL ES-Systemtreiber zu ändern"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Achtung: Aktiviere ANGLE als standardmäßigen OpenGL ES-Treiber. Dies ist eine experimentelle Funktion, die möglicherweise mit einigen Kamera- und Video-Apps nicht kompatibel ist. Sichere deine Gerätedaten, bevor du den Schalter aktivierst.</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Ein Neustart ist erforderlich, um den OpenGL ES-Systemtreiber zu ändern. Sichere deine Gerätedaten, bevor du das Gerät neu startest. Falls der Neustart fehlschlägt, musst du das Gerät zum Wiederherstellen auf die Werkseinstellungen zurücksetzen.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Änderungen der Kompatibilität von Apps"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Änderungen bei der Kompatibilität von Apps festlegen"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Standardmäßig aktivierte Änderungen"</string>
+diff --git a/packages/apps/Settings/res/values-el/strings.xml b/packages/apps/Settings/res/values-el/strings.xml
+index 9ad0f34..5296eea 100644
+--- a/packages/apps/Settings/res/values-el/strings.xml
++++ b/packages/apps/Settings/res/values-el/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Πειραματικό: Ενεργοποιήστε το ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Προειδοποίηση: Ενεργοποιήστε το ANGLE ως προεπιλεγμένο πρόγραμμα οδήγησης OpenGL ES. Αυτή η λειτουργία βρίσκεται σε πειραματικό στάδιο και ενδέχεται να μην είναι συμβατή με ορισμένες εφαρμογές κάμερας και βίντεο."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Για την αλλαγή του προγράμματος οδήγησης OpenGL ES του συστήματος απαιτείται επανεκκίνηση"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Προειδοποίηση: Ενεργοποιήστε το ANGLE ως το προεπιλεγμένο πρόγραμμα οδήγησης OpenGL ES. Αυτή η λειτουργία βρίσκεται σε πειραματικό στάδιο και ενδέχεται να μην είναι συμβατή με ορισμένες εφαρμογές κάμερας και βίντεο. Δημιουργήστε αντίγραφα ασφαλείας των δεδομένων της συσκευής πριν ενεργοποιήσετε τον διακόπτη</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Για την αλλαγή του προγράμματος οδήγησης OpenGL ES του συστήματος απαιτείται επανεκκίνηση. Δημιουργήστε αντίγραφα ασφαλείας των δεδομένων της συσκευής πριν από την επανεκκίνηση. Σε περίπτωση που η επανεκκίνηση απέτυχε, θα πρέπει να κάνετε επαναφορά των εργοστασιακών ρυθμίσεων, για να επαναφέρετε τη συσκευή</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Αλλαγές συμβατότητας εφαρμογής"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Εναλλαγή αλλαγών συμβατότητας εφαρμογών"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Αλλαγές που είναι ενεργοποιημένες από προεπιλογή"</string>
+diff --git a/packages/apps/Settings/res/values-en-rAU/strings.xml b/packages/apps/Settings/res/values-en-rAU/strings.xml
+index f5bafb6..bfeca8c 100644
+--- a/packages/apps/Settings/res/values-en-rAU/strings.xml
++++ b/packages/apps/Settings/res/values-en-rAU/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Experimental: Enable ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Warning: Enable ANGLE as default OpenGL ES driver. This feature is experimental and may not be compatible with some camera and video apps."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"A reboot is required to change the system OpenGL ES driver"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Warning: Enable ANGLE as default OpenGL ES driver. This feature is experimental and may not be compatible with some camera and video apps. Please back up your device data before turning on the switch</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"A reboot is required to change the system OpenGL ES driver. Please back up your device data before rebooting. In case the reboot failed, you'll need a factory reset to restore the device"</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"App compatibility changes"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Toggle app compatibility changes"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Default enabled changes"</string>
+diff --git a/packages/apps/Settings/res/values-en-rCA/strings.xml b/packages/apps/Settings/res/values-en-rCA/strings.xml
+index 324dd80..2e391c9 100644
+--- a/packages/apps/Settings/res/values-en-rCA/strings.xml
++++ b/packages/apps/Settings/res/values-en-rCA/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Experimental: Enable ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Warning: Enable ANGLE as default OpenGL ES driver. This feature is in experiment and may not be compatible with some camera and video apps."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"A reboot is required to change the system OpenGL ES driver"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Warning: Enable ANGLE as default OpenGL ES driver. This feature is in experiment and may not be compatible with some camera and video apps. Please backup your device data before turning on the switch</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">A reboot is required to change the system OpenGL ES driver. Please back up your device data before rebooting. In case the reboot failed, you need a factory reset to restore the device</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"App Compatibility Changes"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Toggle app compatibility changes"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Default enabled changes"</string>
+diff --git a/packages/apps/Settings/res/values-en-rGB/strings.xml b/packages/apps/Settings/res/values-en-rGB/strings.xml
+index 6879735..8520a09 100644
+--- a/packages/apps/Settings/res/values-en-rGB/strings.xml
++++ b/packages/apps/Settings/res/values-en-rGB/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Experimental: Enable ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Warning: Enable ANGLE as default OpenGL ES driver. This feature is experimental and may not be compatible with some camera and video apps."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"A reboot is required to change the system OpenGL ES driver"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Warning: Enable ANGLE as default OpenGL ES driver. This feature is experimental and may not be compatible with some camera and video apps. Please back up your device data before turning on the switch</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"A reboot is required to change the system OpenGL ES driver. Please back up your device data before rebooting. In case the reboot failed, you'll need a factory reset to restore the device"</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"App compatibility changes"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Toggle app compatibility changes"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Default enabled changes"</string>
+diff --git a/packages/apps/Settings/res/values-en-rIN/strings.xml b/packages/apps/Settings/res/values-en-rIN/strings.xml
+index 2c054c3..70b82b1 100644
+--- a/packages/apps/Settings/res/values-en-rIN/strings.xml
++++ b/packages/apps/Settings/res/values-en-rIN/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Experimental: Enable ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Warning: Enable ANGLE as default OpenGL ES driver. This feature is experimental and may not be compatible with some camera and video apps."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"A reboot is required to change the system OpenGL ES driver"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Warning: Enable ANGLE as default OpenGL ES driver. This feature is experimental and may not be compatible with some camera and video apps. Please back up your device data before turning on the switch</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"A reboot is required to change the system OpenGL ES driver. Please back up your device data before rebooting. In case the reboot failed, you'll need a factory reset to restore the device"</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"App compatibility changes"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Toggle app compatibility changes"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Default enabled changes"</string>
+diff --git a/packages/apps/Settings/res/values-es-rUS/strings.xml b/packages/apps/Settings/res/values-es-rUS/strings.xml
+index d32d32b..dcc0d12 100644
+--- a/packages/apps/Settings/res/values-es-rUS/strings.xml
++++ b/packages/apps/Settings/res/values-es-rUS/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Experimental: Habilitar ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Advertencia: Habilita ANGLE como controlador predeterminado de OpenGL ES. Esta función es experimental y tal vez no sea compatible con algunas apps de video o cámara."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Se debe reiniciar para cambiar el controlador del sistema OpenGL ES"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Advertencia: Habilita ANGLE como controlador predeterminado de OpenGL ES. Esta función es experimental y tal vez no sea compatible con algunas apps de video o cámara. Crea una copia de seguridad de los datos del dispositivo antes de activar el interruptor.</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Se debe reiniciar para cambiar el controlador del sistema OpenGL ES. Crea una copia de seguridad de los datos del dispositivo antes de reiniciar. Si el reinicio falla, debes restablecer la configuración de fábrica para restaurar el dispositivo.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Cambios en la compatibilidad de la app"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Activa o desactiva los cambios de compatibilidad de la app"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Cambios habilitados de manera predeterminada"</string>
+diff --git a/packages/apps/Settings/res/values-es/strings.xml b/packages/apps/Settings/res/values-es/strings.xml
+index b28b10f..fea5d33 100644
+--- a/packages/apps/Settings/res/values-es/strings.xml
++++ b/packages/apps/Settings/res/values-es/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Experimental: Habilita ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Advertencia: Habilita ANGLE como controlador OpenGL ES predeterminado. Esta función se encuentra en modo experimental y puede que no sea compatible con algunas apps de cámara y vídeo."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Debes reiniciar para cambiar el controlador OpenGL ES del sistema"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Advertencia: Habilita ANGLE como controlador OpenGL ES predeterminado. Esta función se encuentra en modo experimental y puede que no sea compatible con algunas aplicaciones de cámara y vídeo. Crea una copia de seguridad de los datos de tu dispositivo antes de activar el interruptor.</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Debes reiniciar para cambiar el controlador OpenGL ES del sistema. Crea una copia de seguridad de los datos de tu dispositivo antes de reiniciarlo. Si el reinicio ha fallado, debes restablecer el estado de fábrica para restaurar el dispositivo.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Cambios de compatibilidad de aplicaciones"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Activa o desactiva los cambios de compatibilidad de aplicaciones"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Cambios habilitados de manera predeterminada"</string>
+diff --git a/packages/apps/Settings/res/values-et/strings.xml b/packages/apps/Settings/res/values-et/strings.xml
+index 68718df..9c04b59 100644
+--- a/packages/apps/Settings/res/values-et/strings.xml
++++ b/packages/apps/Settings/res/values-et/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Katseline: luba ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Hoiatus: selle seadega lubate ANGLE-i OpenGL ES-i vaikedraiverina. See funktsioon on katseline ning ei pruugi mõne kaamera- ja videorakendusega ühilduda."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Süsteemi OpenGL ES-i draiveri muutmiseks on vajalik taaskäivitamine"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Hoiatus: selle seadega lubate ANGLE-i OpenGL ES-i vaikedraiverina. See funktsioon on katseline ning ei pruugi mõne kaamera- ja videorakendusega ühilduda. Enne sisselülitamist varundage oma seadme andmed.</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Süsteemi OpenGL ES-i draiveri muutmiseks on vajalik taaskäivitamine. Enne taaskäivitamist varundage oma seadme andmed. Kui taaskäivitamine ebaõnnestub, peate seadme taastamiseks selle tehaseseadetele lähtestama.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Rakenduste ühilduvuse muudatused"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Rakenduse ühilduvuse muudatuste lüliti"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Vaikimisi lubatud rakenduste muudatused"</string>
+diff --git a/packages/apps/Settings/res/values-eu/strings.xml b/packages/apps/Settings/res/values-eu/strings.xml
+index 3d5407d..abd588b 100644
+--- a/packages/apps/Settings/res/values-eu/strings.xml
++++ b/packages/apps/Settings/res/values-eu/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Esperimentala: gaitu ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Abisua: gaitu ANGLE OpenGL ES-en kontrolatzaile lehenetsi gisa. Eginbidea esperimentu bat da, eta baliteke kamera- eta bideo-aplikazio batzuekin bateragarria ez izatea."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Gailua berrabiarazi egin behar da OpenGL ES-aren kontrolatzailea (sistemarena) aldatzeko"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Abisua: gaitu ANGLE OpenGL ES-en kontrolatzaile lehenetsi gisa. Eginbidea esperimentu bat da, eta baliteke kamera- eta bideo-aplikazio batzuekin bateragarria ez izatea. Etengailua aktibatu aurretik, egin gailuko datuen babeskopia</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Gailua berrabiarazi egin behar da OpenGL ES-aren kontrolatzailea (sistemarena) aldatzeko. Berrabiarazi aurretik, egin gailuko datuen babeskopiak. Berrabiarazi ezin bada, jatorrizko datuak berrezarri beharko dituzu gailua leheneratzeko.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Aplikazioen bateragarritasun-aldaketak"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Aktibatu/Desaktibatu aplikazioen bateragarritasun-aldaketak"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Gaitutako aldaketa lehenetsiak"</string>
+diff --git a/packages/apps/Settings/res/values-fa/strings.xml b/packages/apps/Settings/res/values-fa/strings.xml
+index 3d90d28..9303673 100644
+--- a/packages/apps/Settings/res/values-fa/strings.xml
++++ b/packages/apps/Settings/res/values-fa/strings.xml
+@@ -5085,8 +5085,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"‏آزمایشی: فعال کردن ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"‏هشدار: فعال کردن ANGLE به‌عنوان درایور پیش‌فرض OpenGL ES. این ویژگی در مرحله آزمایش است و ممکن است با برخی‌از برنامه‌های ویدیو و دوربین سازگار نباشد."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"‏برای تغییر درایور OpenGL ES در سیستم، به بازراه‌اندازی نیاز است"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">‏هشدار: فعال کردن ANGLE به‌عنوان درایور پیش‌فرض OpenGL ES. این ویژگی در مرحله آزمایش است و ممکن است با برخی‌از برنامه‌های ویدیو و دوربین سازگار نباشد. لطفاً قبل‌از روشن کردن کلید، از داده‌های دستگاهتان پشتیبان‌گیری کنید</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">‏برای تغییر درایور OpenGL ES در سیستم، به بازراه‌اندازی نیاز است. لطفاً قبل‌از بازراه‌اندازی کردن، از داده‌های دستگاهتان پشتیبان‌گیری کنید. اگر بازراه‌اندازی انجام نشد، برای بازگرداندن دستگاه باید آن را بازنشانی کارخانه‌ای کنید</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"تغییرات در سازگاری برنامه"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"روشن/خاموش کردن تغییرات سازگاری برنامه"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"تغییرات فعال پیش‌فرض"</string>
+diff --git a/packages/apps/Settings/res/values-fi/strings.xml b/packages/apps/Settings/res/values-fi/strings.xml
+index c8b6a40..c17b210 100644
+--- a/packages/apps/Settings/res/values-fi/strings.xml
++++ b/packages/apps/Settings/res/values-fi/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Kokeellinen: Ota ANGLE käyttöön"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Varoitus: Ota ANGLE käyttöön OpenGL ES ‑oletusajurina. Tämä ominaisuus on kokeiluvaiheessa, eikä se välttämättä ole yhteensopiva kaikkien kamera- ja videosovellusten kanssa."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Järjestelmän OpenGL ES ‑ajurin muuttaminen edellyttää uudelleenkäynnistystä"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Varoitus: Ota ANGLE käyttöön OpenGL ES ‑oletusajurina. Ominaisuus on kokeiluvaiheessa, eikä se välttämättä ole yhteensopiva kaikkien kamera- ja videosovellusten kanssa. Varmuuskopioi laitteen data ennen kuin laitat kytkimen päälle</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Järjestelmän OpenGL ES ‑ajurin muuttaminen edellyttää uudelleenkäynnistystä. Varmuuskopioi laitteen data ennen uudelleenkäynnistystä. Jos uudelleenkäynnistys epäonnistui, sinun on palautettava laitteen tehdasasetukset</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Sovellusten yhteensopivuuden muutokset"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Sovellusten yhteensopivuuden muutokset päälle/pois"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Oletusarvoisesti käyttöön otettujen muutokset"</string>
+diff --git a/packages/apps/Settings/res/values-fr-rCA/strings.xml b/packages/apps/Settings/res/values-fr-rCA/strings.xml
+index 4af3daa..1683149 100644
+--- a/packages/apps/Settings/res/values-fr-rCA/strings.xml
++++ b/packages/apps/Settings/res/values-fr-rCA/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Expérimental : Activer ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Avertissement : Activer ANGLE en tant que pilote OpenGL ES par défaut. Cette fonctionnalité est en cours de test et peut ne pas être compatible avec certaines applis vidéo et d\'appareils photo."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Un redémarrage est nécessaire pour modifier le pilote OpenGL ES du système"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Avertissement : Activer ANGLE en tant que pilote OpenGL ES par défaut. Cette fonctionnalité est en cours de test et peut ne pas être compatible avec certaines applis vidéo et d'appareils photo. Veuillez sauvegarder les données de votre appareil avant d'activer le commutateur."</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Un redémarrage est nécessaire pour modifier le pilote OpenGL ES du système. Veuillez sauvegarder les données de votre appareil avant de procéder au redémarrage. En cas d'échec du redémarrage, il vous faudra rétablir les paramètres par défaut pour restaurer l'appareil."</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Changements dans la compatibilité des applis"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Activez/Désactivez les changements de compatibilité des applis"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Changements activés par défaut"</string>
+diff --git a/packages/apps/Settings/res/values-fr/strings.xml b/packages/apps/Settings/res/values-fr/strings.xml
+index ccde788..1edf7f8 100644
+--- a/packages/apps/Settings/res/values-fr/strings.xml
++++ b/packages/apps/Settings/res/values-fr/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Expérimental : Activer ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Avertissement : Active ANGLE comme pilote OpenGL ES par défaut. Cette fonctionnalité est en cours de test et peut ne pas être compatible avec certaines applications de caméra et de vidéo."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Un redémarrage est nécessaire pour modifier le pilote OpenGL ES système"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Avertissement : Activer ANGLE comme pilote OpenGL ES par défaut Cette fonctionnalité est en cours de test. Il se peut qu'elle ne soit pas compatible avec certaines applications de caméra et de vidéo. Veuillez sauvegarder les données de votre appareil avant d'activer le commutateur."</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Un redémarrage est nécessaire pour modifier le pilote OpenGL ES système. Veuillez sauvegarder les données de votre appareil avant de le redémarrer. Si le redémarrage a échoué, vous devez rétablir la configuration d'usine pour restaurer l'appareil."</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Changement de compatibilité des applications"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Activer/Désactiver les changements de compatibilité des applications"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Modifications activées par défaut"</string>
+diff --git a/packages/apps/Settings/res/values-gl/strings.xml b/packages/apps/Settings/res/values-gl/strings.xml
+index 25b8241..fcf3118 100644
+--- a/packages/apps/Settings/res/values-gl/strings.xml
++++ b/packages/apps/Settings/res/values-gl/strings.xml
+@@ -5084,8 +5084,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Experimental: Activar ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Advertencia: Activa ANGLE como controlador OpenGL ES predeterminado. Esta función é experimental e pode que non sexa compatible con algunhas aplicacións de cámara e vídeo."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Cómpre reiniciar o dispositivo para cambiar o controlador do OpenGL ES do sistema"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Advertencia: Activa ANGLE como controlador OpenGL ES predeterminado. Esta función é experimental e pode que non sexa compatible con algunhas aplicacións de cámara e vídeo. Antes de activar o interruptor, fai unha copia de seguranza dos datos do dispositivo</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Cómpre reiniciar o dispositivo para cambiar o controlador do OpenGL ES do sistema. Fai unha copia de seguranza dos datos do dispositivo antes de reinicialo. Se o reinicio fallou, terás que restablecer a configuración de fábrica para restaurar o dispositivo</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Cambios na compatibilidade das aplicacións"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Activa/desactiva os cambios de compatibilidade das aplicacións"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Cambios activados de modo predeterminado"</string>
+diff --git a/packages/apps/Settings/res/values-gu/strings.xml b/packages/apps/Settings/res/values-gu/strings.xml
+index 86d8442..c76a62e 100644
+--- a/packages/apps/Settings/res/values-gu/strings.xml
++++ b/packages/apps/Settings/res/values-gu/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"પ્રાયોગિક: ANGLE ચાલુ કરો"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"ચેતવણી: ANGLEને ડિફૉલ્ટ OpenGL ES ડ્રાઇવર તરીકે ચાલુ કરો. આ સુવિધા પ્રાયોગિક તબક્કામાં છે અને તે કેટલીક કૅમેરા અને વીડિયો ઍપ સાથે સુસંગત ન હોય એમ બની શકે છે."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"સિસ્ટમ OpenGL ES ડ્રાઇવરને બદલવા માટે રીબૂટ કરવું જરૂરી છે"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">ચેતવણી: ANGLEને ડિફૉલ્ટ OpenGL ES ડ્રાઇવર તરીકે ચાલુ કરો. આ સુવિધા પ્રયોગાત્મક તબક્કામાં છે અને તે અમુક કૅમેરા અને વીડિયો ઍપ સાથે સુસંગત ન હોય તેવું બની શકે છે. સ્વિચ ચાલુ કરતા પહેલાં કૃપા કરીને તમારા ડિવાઇસના ડેટાનું બૅકઅપ લો</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">સિસ્ટમ OpenGL ES ડ્રાઇવરને બદલવા માટે રીબૂટ કરવું જરૂરી છે. રીબૂટ કરતા પહેલાં, કૃપા કરીને તમારા ડિવાઇસના ડેટાનું બૅકઅપ લો. જો રીબૂટ કરવાનું નિષ્ફળ જાય, તો ડિવાઇસને રિસ્ટોર કરવા માટે તમારે ફેક્ટરી રીસેટ કરવું જરૂરી છે</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"ઍપની સુસંગતતામાં ફેરફારો"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"ઍપ સુસંગતતાના ફેરફારો ટૉગલ કરો"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"ડિફૉલ્ટ રીતે ચાલુ કરેલા ફેરફારો"</string>
+diff --git a/packages/apps/Settings/res/values-hi/strings.xml b/packages/apps/Settings/res/values-hi/strings.xml
+index 220e2e6..1a9cb08 100644
+--- a/packages/apps/Settings/res/values-hi/strings.xml
++++ b/packages/apps/Settings/res/values-hi/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"एक्सपेरिमेंट के तौर पर उपलब्ध: ANGLE चालू करें"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"चेतावनी: ANGLE को OpenGL ES के डिफ़ॉल्ट ड्राइवर के तौर पर चालू करें. यह सुविधा एक्सपेरिमेंट के तौर पर उपलब्ध है. ऐसा हो सकता है कि यह कैमरा और वीडियो वाले कुछ ऐप्लिकेशन के साथ काम न करे."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"सिस्टम के OpenGL ES ड्राइवर को बदलने के लिए, डिवाइस को फिर से चालू करना होगा"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">चेतावनी: ANGLE को OpenGL ES के डिफ़ॉल्ट ड्राइवर के तौर पर चालू करें. यह सुविधा एक्सपेरिमेंट के तौर पर उपलब्ध है. इसलिए, ऐसा हो सकता है कि यह कुछ कैमरा और वीडियो ऐप्लिकेशन के साथ काम न करे. चालू करने से पहले, कृपया अपने डिवाइस के डेटा का बैकअप लें</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">सिस्टम के OpenGL ES ड्राइवर को बदलने के लिए, आपको डिवाइस को फिर से चालू करना होगा. डिवाइस को फिर से चालू करने से पहले, कृपया अपने डिवाइस के डेटा का बैक अप लें. अगर आपका डिवाइस फिर चालू नहीं हो पाता है, तो डिवाइस को पहले जैसा करने के लिए आपको उसे फ़ैक्ट्री रीसेट करना होगा</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"साथ काम करने के लिए ऐप्लिकेशन में किए गए बदलाव"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"साथ काम करने के लिए ऐप्लिकेशन में किए गए बदलावों को लागू करने के लिए, टॉगल करें"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"डिफ़ॉल्ट रूप से चालू किए गए बदलाव"</string>
+diff --git a/packages/apps/Settings/res/values-hr/strings.xml b/packages/apps/Settings/res/values-hr/strings.xml
+index adeffb3..07586ce 100644
+--- a/packages/apps/Settings/res/values-hr/strings.xml
++++ b/packages/apps/Settings/res/values-hr/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Eksperimentalno: omogućite ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Upozorenje: omogućite ANGLE kao zadani upravljački program ES OpenGL-a. Značajka je eksperimentalna i možda nije kompatibilna s nekim aplikacijama za kamere i videozapise."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Potrebno je ponovno pokretanje za promjenu upravljačkog programa sistemskog ES OpenGL-a"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Upozorenje: omogućite ANGLE kao zadani upravljački program ES OpenGL-a. Značajka je eksperimentalna i možda nije kompatibilna s nekim aplikacijama za kamere i videozapise. Prije uključivanja prekidača sigurnosno kopirajte podatke s uređaja</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Potrebno je ponovno pokretanje za promjenu upravljačkog programa sistemskog ES OpenGL-a. Prije ponovnog pokretanja sigurnosno kopirajte podatke s uređaja. Ako ponovno pokretanje nije uspjelo, trebate vratiti uređaj na tvorničke postavke da biste ga vratili</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Promjene kompatibilnosti aplikacije"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Uključite/isključite promjene kompatibilnosti aplikacije"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Zadane omogućene promjene"</string>
+diff --git a/packages/apps/Settings/res/values-hu/strings.xml b/packages/apps/Settings/res/values-hu/strings.xml
+index b069c64..70b2e47 100644
+--- a/packages/apps/Settings/res/values-hu/strings.xml
++++ b/packages/apps/Settings/res/values-hu/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Kísérleti funkció: ANGLE engedélyezése"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Az ANGLE engedélyezése alapértelmezett OpenGL ES-illesztőprogramként. A funkció kísérleti fázisban van, ezért előfordulhat, hogy nem kompatibilis egyes kamerákkal és videóalkalmazásokkal."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Újraindítás szükséges a rendszer OpenGL ES illesztőprogramjának módosításához"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Figyelmeztetés: Az ANGLE engedélyezése alapértelmezett OpenGL ES-illesztőprogramként. A funkció kísérleti fázisban van, ezért előfordulhat, hogy nem kompatibilis egyes kamera- és videóalkalmazásokkal. A kapcsoló bekapcsolása előtt készítsen biztonsági mentést az eszközadatokról.</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Újraindítás szükséges a rendszer OpenGL ES illesztőprogramjának módosításához. Az újraindítás előtt készítsen biztonsági mentést az eszközadatokról. Ha az újraindítás nem sikerül, az eszköz visszaállításához vissza kell állítani a gyári beállításokat.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Az alkalmazás kompatibilitási változtatásai"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Az alkalmazás kompatibilitási változtatásainak be- és kikapcsolása"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Alapértelmezett engedélyezett változtatások"</string>
+diff --git a/packages/apps/Settings/res/values-hy/strings.xml b/packages/apps/Settings/res/values-hy/strings.xml
+index fa5e3c9..6e1955c 100644
+--- a/packages/apps/Settings/res/values-hy/strings.xml
++++ b/packages/apps/Settings/res/values-hy/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Փորձնական գործառույթ․ միացնել ANGLE-ը"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Նախազգուշացում․ միացրեք ANGLE-ը որպես կանխադրված OpenGL ES դրայվեր։ Այս գործառույթը փորձարկման փուլում է և կարող է համատեղելի չլինել տեսանյութերի ստեղծման և տեսախցիկի որոշ հավելվածների հետ։"</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Համակարգի OpenGL ES սարքավարը փոխելու համար պահանջվում է վերաբեռնում"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Նախազգուշացում․ միացրեք ANGLE-ը որպես կանխադրված OpenGL ES դրայվեր։ Այս գործառույթը փորձարկման փուլում է և կարող է համատեղելի չլինել տեսանյութերի ստեղծման և տեսախցիկի որոշ հավելվածների հետ։ Նախքան փոխանջատիչը միացնելը պահուստավորեք սարքի տվյալները։</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Համակարգի OpenGL ES դրայվերը փոխելու համար պահանջվում է վերաբեռնում։ Վերաբեռնումից առաջ պահուստավորեք ձեր սարքի տվյալները։ Եթե չհաջողվի վերաբեռնել, սարքը վերականգնելու համար անհրաժեշտ է վերականգնել գործարանային կարգավորումները</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Հավելվածների համատեղելիության փոփոխություններ"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Թաքցնել/ցուցադրել հավելվածների համատեղելիության փոփոխությունները"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Ըստ կանխադրման միացված փոփոխություններ"</string>
+diff --git a/packages/apps/Settings/res/values-in/strings.xml b/packages/apps/Settings/res/values-in/strings.xml
+index b2b60e4..3a0945e 100644
+--- a/packages/apps/Settings/res/values-in/strings.xml
++++ b/packages/apps/Settings/res/values-in/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Eksperimental: Aktifkan ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Peringatan: Aktifkan ANGLE sebagai driver OpenGL ES default. Fitur ini dalam tahap eksperimen dan mungkin tidak kompatibel dengan beberapa aplikasi kamera dan video."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Perlu memulai ulang untuk mengubah driver OpenGL ES sistem"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Peringatan: Aktifkan ANGLE sebagai driver OpenGL ES default. Fitur ini dalam tahap eksperimen dan mungkin tidak kompatibel dengan beberapa aplikasi kamera dan video. Cadangkan data perangkat Anda sebelum mengaktifkan peralihan</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Perlu memulai ulang untuk mengubah driver OpenGL ES sistem. Cadangkan data perangkat Anda sebelum memulai ulang. Jika mulai ulang gagal, Anda perlu melakukan reset ke setelan pabrik untuk memulihkan perangkat</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Perubahan Kompatibilitas Aplikasi"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Ubah setelan kompatibilitas aplikasi"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Perubahan aktif default"</string>
+diff --git a/packages/apps/Settings/res/values-is/strings.xml b/packages/apps/Settings/res/values-is/strings.xml
+index db6ff46..b635f31 100644
+--- a/packages/apps/Settings/res/values-is/strings.xml
++++ b/packages/apps/Settings/res/values-is/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Tilraun: Kveikja á ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Viðvörun: Virkja ANGLE sem sjálfgefinn OpenGL ES-rekil. Þessi eiginleiki er á tilraunastigi og er hugsanlega ekki samhæfur sumum myndavélar- og vídeóforritum."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Endurræsingar er krafist til að skipta um OpenGL ES-rekil kerfis"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Viðvörun: Virkja ANGLE sem sjálfgefinn OpenGL ES-rekil Þessi eiginleiki er á tilraunastigi og er hugsanlega ekki samhæfur öllum myndavélar- og vídeóforritum. Taktu öryggisafrit af gögnum tækisins áður en þú kveikir á rofanum</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Endurræsingar er krafist til að skipta um OpenGL ES-rekil kerfis. Taktu öryggisafrit af gögnum tækisins áður en þú endurræsir það. Ef ekki tekst að endurræsa þarftu að núllstilla tækið til að endurheimta það</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Breytingar á samhæfi forrits"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Víxla samhæfisbreytingum forrits"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Sjálfgefnar virkar breytingar"</string>
+diff --git a/packages/apps/Settings/res/values-it/strings.xml b/packages/apps/Settings/res/values-it/strings.xml
+index be2e672..ec69669 100644
+--- a/packages/apps/Settings/res/values-it/strings.xml
++++ b/packages/apps/Settings/res/values-it/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Sperimentale: attiva ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Avviso: attiva ANGLE come driver OpenGL ES predefinito. Questa funzionalità è sperimentale e potrebbe non essere compatibile con alcune app fotocamera e video."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"È necessario riavviare per cambiare il driver OpenGL ES di sistema"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Avviso: attiva ANGLE come driver OpenGL ES predefinito. Questa funzionalità è sperimentale e potrebbe non essere compatibile con alcune app fotocamera e video. Esegui il backup dei dati sul dispositivo prima di attivare l'opzione"</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">È necessario riavviare per cambiare il driver di sistema OpenGL ES. Esegui il backup dei dati sul dispositivo prima di riavviarlo. Se il riavvio non è riuscito, è necessario ripristinare i dati di fabbrica per ripristinare il dispositivo</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Modifiche di compatibilità dell\'app"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Attiva/disattiva le modifiche di compatibilità delle app"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Modifiche attivate per impostazione predefinita"</string>
+diff --git a/packages/apps/Settings/res/values-iw/strings.xml b/packages/apps/Settings/res/values-iw/strings.xml
+index 9607210..1742890 100644
+--- a/packages/apps/Settings/res/values-iw/strings.xml
++++ b/packages/apps/Settings/res/values-iw/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"‏ניסיוני: הפעלת ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"‏אזהרה: הפעלה של ANGLE כברירת מחדל של הדרייבר OpenGL ES. התכונה הזו ניסיונית ויכול להיות שלא תתאים לחלק מאפליקציות המצלמה והסרטונים."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"‏צריך להפעיל מחדש כדי לשנות את מערכת OpenGL ES לנהג"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">‏אזהרה: להפעיל את ANGLE כברירת מחדל של הדרייבר OpenGL ES? התכונה הזו ניסיונית ויכול להיות שלא תתאים לחלק מאפליקציות המצלמה והסרטונים. לפני שמפעילים את המתג, צריך לגבות את הנתונים במכשיר.</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">‏כדי לשנות את דרייבר OpenGL ES של המערכת, צריך להפעיל את המכשיר מחדש. לפני ההפעלה מחדש, צריך לגבות את הנתונים במכשיר. אם ההפעלה מחדש נכשלה, צריך לאפס את המכשיר להגדרות המקוריות כדי לשחזר אותו.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"שינויים בתאימות האפליקציה"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"החלפת המצב של שינויים בתאימות של אפליקציות"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"השינויים מופעלים כברירת מחדל"</string>
+diff --git a/packages/apps/Settings/res/values-ja/strings.xml b/packages/apps/Settings/res/values-ja/strings.xml
+index 157461e..8090018 100644
+--- a/packages/apps/Settings/res/values-ja/strings.xml
++++ b/packages/apps/Settings/res/values-ja/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"試験運用機能: ANGLE の有効化"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"警告: デフォルトの OpenGL ES ドライバとして ANGLE を有効にします。これは試験運用機能であり、一部のカメラアプリと動画アプリには対応していない可能性があります。"</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"システムの OpenGL ES ドライバを変更するには再起動が必要です"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">警告: デフォルトの OpenGL ES ドライバとして ANGLE を有効にします。これは試験運用機能であり、一部のカメラアプリと動画アプリには対応していない可能性があります。スイッチを ON にする前に、デバイスのデータをバックアップしてください</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">システムの OpenGL ES ドライバを変更するには再起動が必要です。再起動する前に、デバイスのデータをバックアップしてください。再起動に失敗した場合は、デバイスを復元するために出荷時の設定にリセットする必要があります</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"アプリの互換性の変更"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"「アプリの互換性の変更」を切り替えます"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"デフォルトで有効な変更"</string>
+diff --git a/packages/apps/Settings/res/values-ka/strings.xml b/packages/apps/Settings/res/values-ka/strings.xml
+index 0fc8d25..ee9a03d 100644
+--- a/packages/apps/Settings/res/values-ka/strings.xml
++++ b/packages/apps/Settings/res/values-ka/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"ექსპერიმენტული: ANGLE-ის ჩართვა"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"გაფრთხილება: ANGLE-ის, როგორც OpenGL ES-ის ნაგულისხმევი დრაივერის, ჩართვა. ეს ფუნქცია ექსპერიმენტულია და შეიძლება არ იყოს თავსებადი კამერის და ვიდეოს ზოგიერთ აპთან."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"OpenGL ES სისტემის დრაივერის შესაცვლელად საჭიროა გადატვირთვა"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">გაფრთხილება: ჩართეთ ANGLE, როგორც OpenGL ES-ის ნაგულისხმევი დრაივერი. ეს ფუნქცია ექსპერიმენტულია და შეიძლება არ იყოს თავსებადი კამერის და ვიდეოს ზოგიერთ აპთან. გადამრთველის ჩართვამდე შექმენით თქვენი მოწყობილობის მონაცემების სარეზერვო ასლი</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">სისტემის OpenGL ES დრაივერის შესაცვლელად საჭიროა გადატვირთვა გთხოვთ, გადატვირთვამდე შექმნათ თქვენი მოწყობილობის მონაცემების სარეზერვო ასლი. თუ გადატვირთვა ვერ მოხერხდება, მოწყობილობის აღსადგენად დაგჭირდებათ ქარხნულ პარამეტრებზე დაბრუნება</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"აპის თავსებადობის ცვლილებები"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"აპის თავსებადობის ცვლილებების გადართვა"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"ნაგულისხმევი ჩართული ცვლილებები"</string>
+diff --git a/packages/apps/Settings/res/values-kk/strings.xml b/packages/apps/Settings/res/values-kk/strings.xml
+index 9f4b598..dfcee63 100644
+--- a/packages/apps/Settings/res/values-kk/strings.xml
++++ b/packages/apps/Settings/res/values-kk/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Эксперименттік: ANGLE-ді қосу"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Ескерту: ANGLE-ді әдепкі OpenGL ES драйвері ретінде қосады. Эксперименттік функция болғандықтан, кейбір камера және бейне қолданбасымен үйлесімді болмауы мүмкін."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Жүйенің OpenGL ES драйверін өзгерту үшін өшіріп қосу қажет."</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Ескерту: ANGLE-ді әдепкі OpenGL ES драйвері ретінде қосады. Бұл – эксперименттік функция, сондықтан кейбір камера және бейне қолданбасымен үйлесімді болмауы мүмкін. Ауыстырғышты қоспай тұрып, құрылғыдағы деректің сақтық көшірмесін жасаңыз.</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Жүйенің OpenGL ES драйверін өзгерту үшін өшіріп қосу қажет. Өшіріп қоспай тұрып, құрылғыдағы деректің сақтық көшірмесін жасаңыз. Өшіріп қосылмаған жағдайда, құрылғыны қалпына келтіру үшін зауыттық параметрлерге қайтару қажет.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Қолданба үйлесімділігінің өзгерістері"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Қолданбалардың үйлесімділігін реттеудегі өзгерісті көрсету"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Қосылған әдепкі өзгерістер"</string>
+diff --git a/packages/apps/Settings/res/values-km/strings.xml b/packages/apps/Settings/res/values-km/strings.xml
+index 8af44b2..ba25549 100644
+--- a/packages/apps/Settings/res/values-km/strings.xml
++++ b/packages/apps/Settings/res/values-km/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"ពិសោធន៍៖ បើក ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"សូមប្រុងប្រយ័ត្ន៖ បើក ANGLE ជាដ្រាយវើ OpenGL ES លំនាំដើម។ មុខងារនេះស្ថិតក្នុងការពិសោធ និងប្រហែលមិនត្រូវគ្នាជាមួយកម្មវិធីវីដេអូ និងកាមេរ៉ាមួយចំនួនទេ។"</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"តម្រូវឱ្យ​ចាប់ផ្ដើមឡើងវិញ ដើម្បីប្ដូរ​ប្រព័ន្ធដ្រាយវើ OpenGL ES"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">សូមប្រុងប្រយ័ត្ន៖ បើក ANGLE ជាដ្រាយវើ OpenGL ES លំនាំដើម។ មុខងារនេះស្ថិតក្នុងការពិសោធ និងប្រហែលមិនត្រូវគ្នាជាមួយកម្មវិធីវីដេអូ និងកាមេរ៉ាមួយចំនួនទេ។ សូមបម្រុងទុកទិន្នន័យឧបករណ៍របស់អ្នក មុនពេលបើកប៊ូតុងបិទ/បើក</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">តម្រូវឱ្យ​ចាប់ផ្ដើមឡើងវិញ ដើម្បីប្ដូរ​ដ្រាយវើ OpenGL ES របស់ប្រព័ន្ធ។ សូមបម្រុងទុកទិន្នន័យឧបករណ៍របស់អ្នក មុនពេលចាប់ផ្ដើមឡើងវិញ។ ក្នុងករណីដែលការចាប់ផ្ដើមឡើងវិញមិនបានសម្រេច អ្នកត្រូវកំណត់​ដូច​ចេញ​ពី​រោងចក្រ ដើម្បីស្ដារឧបករណ៍</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"ការផ្លាស់ប្ដូរ​ចំពោះ​ភាពត្រូវគ្នា​នៃ​កម្មវិធី"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"បិទ/បើក​ការផ្លាស់ប្ដូរ​ភាពត្រូវគ្នា​នៃ​កម្មវិធី"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"ការផ្លាស់ប្ដូរ​ដែលបានបើក​តាម​លំនាំដើម"</string>
+diff --git a/packages/apps/Settings/res/values-kn/strings.xml b/packages/apps/Settings/res/values-kn/strings.xml
+index f2240c7..7368619 100644
+--- a/packages/apps/Settings/res/values-kn/strings.xml
++++ b/packages/apps/Settings/res/values-kn/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"ಪ್ರಾಯೋಗಿಕ: ANGLE ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"ಎಚ್ಚರಿಕೆ: ANGLE ಅನ್ನು ಡೀಫಾಲ್ಟ್ OpenGL ES ಡ್ರೈವರ್ ಆಗಿ ಸಕ್ರಿಯಗೊಳಿಸಿ. ಈ ಫೀಚರ್ ಪ್ರಯೋಗದಲ್ಲಿದೆ ಮತ್ತು ಇದು ಕೆಲವು ಕ್ಯಾಮರಾ ಹಾಗೂ ವೀಡಿಯೊ ಆ್ಯಪ್‌ಗಳ ಜೊತೆ ಹೊಂದಾಣಿಕೆಯಾಗದಿರಬಹುದು."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"ಸಿಸ್ಟಂ OpenGL ES ಡ್ರೈವರ್ ಅನ್ನು ಬದಲಾಯಿಸಲು ರೀಬೂಟ್ ಅಗತ್ಯವಿದೆ"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">ಎಚ್ಚರಿಕೆ: ANGLE ಅನ್ನು ಡೀಫಾಲ್ಟ್ OpenGL ES ಡ್ರೈವರ್ ಆಗಿ ಸಕ್ರಿಯಗೊಳಿಸಿ. ಈ ಫೀಚರ್ ಪ್ರಯೋಗದಲ್ಲಿದೆ ಮತ್ತು ಇದು ಕೆಲವು ಕ್ಯಾಮರಾ ಹಾಗೂ ವೀಡಿಯೊ ಆ್ಯಪ್‌ಗಳ ಜೊತೆ ಹೊಂದಾಣಿಕೆಯಾಗದಿರಬಹುದು. ಸ್ವಿಚ್ ಅನ್ನು ಆನ್ ಮಾಡುವ ಮೊದಲು ನಿಮ್ಮ ಸಾಧನದ ಡೇಟಾವನ್ನು ಬ್ಯಾಕಪ್ ಮಾಡಿ</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">ಸಿಸ್ಟಂ OpenGL ES ಡ್ರೈವರ್ ಅನ್ನು ಬದಲಾಯಿಸಲು ರೀಬೂಟ್ ಮಾಡುವ ಅಗತ್ಯವಿದೆ. ರೀಬೂಟ್ ಮಾಡುವ ಮೊದಲು ನಿಮ್ಮ ಸಾಧನದ ಡೇಟಾವನ್ನು ಬ್ಯಾಕಪ್ ಮಾಡಿ. ರೀಬೂಟ್ ವಿಫಲವಾದರೆ, ಸಾಧನವನ್ನು ಮರುಸ್ಥಾಪಿಸಲು ನಿಮಗೆ ಫ್ಯಾಕ್ಟರಿ ರೀಸೆಟ್ ಮಾಡುವ ಅಗತ್ಯವಿದೆ</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"ಆ್ಯಪ್‌ ಹೊಂದಾಣಿಕೆಗೆ ಬದಲಾವಣೆಗಳು"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"ಆ್ಯಪ್ ಹೊಂದಾಣಿಕೆ ಬದಲಾವಣೆಗಳನ್ನು ಟಾಗಲ್ ಮಾಡಿ"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"ಸಕ್ರಿಯಗೊಳಿಸಲಾದ ಬದಲಾವಣೆಗಳ ಡೀಫಾಲ್ಟ್"</string>
+diff --git a/packages/apps/Settings/res/values-ko/strings.xml b/packages/apps/Settings/res/values-ko/strings.xml
+index 1616959..6986624 100644
+--- a/packages/apps/Settings/res/values-ko/strings.xml
++++ b/packages/apps/Settings/res/values-ko/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"실험 기능: ANGLE 사용 설정"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"경고: ANGLE을 기본 OpenGL ES 드라이버로 사용 설정합니다. 이 기능은 실험적인 기능이며, 일부 카메라 및 동영상 앱과 호환되지 않을 수도 있습니다."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"시스템 OpenGL ES 드라이버를 변경하려면 재부팅해야 합니다."</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">경고: ANGLE을 기본 OpenGL ES 드라이버로 사용 설정합니다. 이 기능은 실험적인 기능이며, 일부 카메라 및 동영상 앱과 호환되지 않을 수도 있습니다. 스위치를 켜기 전에 기기 데이터를 백업하세요.</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">시스템 OpenGL ES 드라이버를 변경하려면 재부팅해야 합니다. 재부팅하기 전에 기기 데이터를 백업하세요. 재부팅에 실패할 경우 기기를 복원하려면 초기화해야 합니다.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"앱 호환성 변경사항"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"앱 호환성 변경사항 전환"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"기본적으로 사용 설정된 앱의 변경사항"</string>
+diff --git a/packages/apps/Settings/res/values-ky/strings.xml b/packages/apps/Settings/res/values-ky/strings.xml
+index f68d42a..4e63728 100644
+--- a/packages/apps/Settings/res/values-ky/strings.xml
++++ b/packages/apps/Settings/res/values-ky/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Сынамык функция: ANGLE\'ди күйгүзүү"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Эскертүү: ANGLE\'ди демейки OpenGL ES драйвери катары иштетиңиз. Бул сынамык функция болгондуктан, айрым камераларга жана видео колдонмолоруна шайкеш келбеши мүмкүн."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Тутумдун OpenGL ES драйверин өзгөртүү үчүн өчүрүп-күйгүзүү керек"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Эскертүү: ANGLE'ди демейки OpenGL ES драйвери катары иштетиңиз. Бул сынамык функция болгондуктан, айрым камераларга жана видео колдонмолоруна шайкеш келбеши мүмкүн. Которгучту күйгүзүүдөн мурун түзмөктөгү нерселердин камдык көчүрмөсүн сактаңыз"</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Тутумдун OpenGL ES драйверин өзгөртүү үчүн өчүрүп-күйгүзүү керек. Өчүрүп-күйгүзүүдөн мурун түзмөктөгү нерселердин камдык көчүрмөсүн сактаңыз. Эгер өчүрүп-күйгүзүү ишке ашпай калса, түзмөктү калыбына келтирүү үчүн аны баштапкы абалга кайтарышыңыз керек</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Колдонмонун шайкештигиндеги өзгөрүүлөр"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Колдонмолордун шайкештигине киргизилген өзгөрүүлөрдү көрсөтөсүз"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Демейки күйгүзүлгөн өзгөртүүлөр"</string>
+diff --git a/packages/apps/Settings/res/values-lo/strings.xml b/packages/apps/Settings/res/values-lo/strings.xml
+index 3ae805e..40b0385 100644
+--- a/packages/apps/Settings/res/values-lo/strings.xml
++++ b/packages/apps/Settings/res/values-lo/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"ທົດລອງ: ເປີດການນຳໃຊ້ ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"ຄຳເຕືອນ: ເປີດການນຳໃຊ້ ANGLE ເປັນໄດຣເວີ OpenGL ES ເລີ່ມຕົ້ນ. ຄຸນສົມບັດນີ້ຢູ່ໃນຂັ້ນທົດລອງ ແລະ ອາດໃຊ້ບໍ່ໄດ້ກັບແອັບກ້ອງຖ່າຍຮູບ ແລະ ແອັບວິດີໂອບາງແອັບ."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"ຈຳເປັນຕ້ອງປິດເປີດໃໝ່ເພື່ອປ່ຽນໄດຣເວີ OpenGL ES ຂອງລະບົບ"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">ຄຳເຕືອນ: ເປີດການນຳໃຊ້ ANGLE ເປັນໄດຣເວີ OpenGL ES ເລີ່ມຕົ້ນ. ຄຸນສົມບັດນີ້ຢູ່ໃນຂັ້ນທົດລອງ ແລະ ອາດໃຊ້ບໍ່ໄດ້ກັບແອັບກ້ອງຖ່າຍຮູບ ແລະ ແອັບວິດີໂອບາງແອັບ. ກະລຸນາສຳຮອງຂໍ້ມູນອຸປະກອນຂອງທ່ານກ່ອນເປີດສະວິດ</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">ຈຳເປັນຕ້ອງປິດເປີດໃໝ່ເພື່ອປ່ຽນໄດຣເວີ OpenGL ES ຂອງລະບົບ. ກະລຸນາສຳຮອງຂໍ້ມູນອຸປະກອນຂອງທ່ານກ່ອນຣີບູດ. ໃນກໍລະນີທີ່ການປິດເປີດຄືນໃໝ່ບໍ່ສຳເລັດ, ທ່ານຈະຕ້ອງຣີເຊັດເປັນຄ່າຈາກໂຮງງານເພື່ອຄືນຄ່າອຸປະກອນ</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"ການປ່ຽນແປງຄວາມເຂົ້າກັນໄດ້ຂອງແອັບ"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"ສະຫຼັບການປ່ຽນແປງຄວາມເຂົ້າກັນໄດ້ຂອງແອັບ"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"ການປ່ຽນແປງທີ່ເປີດການນຳໃຊ້ຕາມຄ່າເລີ່ມຕົ້ນ"</string>
+diff --git a/packages/apps/Settings/res/values-lt/strings.xml b/packages/apps/Settings/res/values-lt/strings.xml
+index 998919f..41eb601 100644
+--- a/packages/apps/Settings/res/values-lt/strings.xml
++++ b/packages/apps/Settings/res/values-lt/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Eksperimentas: ANGLE įgalinimas"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Perspėjimas: įgalinkite ANGLE kaip numatytąją „OpenGL ES“ tvarkyklę. Ši funkcija yra eksperimentinė ir gali būti nesuderinama su kai kuriomis fotoaparato ir vaizdo įrašų programomis."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Norint pakeisti sistemos „OpenGL ES“ tvarkyklę, būtina paleisti iš naujo"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Perspėjimas: įgalinkite ANGLE kaip numatytąją „OpenGL ES“ tvarkyklę. Ši funkcija yra eksperimentinė ir gali būti nesuderinama su kai kuriomis fotoaparato ir vaizdo įrašų programomis. Prieš įjungdami jungiklį sukurkite atsarginę įrenginio duomenų kopiją</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Norint pakeisti sistemos „OpenGL ES“ tvarkyklę, būtina paleisti iš naujo. Prieš paleisdami įrenginį iš naujo sukurkite atsarginę įrenginio duomenų kopiją. Jei nepavyko paleisti iš naujo, turite atkurti gamyklinius nustatymus, kad atkurtumėte įrenginį</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Programos suderinamumo pakeitimai"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Perjungti programos suderinamumo pakeitimus"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Numatytieji įgalinti pakeitimai"</string>
+diff --git a/packages/apps/Settings/res/values-lv/strings.xml b/packages/apps/Settings/res/values-lv/strings.xml
+index a3febdc..bf398a6 100644
+--- a/packages/apps/Settings/res/values-lv/strings.xml
++++ b/packages/apps/Settings/res/values-lv/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Eksperimentāla funkcija: iespējojiet ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Brīdinājums: iespējojiet ANGLE kā noklusējuma OpenGL ES draiveri. Šī funkcija ir eksperimentāla un var nebūt saderīga ar noteiktām kameras un video lietotnēm."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Lai mainītu sistēmas OpenGL ES draiveri, nepieciešama atkārtota palaišana."</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Brīdinājums: iespējojiet ANGLE kā noklusējuma OpenGL ES draiveri. Šī funkcija ir eksperimentāla un var nebūt saderīga ar noteiktām kameras un video lietotnēm. Pirms slēdža ieslēgšanas dublējiet ierīces datus.</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Lai mainītu sistēmas OpenGL ES draiveri, nepieciešama atkārtota palaišana. Pirms atkārtotas palaišanas dublējiet ierīces datus. Ja atkārtota palaišana neizdevās, ierīces atjaunošanai ir jāveic rūpnīcas datu atiestatīšana.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Lietotņu saderības iestatījumu izmaiņas"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Pārslēdziet lietotņu saderības iestatījumu izmaiņas"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Pēc noklusējuma iespējotās izmaiņas"</string>
+diff --git a/packages/apps/Settings/res/values-mk/strings.xml b/packages/apps/Settings/res/values-mk/strings.xml
+index f381944..9d03dfd 100644
+--- a/packages/apps/Settings/res/values-mk/strings.xml
++++ b/packages/apps/Settings/res/values-mk/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Експериментално: овозможете ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Предупредување: ќе се овозможи ANGLE како стандарден драјвер за OpenGL ES. Функцијава е експериментална, па можно е да не биде компатибилна со некои апликации за камера и видео."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Потребно е рестартирање за да се промени драјверот за системот OpenGL ES"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Предупредување: Ќе се овозможи ANGLE како стандарден драјвер за OpenGL ES. Функцијава е експериментална, па може да не биде компатибилна со некои апликации за камера и видео. Направете бекап на податоците на уредот пред да го вклучите прекинувачот</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Потребно е рестартирање за да се промени драјверот за системот OpenGL ES. Направете бекап на податоците на уредот пред да рестартирате. Ако не успее рестартирањето, ќе треба да ресетирате на фабрички поставки за да го вратите уредот</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Промени за компатибилност на апликациите"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Вклучување/исклучување на промените за компатибилност на апликациите"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Стандардно овозможени промени"</string>
+diff --git a/packages/apps/Settings/res/values-ml/strings.xml b/packages/apps/Settings/res/values-ml/strings.xml
+index 02972a8..f29f497 100644
+--- a/packages/apps/Settings/res/values-ml/strings.xml
++++ b/packages/apps/Settings/res/values-ml/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"പരീക്ഷണാത്മകം: ആംഗിൾ പ്രവർത്തനക്ഷമമാക്കുക"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"മുന്നറിയിപ്പ്: ഡിഫോൾട്ട് OpenGL ES ഡ്രൈവറായി ആംഗിൾ പ്രവർത്തനക്ഷമമാക്കുക. ഈ ഫീച്ചർ പരീക്ഷണത്തിലാണ്, ചില ക്യാമറ, വീഡിയോ ആപ്പുകളുമായി ഇത് അനുയോജ്യമല്ലായിരിക്കാം."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"സിസ്റ്റം OpenGL ES ഡ്രൈവർ മാറ്റാൻ റീബൂട്ട് ചെയ്യേണ്ടതുണ്ട്"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">മുന്നറിയിപ്പ്: ഡിഫോൾട്ട് OpenGL ES ഡ്രൈവറായി ആംഗിൾ പ്രവർത്തനക്ഷമമാക്കുക. ഈ ഫീച്ചർ പരീക്ഷണത്തിലാണ്, ചില ക്യാമറ, വീഡിയോ ആപ്പുകളുമായി ഇത് അനുയോജ്യമല്ലായിരിക്കാം. സ്വിച്ച് ഓണാക്കുന്നതിന് മുമ്പ് നിങ്ങളുടെ ഉപകരണ ഡാറ്റ ബാക്കപ്പ് ചെയ്യുക</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">സിസ്റ്റം OpenGL ES ഡ്രൈവർ മാറ്റാൻ റീബൂട്ട് ചെയ്യേണ്ടതുണ്ട്. റീബൂട്ട് ചെയ്യുന്നതിന് മുമ്പ് നിങ്ങളുടെ ഉപകരണ ഡാറ്റ ബാക്കപ്പ് ചെയ്യുക. റീബൂട്ട് ചെയ്യാനായില്ലെങ്കിൽ, ഉപകരണം പുനഃസ്ഥാപിക്കാൻ നിങ്ങൾ ഫാക്‌ടറി റീസെറ്റ് ചെയ്യേണ്ടതുണ്ട്</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"ആപ്പ് അനുയോജ്യതാ മാറ്റങ്ങൾ"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"ആപ്പ് അനുയോജ്യതാ മാറ്റങ്ങൾ ടോഗിൾ ചെയ്യുക"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"ഡിഫോൾട്ട് ആയ, പ്രവർത്തനക്ഷമമാക്കിയ മാറ്റങ്ങൾ"</string>
+diff --git a/packages/apps/Settings/res/values-mn/strings.xml b/packages/apps/Settings/res/values-mn/strings.xml
+index ac8fdbb..73e01de 100644
+--- a/packages/apps/Settings/res/values-mn/strings.xml
++++ b/packages/apps/Settings/res/values-mn/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Туршилтын: ANGLE-г идэвхжүүлэх"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Сануулга: ANGLE-г өгөгдмөл OpenGL ES драйвераар идэвхжүүлнэ үү. Энэ онцлог нь туршилтад байгаа бөгөөд зарим камер болон видео аппуудтай тохирохгүй байж магадгүй."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Системийн OpenGL ES драйверыг өөрчлөхөд дахин асаах шаардлагатай"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Сануулга: ANGLE-г өгөгдмөл OpenGL ES драйвер байдлаар идэвхжүүлнэ үү. Энэ онцлогийг туршиж байгаа бөгөөд зарим камер, видео апптай тохиромжгүй байж болзошгүй. Сэлгүүрийг асаахаасаа өмнө төхөөрөмжийн өгөгдлөө нөөцөлнө үү</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Системийн OpenGL ES драйверыг өөрчлөхийн тулд дахин асаах шаардлагатай. Дахин асаахаасаа өмнө төхөөрөмжийн өгөгдлөө хуулбарлана уу. Дахин асааж чадаагүй тохиолдолд та төхөөрөмжийг сэргээхийн тулд үйлдвэрийн тохиргоонд шинэчлэх шаардлагатай</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Аппын тохирох байдлын өөрчлөлт"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Аппын тохирох байдлын өөрчлөлтийг идэвхгүй болгох/идэвхжүүлэх"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Өгөгдмөл тохиргоогоор идэвхжүүлсэн өөрчлөлт"</string>
+diff --git a/packages/apps/Settings/res/values-mr/strings.xml b/packages/apps/Settings/res/values-mr/strings.xml
+index 678d4d5..41a401b 100644
+--- a/packages/apps/Settings/res/values-mr/strings.xml
++++ b/packages/apps/Settings/res/values-mr/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"प्रायोगिक: ANGLE सुरू करा"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"चेतावणी: डीफॉल्ट OpenGL ES ड्रायव्हर म्हणून ANGLE सुरू करा. या वैशिष्ट्यावर प्रयोग सुरू आहे आणि ते काही कॅमेरा व व्हिडिओ अ‍ॅप्सशी कंपॅटिबल नसू शकते."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"सिस्टीम OpenGL ES ड्रायव्हर बदलण्यासाठी रीबूट करणे आवश्यक आहे"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">चेतावणी: डीफॉल्ट OpenGL ES ड्रायव्हर म्हणून ANGLE सुरू करा. हे वैशिष्ट्य प्रयोगाच्या स्वरूपात आहे आणि ते काही कॅमेरा व व्हिडिओ अ‍ॅप्सशी कंपॅटिबल असू शकत नाही. कृपया स्विच सुरू करण्यापूर्वी तुमच्या डिव्हाइसमधील डेटाचा बॅकअप घ्या</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">सिस्टीम OpenGL ES ड्रायव्हर बदलण्यासाठी रीबूट करणे आवश्यक आहे. कृपया रीबूट करण्यापूर्वी तुमच्या डिव्हाइसमधील डेटाचा बॅकअप घ्या. रीबूट करता न आल्यास, डिव्हाइस रिस्टोअर करण्यासाठी तुम्ही फॅक्टरी रीसेट करण्याची आवश्यकता आहे</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"ॲप कंपॅटिबिलिटी बदल"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"ॲप कंपॅटिबिलिटी बदल टॉगल करा"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"डीफॉल्ट सुरू केलेले बदल"</string>
+diff --git a/packages/apps/Settings/res/values-ms/strings.xml b/packages/apps/Settings/res/values-ms/strings.xml
+index 529bd49..b6a38c5 100644
+--- a/packages/apps/Settings/res/values-ms/strings.xml
++++ b/packages/apps/Settings/res/values-ms/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Percubaan: Dayakan ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Amaran: Dayakan ANGLE sebagai pemacu OpenGL ES lalai. Ciri ini dalam peringkat percubaan dan mungkin tidak serasi dengan sesetengah apl kamera dan video."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"But semula diperlukan untuk menukar pemacu OpenGL ES sistem"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Amaran: Dayakan ANGLE sebagai pemacu OpenGL ES lalai. Ciri ini sedang dalam percubaan dan mungkin tidak serasi dengan sesetengah apl kamera dan video. Sila sandarkan data peranti anda sebelum menghidupkan suis</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">But semula diperlukan untuk menukar pemacu OpenGL ES sistem. Sila sandarkan data peranti anda sebelum melakukan but semula. Sekiranya but semula gagal, anda perlu melakukan tetapan semula kilang untuk memulihkan peranti</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Perubahan Keserasian Apl"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Togol perubahan keserasian apl"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Perubahan didayakan tetapan lalai"</string>
+diff --git a/packages/apps/Settings/res/values-my/strings.xml b/packages/apps/Settings/res/values-my/strings.xml
+index 8c2a006..9e7448a 100644
+--- a/packages/apps/Settings/res/values-my/strings.xml
++++ b/packages/apps/Settings/res/values-my/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"စမ်းသပ်ဆဲ- ANGLE ဖွင့်ရန်"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"သတိပေးချက်- ANGLE ကို မူရင်း OpenGL ES ဒရိုင်ဗာအဖြစ် ဖွင့်နိုင်သည်။ ဤအင်္ဂါရပ်သည် စမ်းသပ်မှုဖြစ်ပြီး ကင်မရာ၊ ဗီဒီယိုအက်ပ်အချို့နှင့် တွဲသုံး၍ မရနိုင်ပါ။"</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"စနစ် OpenGL ES ဒရိုင်ဗာကိုပြောင်းရန်အတွက် ပြန်လည်စတင်ရန် လိုအပ်သည်"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">သတိပေးချက်- ANGLE ကို မူရင်း OpenGL ES ဒရိုင်ဗာအဖြစ် ဖွင့်နိုင်သည်။ ဤတူးလ်သည် စမ်းသပ်မှုဖြစ်ပြီး ကင်မရာ၊ ဗီဒီယို အက်ပ်အချို့နှင့် တွဲသုံး၍ မရနိုင်ပါ။ ခလုတ်မဖွင့်မီ သင့်စက်တွင်း ဒေတာကို အရန်သိမ်းပါ</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">စနစ် OpenGL ES ဒရိုင်ဗာကို ပြောင်းရန်အတွက် ပြန်လည်စတင်ရန် လိုအပ်သည်။ ပြန်လည်မစတင်မီ သင့်စက်တွင်း ဒေတာကို အရန်သိမ်းပါ။ ပြန်လည်စတင်၍ မရလိုက်ပါက စက်ကို ပြန်ပြောင်းရန်အတွက် စက်ရုံထုတ်အတိုင်း ပြင်ဆင်သတ်မှတ်ရပါမည်</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"တွဲဖက်သုံးနိုင်သော အက်ပ် အပြောင်းအလဲများ"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"တွဲဖက်သုံးနိုင်သော အက်ပ်အပြောင်းအလဲများကို အဖွင့်အပိတ်လုပ်သည်"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"မူလစနစ်အရ ဖွင့်ထားသော အပြောင်းအလဲများ"</string>
+diff --git a/packages/apps/Settings/res/values-nb/strings.xml b/packages/apps/Settings/res/values-nb/strings.xml
+index 6cfce42..ab866f3 100644
+--- a/packages/apps/Settings/res/values-nb/strings.xml
++++ b/packages/apps/Settings/res/values-nb/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"På forsøksstadiet: Aktiver ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Varsel: Aktiver ANGLE som standard OpenGL ES-driver. Denne funksjonen er på forsøksstadiet og er muligens ikke kompatibel med enkelte kamera- og videoapper."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"En omstart kreves for å endre OpenGL ES-driveren for systemet"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Varsel: Aktiver ANGLE som standard OpenGL ES-driver. Denne funksjonen er på forsøksstadiet og er muligens ikke kompatibel med bestemte kamera- og videoapper. Sikkerhetskopier enhetsdataene før du slår på bryteren</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">En omstart kreves for å bytte OpenGL ES-driver for systemet. Sikkerhetskopier enhetsdataene før du starter på nytt. Hvis omstarten mislykkes, må du tilbakestille enheten til fabrikkstandard for å gjenopprette den.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Endringer av appkompatibilitet"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Slå endringer av appkompatibilitet på/av"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Endringer som er aktivert som standard"</string>
+diff --git a/packages/apps/Settings/res/values-ne/strings.xml b/packages/apps/Settings/res/values-ne/strings.xml
+index 2f6c830..fda8b96 100644
+--- a/packages/apps/Settings/res/values-ne/strings.xml
++++ b/packages/apps/Settings/res/values-ne/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"परीक्षणका क्रममा रहेको: ANGLE अन गर्नुहोस्"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"चेतावनी: ANGLE लाई डिफल्ट OpenGL ES ड्राइभर बनाउनुहोस्। यो सुविधा परीक्षणको क्रममा छ र यसले क्यामेरा तथा भिडियोसम्बन्धी केही एपहरूमा काम नगर्न सक्छ।"</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"सिस्टम OpenGL ES ड्राइभर बदल्न रिबुट गर्नु पर्ने हुन्छ"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">चेतावनी: ANGLE लाई डिफल्ट OpenGL ES ड्राइभरका रूपमा अन गर्नुहोस्। यो सुविधा परीक्षणका क्रममा छ। त्यसैले यो सुविधा क्यामेरा तथा भिडियोसम्बन्धी केही एपहरूसँग कम्प्याटिबल नहुन सक्छ। यो स्विच अन गर्नुअघि कृपया आफ्नो डिभाइसमा भएको डेटा ब्याकअप गर्नुहोस्</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">सिस्टम OpenGL ES ड्राइभर परिवर्तन गर्न रिबुट गर्नु पर्ने हुन्छ। रिबुट गर्नुअघि कृपया आफ्नो डिभाइसमा भएको डेटा ब्याकअप गर्नुहोस्। रिबुट गर्न सकिएन भने तपाईंले यो डिभाइस फ्याक्ट्री रिसेट गरी रिस्टोर गर्नु पर्ने हुन्छ</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"एपको कम्प्याटिबिलिटीमा भएका परिवर्तनहरू"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"एपको कम्प्याटिबिलिटीमा गरिएको परिवर्तन टगल गर्नुहोस्"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"डिफल्ट रूपमा सक्षम पारिएका परिवर्तनहरू"</string>
+diff --git a/packages/apps/Settings/res/values-nl/strings.xml b/packages/apps/Settings/res/values-nl/strings.xml
+index 4db4011..7ee22ed 100644
+--- a/packages/apps/Settings/res/values-nl/strings.xml
++++ b/packages/apps/Settings/res/values-nl/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Experimenteel: ANGLE aanzetten"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Waarschuwing: ANGLE wordt aangezet als standaard OpenGL ES-stuurprogramma. Deze functie is in een experimentele fase en werkt misschien niet met bepaalde camera- en video-apps."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Je moet opnieuw opstarten om het OpenGL ES-stuurprogramma van het systeem te wijzigen"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Waarschuwing: Zet ANGLE aan als standaard OpenGL ES-stuurprogramma. Deze functie is in een experimentele fase en werkt misschien niet met bepaalde camera- en video-apps. Maak een back-up van je apparaatgegevens voordat je de schakelaar aanzet.</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Je moet opnieuw opstarten om het OpenGL ES-stuurprogramma van het systeem te wijzigen. Maak een back-up van je apparaatgegevens voordat je opnieuw opstart. Als het opnieuw opstarten is mislukt, moet je de fabrieksinstellingen terugzetten om het apparaat te herstellen.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"App-compatibiliteitswijzigingen"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Zet app-compatibiliteitswijzigingen aan of uit"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Standaard aangezette wijzigingen"</string>
+diff --git a/packages/apps/Settings/res/values-or/strings.xml b/packages/apps/Settings/res/values-or/strings.xml
+index 695bbbb..bc5d468 100644
+--- a/packages/apps/Settings/res/values-or/strings.xml
++++ b/packages/apps/Settings/res/values-or/strings.xml
+@@ -5083,8 +5083,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"ପରୀକ୍ଷାମୂଳକ: ANGLEକୁ ସକ୍ଷମ କରନ୍ତୁ"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"ଚେତାବନୀ: ଡିଫଲ୍ଟ OpenGL ES ଡ୍ରାଇଭର ଭାବେ ANGLEକୁ ସକ୍ଷମ କରନ୍ତୁ। ଏହି ଫିଚର ପରୀକ୍ଷଣରେ ଅଛି ଏବଂ ଏହା କିଛି କେମେରା ଓ ଭିଡିଓ ଆପ୍ସ ସହ କମ୍ପାଟିବଲ ହୋଇନପାରେ।"</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"ସିଷ୍ଟମ OpenGL ES ଡ୍ରାଇଭରକୁ ପରିବର୍ତ୍ତନ କରିବା ପାଇଁ ରିବୁଟ କରିବା ଆବଶ୍ୟକ"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">ଚେତାବନୀ: ଡିଫଲ୍ଟ OpenGL ES ଡ୍ରାଇଭର ଭାବେ ANGLEକୁ ସକ୍ଷମ କରନ୍ତୁ। ଏହି ଫିଚର ଏକ୍ସପେରିମେଣ୍ଟ ହେଉଛି ଏବଂ ଏହା କିଛି କେମେରା ଓ ଭିଡିଓ ଆପ୍ସ ସହ କମ୍ପାଟିବଲ ହୋଇନପାରେ। ଦୟାକରି ସ୍ୱିଚ ଚାଲୁ କରିବା ପୂର୍ବରୁ ଆପଣଙ୍କ ଡିଭାଇସ ଡାଟାର ବେକଅପ ନିଅନ୍ତୁ</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">ସିଷ୍ଟମ OpenGL ES ଡ୍ରାଇଭରକୁ ପରିବର୍ତ୍ତନ କରିବା ପାଇଁ ରିବୁଟ କରିବା ଆବଶ୍ୟକ। ରିବୁଟ କରିବା ପୂର୍ବରୁ ଦୟାକରି ଆପଣଙ୍କ ଡିଭାଇସ ଡାଟାର ବେକଅପ ନିଅନ୍ତୁ। ରିବୁଟ ବିଫଳ ହେଲେ, ଡିଭାଇସକୁ ରିଷ୍ଟୋର କରିବା ପାଇଁ ଆପଣଙ୍କୁ ଏକ ଫେକ୍ଟୋରୀ ରିସେଟ ଆବଶ୍ୟକ</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"ଆପ୍ କମ୍ପାଟିବିଲିଟୀ ପରିବର୍ତ୍ତନଗୁଡ଼ିକ"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"ଆପ କମ୍ପାଟିବିଲିଟୀ ପରିବର୍ତ୍ତନଗୁଡ଼ିକୁ ଟୋଗଲ କରନ୍ତୁ"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"ଡିଫଲ୍ଟ ଭାବେ ସକ୍ଷମ କରାଯାଇଥିବା ପରିବର୍ତ୍ତନଗୁଡ଼ିକ"</string>
+diff --git a/packages/apps/Settings/res/values-pa/strings.xml b/packages/apps/Settings/res/values-pa/strings.xml
+index 7d1d33f..2a6c988 100644
+--- a/packages/apps/Settings/res/values-pa/strings.xml
++++ b/packages/apps/Settings/res/values-pa/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"ਪ੍ਰਯੋਗਮਈ: ANGLE ਚਾਲੂ ਕਰੋ"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"ਚਿਤਾਵਨੀ: ਪੂਰਵ-ਨਿਰਧਾਰਿਤ OpenGL ES ਡਰਾਈਵਰ ਵਜੋਂ ANGLE ਨੂੰ ਚਾਲੂ ਕਰੋ। ਇਹ ਵਿਸ਼ੇਸ਼ਤਾ ਪ੍ਰਯੋਗ ਵਿੱਚ ਹੈ ਅਤੇ ਹੋ ਸਕਦਾ ਹੈ ਕਿ ਇਹ ਕੁਝ ਕੈਮਰਾ ਅਤੇ ਵੀਡੀਓ ਐਪਾਂ ਦੇ ਅਨੁਰੂਪ ਨਾ ਹੋਵੇ।"</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"ਸਿਸਟਮ ਦੇ OpenGL ES ਡਰਾਈਵਰ ਨੂੰ ਬਦਲਣ ਲਈ ਰੀਬੂਟ ਕਰਨ ਦੀ ਲੋੜ ਹੈ"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">ਚਿਤਾਵਨੀ: ਪੂਰਵ-ਨਿਰਧਾਰਿਤ OpenGL ES ਡਰਾਈਵਰ ਵਜੋਂ ANGLE ਨੂੰ ਚਾਲੂ ਕਰੋ। ਇਹ ਵਿਸ਼ੇਸ਼ਤਾ ਪ੍ਰਯੋਗ ਵਿੱਚ ਹੈ ਅਤੇ ਹੋ ਸਕਦਾ ਹੈ ਕਿ ਇਹ ਕੁਝ ਕੈਮਰਾ ਅਤੇ ਵੀਡੀਓ ਐਪਾਂ ਦੇ ਅਨੁਰੂਪ ਨਾ ਹੋਵੇ। ਸਵਿੱਚ ਨੂੰ ਚਾਲੂ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ, ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੇ ਡੀਵਾਈਸ ਡਾਟੇ ਦਾ ਬੈਕਅੱਪ ਲਓ</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">ਸਿਸਟਮ ਦੇ OpenGL ES ਡਰਾਈਵਰ ਨੂੰ ਬਦਲਣ ਲਈ ਰੀਬੂਟ ਕਰਨ ਦੀ ਲੋੜ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਰੀਬੂਟ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਆਪਣੇ ਡੀਵਾਈਸ ਡਾਟੇ ਦਾ ਬੈਕਅੱਪ ਲਓ। ਜੇ ਰੀਬੂਟ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ, ਤਾਂ ਤੁਹਾਨੂੰ ਡੀਵਾਈਸ ਨੂੰ ਮੁੜ-ਬਹਾਲ ਕਰਨ ਲਈ ਫੈਕਟਰੀ ਰੀਸੈੱਟ ਕਰਨ ਦੀ ਲੋੜ ਪਵੇਗੀ</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"ਐਪ ਅਨੁਰੂਪਤਾ ਸੰਬੰਧੀ ਤਬਦੀਲੀਆਂ"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"ਐਪ ਅਨੁਰੂਪਤਾ ਸੰਬੰਧੀ ਤਬਦੀਲੀਆਂ ਨੂੰ ਟੌਗਲ ਕਰੋ"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"ਪੂਰਵ-ਨਿਰਧਾਰਤ ਤੌਰ \'ਤੇ ਚਾਲੂ ਕੀਤੀਆਂ ਤਬਦੀਲੀਆਂ"</string>
+diff --git a/packages/apps/Settings/res/values-pl/strings.xml b/packages/apps/Settings/res/values-pl/strings.xml
+index 6722442..df93caa 100644
+--- a/packages/apps/Settings/res/values-pl/strings.xml
++++ b/packages/apps/Settings/res/values-pl/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Funkcja eksperymentalna: włącz ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Ostrzeżenie: włącz ANGLE jako domyślny sterownik OpenGL ES. Funkcja jest w fazie eksperymentalnej i może nie być zgodna z niektórymi aplikacjami aparatu i aplikacjami do filmów."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Zmiana systemowego sterownika OpenGL ES wymaga ponownego uruchomienia"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Ostrzeżenie: włącz ANGLE jako domyślny sterownik OpenGL ES. Funkcja jest w fazie eksperymentalnej i może być niezgodna z niektórymi aplikacjami aparatu i do filmów. Przed włączeniem przełącznika utwórz kopię zapasową danych na urządzeniu</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Zmiana systemowego sterownika OpenGL ES wymaga ponownego uruchomienia. Przed ponownym uruchomieniem utwórz kopię zapasową danych na urządzeniu. Jeśli nie uda się ponownie uruchomić urządzenia, musisz je przywrócić do ustawień fabrycznych</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Zmiany zgodności aplikacji"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Przełączanie zmian zgodności aplikacji"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Zmiany domyślnie włączonych"</string>
+diff --git a/packages/apps/Settings/res/values-pt-rBR/strings.xml b/packages/apps/Settings/res/values-pt-rBR/strings.xml
+index 2aab6aa..b35eeb0 100644
+--- a/packages/apps/Settings/res/values-pt-rBR/strings.xml
++++ b/packages/apps/Settings/res/values-pt-rBR/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Experimental: ativar ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Atenção: ative o ANGLE como o driver padrão do OpenGL ES. Esse recurso é experimental e pode não ser compatível com alguns apps de câmera e vídeo."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"É necessário reiniciar o dispositivo para mudar o driver do OpenGL ES do sistema"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Atenção: ative o ANGLE como o driver padrão do OpenGL ES. Esse recurso é experimental e pode não ser compatível com alguns apps de câmera e vídeo. Faça backup dos dados do dispositivo antes de ativar a chave.</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">É necessário reiniciar o dispositivo para mudar o driver do OpenGL ES do sistema. Faça backup dos dados do dispositivo antes de reiniciar. Se a reinicialização falhar, será necessário restaurar o dispositivo às configurações de fábrica.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Mudanças na compatibilidade do app"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Alternar mudanças de compatibilidade do app"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Mudanças ativadas padrão"</string>
+diff --git a/packages/apps/Settings/res/values-pt-rPT/strings.xml b/packages/apps/Settings/res/values-pt-rPT/strings.xml
+index c2ad683..0043034 100644
+--- a/packages/apps/Settings/res/values-pt-rPT/strings.xml
++++ b/packages/apps/Settings/res/values-pt-rPT/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Experimental: ativar ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Aviso: ative o ANGLE como controlador predefinido do OpenGL ES. Esta funcionalidade é uma experiência e pode não ser compatível com algumas apps de câmara e vídeo."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"É necessário reiniciar para alterar o controlador do OpenGL ES do sistema"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Aviso: ative o ANGLE como controlador predefinido do OpenGL ES. Esta funcionalidade é uma experiência e pode não ser compatível com algumas apps de câmara e vídeo. Faça uma cópia de segurança dos dados do dispositivo antes de ativar o switch</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">É necessário reiniciar para alterar o controlador do OpenGL ES do sistema. Faça uma cópia de segurança dos dados do dispositivo antes de o reiniciar. Caso o reinício tenha falhado, precisa de uma reposição de fábrica para restaurar o dispositivo</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Alterações de compatibilidade da aplicação"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Ativar/desativar alterações de compatibilidade das apps"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Alterações ativadas predefinidas"</string>
+diff --git a/packages/apps/Settings/res/values-pt/strings.xml b/packages/apps/Settings/res/values-pt/strings.xml
+index 2aab6aa..b35eeb0 100644
+--- a/packages/apps/Settings/res/values-pt/strings.xml
++++ b/packages/apps/Settings/res/values-pt/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Experimental: ativar ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Atenção: ative o ANGLE como o driver padrão do OpenGL ES. Esse recurso é experimental e pode não ser compatível com alguns apps de câmera e vídeo."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"É necessário reiniciar o dispositivo para mudar o driver do OpenGL ES do sistema"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Atenção: ative o ANGLE como o driver padrão do OpenGL ES. Esse recurso é experimental e pode não ser compatível com alguns apps de câmera e vídeo. Faça backup dos dados do dispositivo antes de ativar a chave.</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">É necessário reiniciar o dispositivo para mudar o driver do OpenGL ES do sistema. Faça backup dos dados do dispositivo antes de reiniciar. Se a reinicialização falhar, será necessário restaurar o dispositivo às configurações de fábrica.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Mudanças na compatibilidade do app"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Alternar mudanças de compatibilidade do app"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Mudanças ativadas padrão"</string>
+diff --git a/packages/apps/Settings/res/values-ro/strings.xml b/packages/apps/Settings/res/values-ro/strings.xml
+index 4ed3d2c..6fb5d73 100644
+--- a/packages/apps/Settings/res/values-ro/strings.xml
++++ b/packages/apps/Settings/res/values-ro/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Experimental: activează ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Avertisment: activează ANGLE ca driver OpenGL ES prestabilit. Funcția este experimentală și poate să nu fie compatibilă cu unele aplicații pentru camera foto și pentru videoclipuri."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Este nevoie de o repornire pentru a schimba driverul de sistem OpenGL ES"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Avertisment: activează ANGLE ca driver OpenGL ES prestabilit. Funcția este în faza experimentală și poate să nu fie compatibilă cu unele aplicații video și pentru camera foto. Fă backup datelor de pe dispozitiv înainte să activezi comutatorul.</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Este nevoie de o repornire pentru a schimba driverul de sistem OpenGL ES. Fă backup datelor de pe dispozitiv înainte de repornire. Dacă repornirea nu a reușit, trebuie să revii la setările din fabrică pentru a restabili dispozitivul.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Modificări ale compatibilității aplicației"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Activează / dezactivează modificările compatibilității aplicației"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Modificări activate prestabilite"</string>
+diff --git a/packages/apps/Settings/res/values-ru/strings.xml b/packages/apps/Settings/res/values-ru/strings.xml
+index 6350c9c..aec63be 100644
+--- a/packages/apps/Settings/res/values-ru/strings.xml
++++ b/packages/apps/Settings/res/values-ru/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Включить ANGLE (экспериментальная функция)"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Внимание! Параметр позволяет использовать ANGLE в качестве драйвера OpenGL ES по умолчанию. Эта функция экспериментальная и может быть несовместима с некоторыми камерами и приложениями для видеосъемки."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Для изменения системного драйвера OpenGL ES требуется перезагрузка."</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Внимание! ANGLE будет использоваться в качестве драйвера OpenGL ES по умолчанию. Эта функция экспериментальная и может быть несовместима с некоторыми приложениями для работы с камерой или видео. Перед переключением создайте резервную копию данных.</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Для изменения системного драйвера OpenGL ES требуется перезагрузка. Перед этим создайте резервную копию данных. Если перезагрузить устройство не удалось, для его восстановления нужно сбросить настройки.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Изменение настроек совместимости приложений"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Изменение настроек совместимости приложений"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Изменения, включенные по умолчанию"</string>
+diff --git a/packages/apps/Settings/res/values-si/strings.xml b/packages/apps/Settings/res/values-si/strings.xml
+index 829b905..5122734 100644
+--- a/packages/apps/Settings/res/values-si/strings.xml
++++ b/packages/apps/Settings/res/values-si/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"පර්යේෂණාත්මක: ANGLE සබල කරන්න"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"අවවාදයයි: පෙරනිමි OpenGL ES ධාවකය ලෙස ANGLE සබල කරන්න. මෙම විශේෂාංගය අත්හදා බැලීමේ පවතින අතර සමහර කැමරා සහ වීඩියෝ යෙදුම් සමග නොගැළපිය හැක."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"පද්ධති OpenGL ES ධාවකය වෙනස් කිරීම සඳහා නැවත පණගැන්වීමක් අවශ්‍ය වේ"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">අවවාදයයි: පෙරනිමි OpenGL ES ධාවකය ලෙස ANGLE සබල කරන්න. මෙම විශේෂාංගය අත්හදා බැලීමේ පවතින අතර සමහර කැමරා සහ වීඩියෝ යෙදුම් සමග නොගැළපිය හැක. ස්විචය ක්‍රියාත්මක කිරීමට පෙර ඔබේ උපාංග දත්ත උපස්ථ කරන්න</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">පද්ධති OpenGL ES ධාවකය වෙනස් කිරීම සඳහා නැවත පණගැන්වීමක් අවශ්‍ය වේ. නැවත පණ ගැන්වීමට පෙර ඔබේ උපාංග දත්ත උපස්ථ කරන්න. නැවත පණගැන්වීම අසමත් වුවහොත්, උපාංගය ප්‍රතිසාධනය කිරීමට ඔබට කර්මාන්තශාලා යළි සැකසීමක් අවශ්‍ය වේ</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"යෙදුම් ගැළපෙන බවේ වෙනස් කිරීම්"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"යෙදුම් ගැළපෙන බව පිළිබඳ වෙනස් කිරීම් ටොගල් කරන්න"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"පෙරනිමි සබල කළ වෙනස් කිරීම්"</string>
+diff --git a/packages/apps/Settings/res/values-sk/strings.xml b/packages/apps/Settings/res/values-sk/strings.xml
+index 9bf8654..bc755ef 100644
+--- a/packages/apps/Settings/res/values-sk/strings.xml
++++ b/packages/apps/Settings/res/values-sk/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Experimentálne: povoliť ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Upozornenie: Povoľte ovládač ANGLE ako predvolený ovládač OpenGL ES. Táto funkcia je experimentálna a nemusí byť kompatibilná s niektorými aplikáciami na ovládanie kamery a tvorbu videa."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Zmena systémového ovládača OpenGL ES vyžaduje reštart"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Upozornenie: Povoľte ANGLE ako predvolený ovládač OpenGL ES. Táto funkcia je experimentálna a nemusí byť kompatibilná s niektorými aplikáciami na ovládanie kamery a tvorbu videa. Pred zapnutím prepínača zálohujte dáta zo zariadenia.</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Zmena systémového ovládača OpenGL ES vyžaduje reštart. Pred reštartom zálohujte dáta zo zariadenia. Ak sa reštart nepodaril, musíte obnoviť výrobné nastavenia zariadenia.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Zmeny v kompatibilite aplikácie"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Prepínať zmeny kompatibility aplikácie"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Predvolené aktivované zmeny"</string>
+diff --git a/packages/apps/Settings/res/values-sl/strings.xml b/packages/apps/Settings/res/values-sl/strings.xml
+index e85cbd8..02ce614 100644
+--- a/packages/apps/Settings/res/values-sl/strings.xml
++++ b/packages/apps/Settings/res/values-sl/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Preizkusno: Omogoči gonilnik ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Opozorilo: Omogoči gonilnik ANGLE kot privzeti gonilnik OpenGL ES. Ta funkcija je preizkusna in morda ni združljiva z nekaterimi aplikacijami za fotoaparat in videoposnetke."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Če želite spremeniti sistemski gonilnik OpenGL ES, morate znova zagnati napravo."</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Opozorilo: Omogoči gonilnik ANGLE kot privzeti gonilnik OpenGL ES. Ta funkcija je preizkusna in morda ni združljiva z nekaterimi aplikacijami za fotoaparat in videoposnetke. Pred vklopom stikala varnostno kopirajte podatke v napravi.</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Če želite spremeniti sistemski gonilnik OpenGL ES, morate znova zagnati napravo. Pred vnovičnim zagonom varnostno kopirajte podatke v napravi. Če vnovični zagon ne uspe, boste za obnovitev naprave morali izvesti ponastavitev na tovarniške nastavitve.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Spremembe združljivosti aplikacij"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Vklop/izklop sprememb združljivosti aplikacij"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Privzeto omogočene spremembe"</string>
+diff --git a/packages/apps/Settings/res/values-sq/strings.xml b/packages/apps/Settings/res/values-sq/strings.xml
+index bfd62ee..b5d4112 100644
+--- a/packages/apps/Settings/res/values-sq/strings.xml
++++ b/packages/apps/Settings/res/values-sq/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Eksperimentale: Aktivizo ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Paralajmërim: Aktivizo ANGLE si drejtues të parazgjedhur OpenGL ES. Kjo veçori është në eksperiment dhe mund të mos jetë e përputhshme me disa aplikacione të kamerave dhe videove."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Kërkohet rindezja për të ndryshuar drejtuesin e OpenGL ES për sistemin"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Paralajmërim: Aktivizo ANGLE si drejtues të parazgjedhur OpenGL ES. Kjo veçori është në eksperiment dhe mund të mos jetë e përputhshme me disa aplikacione të kamerave dhe videove. Rezervo të dhënat e pajisjes para se të aktivizosh ndryshimin</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Kërkohet rindezja për të ndryshuar drejtuesin e OpenGL ES për sistemin. Rezervo të dhënat e pajisjes para se ta rindezësh. Në rast se rindezja dështon, të duhet një rivendosje në gjendje fabrike për të restauruar pajisjen</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Ndryshimet e pajtueshmërisë së aplikacionit"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Aktivizo ose çaktivizo ndryshimet e përputhshmërisë së aplikacionit"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Ndryshimet të aktivizuara si parazgjedhje"</string>
+diff --git a/packages/apps/Settings/res/values-sr/strings.xml b/packages/apps/Settings/res/values-sr/strings.xml
+index 2e9bb33..1f7a1ea 100644
+--- a/packages/apps/Settings/res/values-sr/strings.xml
++++ b/packages/apps/Settings/res/values-sr/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Експериментално: Омогући ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Упозорење: Омогућава ANGLE као подразумевани OpenGL ES управљачки програм. Ова функција је у експерименталној фази и можда није компатибилна са неким апликацијама за камеру и видео снимке."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Морате да рестартујете да бисте променили OpenGL ES управљачки програм система"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Упозорење: Омогућава ANGLE као подразумевани OpenGL ES управљачки програм. Ова функција је у експерименталној фази и можда није компатибилна са неким апликацијама за камеру и видео снимке. Направите резервну копију података са уређаја пре него што укључите прекидач</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Морате да рестартујете да бисте променили OpenGL ES управљачки програм система. Направите резервну копију података са уређаја пре рестартовања. Ако рестартовање није успело, треба да ресетујете уређај на фабричка подешавања да бисте га вратили у претходно стање</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Промене компатибилности апликације"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Укључите/искључите промене компатибилности апликације"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Подразумеване омогућене промене"</string>
+diff --git a/packages/apps/Settings/res/values-sv/strings.xml b/packages/apps/Settings/res/values-sv/strings.xml
+index 5ff9454..e3309c5 100644
+--- a/packages/apps/Settings/res/values-sv/strings.xml
++++ b/packages/apps/Settings/res/values-sv/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Experimentell: Aktivera ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Varning: Aktivera ANGLE som OpenGL ES-standarddrivrutin. Denna funktion är experimentell och är eventuellt inte kompatibel med vissa kamera- och videoappar."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Du måste starta om enheten för att ändra systemets OpenGL ES-drivrutin"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Varning: Aktivera ANGLE som OpenGL ES-standarddrivrutin. Denna funktion är experimentell och är eventuellt inte kompatibel med vissa kamera- och videoappar. Säkerhetskopiera enhetsdata innan du aktiverar ändringen</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Du måste starta om enheten för att ändra systemets OpenGL ES-drivrutin. Säkerhetskopiera enhetsdata innan du startar om. Om omstarten misslyckades måste du återställa enheten till standardinställningarna för att återställa den</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Kompatibilitetsändringar för appar"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Aktivera eller inaktivera kompabilitetsändringar för appar"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Ändringar som är aktiverade som standard"</string>
+diff --git a/packages/apps/Settings/res/values-sw/strings.xml b/packages/apps/Settings/res/values-sw/strings.xml
+index 9958c31..5b2d35e 100644
+--- a/packages/apps/Settings/res/values-sw/strings.xml
++++ b/packages/apps/Settings/res/values-sw/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Kipengele cha jaribio: Washa ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Onyo: Kitawasha ANGLE kama kiendeshaji chaguomsingi cha OpenGL ES. Kipengele hiki ni cha jaribio na huenda kisioane na baadhi ya programu za kamera na video."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Unahitaji kuwasha tena ili kubadilisha kiendeshaji cha mfumo cha OpenGL ES"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Onyo: Washa ANGLE kama kiendeshaji chaguomsingi cha OpenGL ES. Kipengele hiki ni cha jaribio na huenda kisioane na baadhi ya programu za kamera na video. Tafadhali hifadhi nakala ya data ya kifaa chako kabla ya kuwasha swichi</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Unahitaji kuwasha tena ili kubadilisha kiendeshaji cha mfumo cha OpenGL ES. Tafadhali hifadhi nakala ya data iliyo kwenye kifaa chako kabla ya kuzima kisha uwashe. Ikiwa imeshindwa kuzima kisha kuwaka, unahitaji kurejesha mipangilio ambayo kifaa chako kilitoka nayo kiwandani ili kurejesha data ya kifaa</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Mabadiliko ya Uoanifu wa Programu"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Geuza mabadiliko ya uoanifu wa programu"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Mabadiliko chaguomsingi yaliyowashwa"</string>
+diff --git a/packages/apps/Settings/res/values-ta/strings.xml b/packages/apps/Settings/res/values-ta/strings.xml
+index b48845a..21838f4 100644
+--- a/packages/apps/Settings/res/values-ta/strings.xml
++++ b/packages/apps/Settings/res/values-ta/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"பரிசோதனை: ANGLEளை இயக்குதல்"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"எச்சரிக்கை: இயல்புநிலை OpenGL ES இயக்கியாக ANGLEளை இயக்கலாம். இந்த அம்சம் பரிசோதனைக் கட்டத்தில் உள்ளது, சில கேமரா மற்றும் வீடியோ ஆப்ஸுடன் இணங்காமல் போகலாம்."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"சிஸ்டத்தின் OpenGL ES இயக்கியை மாற்ற மறுதொடக்கம் தேவை"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">எச்சரிக்கை: இயல்புநிலை OpenGL ES இயக்கியாக ANGLEளை இயக்கவும். இந்த அம்சம் பரிசோதனைக் கட்டத்தில் உள்ளது, சில கேமரா மற்றும் வீடியோ ஆப்ஸுடன் இணங்காமல் போகலாம். சுவிட்ச்சை ஆன் செய்வதற்கு முன்பு உங்கள் சாதனத் தரவைக் காப்புப் பிரதியெடுக்கவும்.</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">சிஸ்டத்தின் OpenGL ES இயக்கியை மாற்ற மறுபடி தொடங்க வேண்டும். மறுபடி தொடங்குவதற்கு முன்பு உங்கள் சாதனத் தரவைக் காப்புப் பிரதி எடுக்கவும். மறுபடி தொடங்குதல் தோல்வியடைந்தால், சாதனத்தை மீட்டெடுக்க ஆரம்பநிலைக்கு மீட்டமைக்க வேண்டும்.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"ஆப்ஸ் இணக்கத்தன்மை தொடர்பான மாற்றங்கள்"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"ஆப்ஸ் இணக்கத்தன்மை தொடர்பான மாற்றங்களை நிலைமாற்றும்"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"இயல்புநிலை இயக்கப்பட்டது தொடர்பான மாற்றங்கள்"</string>
+diff --git a/packages/apps/Settings/res/values-te/strings.xml b/packages/apps/Settings/res/values-te/strings.xml
+index ee2b62d..fb4b4c6 100644
+--- a/packages/apps/Settings/res/values-te/strings.xml
++++ b/packages/apps/Settings/res/values-te/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"ప్రయోగాత్మకం: ANGLEను ఎనేబుల్ చేయండి"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"హెచ్చరిక: ఆటోమేటిక్ సెట్టింగ్ OpenGL ES డ్రైవర్‌గా ANGLEను ఎనేబుల్ చేయండి. ఈ ఫీచర్ ప్రయోగ దశలో ఉంది, కొన్ని కెమెరా, వీడియో యాప్‌లకు అనుకూలంగా ఉండకపోవచ్చు."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"సిస్టమ్ OpenGL ES డ్రైవర్‌ను మార్చడానికి రీబూట్ చేయడం అవసరం"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">హెచ్చరిక: ఆటోమేటిక్ సెట్టింగ్ OpenGL ES డ్రైవర్‌గా ANGLEను ఎనేబుల్ చేయండి. ఈ ఫీచర్ ప్రయోగ దశలో ఉంది, కొన్ని కెమెరా, వీడియో యాప్‌లకు అనుకూలంగా ఉండకపోవచ్చు. దయచేసి స్విచ్‌ను ఆన్ చేసే ముందు మీ డివైజ్ డేటాను బ్యాకప్ చేయండి</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">సిస్టమ్ OpenGL ES డ్రైవర్‌ను మార్చడానికి రీబూట్ చేయడం అవసరం. రీబూట్ చేయడానికి ముందు దయచేసి మీ డివైజ్ డేటాను బ్యాకప్ చేయండి. రీబూట్ విఫలమైతే, డివైజ్‌ను రీస్టోర్ చేయడానికి మీరు ఫ్యాక్టరీ రీసెట్ చేయాలి</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"యాప్ అనుకూలత మార్పులు"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"యాప్ అనుకూలత మార్పులను టోగుల్ చేయడం"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"ఆటోమేటిక్‌గా ఎనేబుల్ చేయబడిన మార్పులు"</string>
+diff --git a/packages/apps/Settings/res/values-th/strings.xml b/packages/apps/Settings/res/values-th/strings.xml
+index f19ce12..f9517dd 100644
+--- a/packages/apps/Settings/res/values-th/strings.xml
++++ b/packages/apps/Settings/res/values-th/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"ทดลอง: เปิดใช้ ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"คำเตือน: เปิดใช้ ANGLE เป็นไดรเวอร์ OpenGL ES เริ่มต้น ฟีเจอร์นี้อยู่ระหว่างการทดสอบและอาจใช้งานกับแอปกล้องและแอปวิดีโอบางแอปไม่ได้"</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"ต้องรีบูตเพื่อเปลี่ยนไดรเวอร์ OpenGL ES ของระบบ"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">คำเตือน: เปิดใช้ ANGLE เป็นไดรเวอร์ OpenGL ES เริ่มต้น ฟีเจอร์นี้อยู่ระหว่างการทดสอบและอาจใช้งานกับแอปกล้องและแอปวิดีโอบางแอปไม่ได้ โปรดสำรองข้อมูลอุปกรณ์ก่อนเปิดสวิตช์</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">ต้องรีบูตเพื่อเปลี่ยนไดรเวอร์ OpenGL ES ของระบบ โปรดสำรองข้อมูลอุปกรณ์ก่อนรีบูต หากรีบูตไม่สำเร็จ คุณจะต้องรีเซ็ตเป็นค่าเริ่มต้นเพื่อกู้คืนอุปกรณ์</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"การเปลี่ยนแปลงความเข้ากันได้ของแอป"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"สลับการเปลี่ยนแปลงความเข้ากันได้ของแอป"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"การเปลี่ยนแปลงที่เปิดใช้โดยค่าเริ่มต้น"</string>
+diff --git a/packages/apps/Settings/res/values-tl/strings.xml b/packages/apps/Settings/res/values-tl/strings.xml
+index 15ebbc3..edd328b 100644
+--- a/packages/apps/Settings/res/values-tl/strings.xml
++++ b/packages/apps/Settings/res/values-tl/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Pang-eksperimento: I-enable ang ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Babala: I-enable ang ANGLE bilang default na OpenGL ES driver. Eksperimento pa ang feature na ito at posibleng hindi ito compatible sa ilang camera at video app."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Kinakailangang mag-reboot para mabago ang OpenGL ES driver ng system"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Babala: I-enable ang ANGLE bilang default na OpenGL ES driver. Eksperimento pa ang feature na ito at posibleng hindi ito compatible sa ilang camera at video app. I-back up ang data ng device mo bago i-on ang switch</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Kinakailangang mag-reboot para mabago ang OpenGL ES driver ng system. I-back up ang data ng device mo bago i-reboot. Kung sakaling hindi nakapag-reboot, kailangan mong mag-factory reset para ma-restore ang device</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Mga Pagbabago sa Compatibility ng App"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"I-toggle ang mga pagbabago sa compatibility ng app"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Mga default na naka-enable na pagbabago"</string>
+diff --git a/packages/apps/Settings/res/values-tr/strings.xml b/packages/apps/Settings/res/values-tr/strings.xml
+index 9e68ad0..d8dbb15 100644
+--- a/packages/apps/Settings/res/values-tr/strings.xml
++++ b/packages/apps/Settings/res/values-tr/strings.xml
+@@ -5083,8 +5083,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Deneysel: ANGLE\'ı etkinleştir"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Uyarı: ANGLE\'ı, varsayılan OpenGL ES sürücüsü olarak etkinleştirin. Bu özellik deneme aşamasında olduğu için bazı kamera ve video uygulamalarıyla uyumlu olmayabilir."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Sistem OpenGL ES sürücüsünü değiştirmek için yeniden başlatma gerekir"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Uyarı: ANGLE'ı, varsayılan OpenGL ES sürücüsü olarak etkinleştirin. Bu özellik deneme aşamasında olduğu için bazı kamera ve video uygulamalarıyla uyumlu olmayabilir. Anahtarı açmadan önce lütfen cihaz verilerinizi yedekleyin"</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Sistem OpenGL ES sürücüsünü değiştirmek için yeniden başlatma gerekir. Lütfen yeniden başlatmadan önce cihaz verilerinizi yedekleyin. Yeniden başlatma işlemi başarısız olursa cihazı geri yüklemek için fabrika ayarlarına sıfırlamanız gerekir.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Uygulama Uyumluluğuyla İlgili Değişiklikler"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Uygulama uyumluluk değişikliklerini aç/kapat"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Varsayılan olarak etkin değişiklikler"</string>
+diff --git a/packages/apps/Settings/res/values-uk/strings.xml b/packages/apps/Settings/res/values-uk/strings.xml
+index 8714375..c9567a1 100644
+--- a/packages/apps/Settings/res/values-uk/strings.xml
++++ b/packages/apps/Settings/res/values-uk/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Експериментальна функція: увімкнути ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Попередження. ANGLE буде ввімкнено як драйвер OpenGL ES за умовчанням. Це експериментальна функція. Вона може бути несумісна з деякими додатками для камери й відео."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Щоб змінити системний драйвер OpenGL ES, перезапустіть пристрій"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Попередження. ANGLE буде ввімкнено як драйвер OpenGL ES за умовчанням. Це експериментальна функція. Вона може бути несумісна з деякими додатками для камери й відео. Перш ніж увімкнути перемикач, створіть резервну копію даних на пристрої.</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Щоб змінити системний драйвер OpenGL ES, перезапустіть пристрій. Перш ніж зробити це, створіть резервну копію даних на пристрої. Якщо пристрій не вдасться перезапустити, скиньте його налаштування, щоб відновити дані на пристрої.</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Зміни сумісності додатка"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Увімкнути або вимкнути зміни сумісності додатка"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Зміни, увімкнені за умовчанням"</string>
+diff --git a/packages/apps/Settings/res/values-ur/strings.xml b/packages/apps/Settings/res/values-ur/strings.xml
+index 9b8debf..ad02ba6 100644
+--- a/packages/apps/Settings/res/values-ur/strings.xml
++++ b/packages/apps/Settings/res/values-ur/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"‏تجرباتی: ANGLE کو فعال کریں"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"‏وارننگ: ANGLE کو ڈیفالٹ OpenGL ES ڈرائیور کے طور پر فعال کریں۔ یہ خصوصیت تجربہ میں ہے اور ہو سکتا ہے کہ کیمرا اور ویڈیو کی کچھ ایپس کے ساتھ موافق نہ ہو۔"</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"‏سسٹم OpenGL ES ڈرائیور تبدیل کرنے کے لیے ریبوٹ کی ضرورت ہے"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">‏وارننگ: ANGLE کو ڈیفالٹ OpenGL ES ڈرائیور کے طور پر فعال کریں۔ یہ خصوصیت تجربہ میں ہے اور ہو سکتا ہے کہ کیمرا اور ویڈیو کی کچھ ایپس کے ساتھ موافق نہ ہو۔ سوئچ آن کرنے سے پہلے براہ کرم اپنے آلہ پر موجود ڈیٹا کا بیک اپ لیں</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">‏سسٹم OpenGL ES ڈرائیور تبدیل کرنے کے لیے ریبوٹ کی ضرورت ہے۔ براہ کرم ریبوٹ کرنے سے پہلے اپنے آلہ پر موجود ڈیٹا کا بیک اپ لیں۔ اگر ریبوٹ ناکام ہو جاتا ہے تو آپ کو آلہ کو بحال کرنے کے لیے فیکٹری ری سیٹ کی ضرورت ہے</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"ایپ کی موافقت میں تبدیلیاں"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"ایپ کی موافقت کی تبدیلیاں ٹوگل کریں"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"فعال کردہ ڈیفالٹ تبدیلیاں"</string>
+diff --git a/packages/apps/Settings/res/values-uz/strings.xml b/packages/apps/Settings/res/values-uz/strings.xml
+index 5fe576f..fdd334e 100644
+--- a/packages/apps/Settings/res/values-uz/strings.xml
++++ b/packages/apps/Settings/res/values-uz/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Tajribaviy: ANGLE tizimini yoqish"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Diqqat: ANGLE tizimini OpenGL ES drayveri sifatida yoqish. Bu tajribaviy funksiya va ayrim kamera va video ilovalar bilan ishlamasligi mumkin."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Tizim OpenGL ES drayveri oʻzgarishi uchun qayta ishga tushirish zarur"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Diqqat: ANGLE tizimini OpenGL ES drayveri sifatida yoqish. Bu tajribaviy funksiya va ayrim kamera va video ilovalar bilan ishlamasligi mumkin. Kalitni yoqishdan oldin qurilmadagi maʼlumotlarni zaxiralashni unutmang</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Tizim OpenGL ES drayveri oʻzgarishi uchun qayta ishga tushirish zarur. Qayta yoqishdan oldin qurilmadagi maʼlumotlarni zaxiralang. Qayta yoqish amalga oshmasa, qurilmani tiklash uchun zavod sozlamalariga qaytarish kerak</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Ilovalar mosligi sozlamalaridagi oʻzgarishlar"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Ilova mosligiga oʻzgartirishlarni koʻrsatish"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Standart yoniq oʻzgartirishlar"</string>
+diff --git a/packages/apps/Settings/res/values-vi/strings.xml b/packages/apps/Settings/res/values-vi/strings.xml
+index ec9b810..d4d72e4 100644
+--- a/packages/apps/Settings/res/values-vi/strings.xml
++++ b/packages/apps/Settings/res/values-vi/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Thử nghiệm: Bật ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Cảnh báo: Hãy bật ANGLE làm trình điều khiển OpenGL ES mặc định. Tính năng này đang được thử nghiệm và có thể không tương thích với một số ứng dụng camera và video."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Cần phải khởi động lại để thay đổi trình điều khiển hệ thống OpenGL ES"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Cảnh báo: Hãy bật ANGLE làm trình điều khiển OpenGL ES mặc định. Tính năng này đang được thử nghiệm và có thể không tương thích với một số ứng dụng camera cũng như ứng dụng video. Vui lòng sao lưu dữ liệu trên thiết bị của bạn trước khi bật nút chuyển</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Cần phải khởi động lại để thay đổi trình điều khiển OpenGL ES của hệ thống. Vui lòng sao lưu dữ liệu trên thiết bị của bạn trước khi khởi động lại. Trong trường hợp không khởi động lại được, bạn cần đặt lại thiết bị về trạng thái ban đầu để khôi phục thiết bị</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Các thay đổi về khả năng tương thích của ứng dụng"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Bật/tắt các thay đổi về khả năng tương thích của ứng dụng"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Các thay đổi được bật theo mặc định"</string>
+diff --git a/packages/apps/Settings/res/values-zh-rCN/strings.xml b/packages/apps/Settings/res/values-zh-rCN/strings.xml
+index 33131a8..74b961b 100644
+--- a/packages/apps/Settings/res/values-zh-rCN/strings.xml
++++ b/packages/apps/Settings/res/values-zh-rCN/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"实验功能：启用 ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"警告：您可以启用 ANGLE 作为默认 OpenGL ES 驱动程序，但此功能目前处于实验阶段，可能与某些相机和视频应用不兼容。"</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"必须重新启动，才能更改系统 OpenGL ES 驱动程序"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">警告：启用 ANGLE 作为默认 OpenGL ES 驱动程序。此功能目前处于实验阶段，可能与某些相机和视频应用不兼容。请在开启开关前备份设备数据</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">必须重启，才能更改系统 OpenGL ES 驱动程序。请在重启设备之前备份设备数据。如果重启失败，您需要将设备恢复出厂设置，才能恢复设备</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"应用兼容性变更"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"在不同的应用兼容性设置之间切换"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"默认启用的应用兼容性变更"</string>
+diff --git a/packages/apps/Settings/res/values-zh-rHK/strings.xml b/packages/apps/Settings/res/values-zh-rHK/strings.xml
+index fbc3520..0405209 100644
+--- a/packages/apps/Settings/res/values-zh-rHK/strings.xml
++++ b/packages/apps/Settings/res/values-zh-rHK/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"實驗功能：啟用 ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"警告：啟用 ANGLE 作為預設 OpenGL ES 驅動程式。此功能目前處於實驗階段，可能與部分相機和影片應用程式不兼容。"</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"你需要重新開機，才能變更 OpenGL ES 驅動程式"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">警告：啟用 ANGLE 作為預設 OpenGL ES 驅動程式。此功能目前處於實驗階段，可能與部分相機和影片應用程式不兼容。請在開啟開關前備份裝置資料</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">你需要重新開機，才能變更 OpenGL ES 驅動程式。請在重新開機前備份裝置資料。如果無法重新開機，你需要將裝置回復原廠設定才能還原</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"應用程式兼容性變更"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"切換應用程式兼容性變更"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"預設為啟用的變更"</string>
+diff --git a/packages/apps/Settings/res/values-zh-rTW/strings.xml b/packages/apps/Settings/res/values-zh-rTW/strings.xml
+index 098e327..32943f5 100644
+--- a/packages/apps/Settings/res/values-zh-rTW/strings.xml
++++ b/packages/apps/Settings/res/values-zh-rTW/strings.xml
+@@ -5082,8 +5082,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"實驗功能：啟用 ANGLE"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"警告：啟用 ANGLE 做為預設 OpenGL ES 驅動程式時，請特別注意。這項功能目前處於實驗階段，可能與某些相機和視訊應用程式不相容。"</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"需要重新啟動才能變更系統 OpenGL ES 驅動程式"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">警告：啟用 ANGLE 做為預設 OpenGL ES 驅動程式時，請特別注意。這項功能目前處於實驗階段，可能與某些相機和影片應用程式不相容。請先備份裝置資料，再開啟切換鈕</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">必須重新啟動，才能變更系統 OpenGL ES 驅動程式。請先備份裝置資料，再重新啟動。如果無法重新啟動，請將裝置恢復原廠設定</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"應用程式相容性變更"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"切換應用程式相容性變更"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"預設啟用的應用程式有相容性異動"</string>
+diff --git a/packages/apps/Settings/res/values-zu/strings.xml b/packages/apps/Settings/res/values-zu/strings.xml
+index 769762a..f92ddee 100644
+--- a/packages/apps/Settings/res/values-zu/strings.xml
++++ b/packages/apps/Settings/res/values-zu/strings.xml
+@@ -5085,8 +5085,8 @@
+     <!-- no translation found for graphics_driver_app_preference_values:2 (5391218026495225599) -->
+     <!-- no translation found for graphics_driver_app_preference_values:3 (2586045835780389650) -->
+     <string name="enable_angle_as_system_driver" msgid="4648827560023949786">"Ukuhlola: Nika amandla I-ENGELI"</string>
+-    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">"Nika amandla I-ENGELI njengesishayeli sesistimu ye-OpenGL ES. Lesi sakhi ngesesilingo futhi asikwazi ukusebenzisana namanye ama-app wekhamera nevidiyo."</string>
+-    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">"Ukuqalisa kabusha kuyadingeka ukuze ushintshe umshayeli wesistimu we-OpenGL ES"</string>
++    <string name="enable_angle_as_system_driver_summary" msgid="2170215556348477481">Isexwayiso: Gunyaza i-ENGELI njengesishayeli se-OpenGL ES ezenzakalelayo. Lesi sakhi ngesokuhlola futhi kungenzeka singakwazi ukuhambelana namanye ama-app ekhamera nevidiyo. Sicela wenze isipele sedatha yedivayisi yakho ngaphambi kokuvula okokushintsha</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver" msgid="2619263039763150810">Ukuqalisa kabusha kuyadingeka ukuze kushintshwe isishayeli se-OpenGL ES. Sicela wenze isipele sedatha yedivayisi yakho ngaphambi kokuqalisa kabusha. Uma kwenzeka ukuqalisa kabusha kwehluleka, udinga ukusetha kabusha njengasekuqaleni ukuze ubuyisele idivayisi</string>
+     <string name="platform_compat_dashboard_title" msgid="1323980546791790236">"Ushintsho lokuhambisana kwe-app"</string>
+     <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Guqula ushintsho lokuhambisana kohlelo lokusebenza"</string>
+     <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Ushintsho olunikwe amandla oluzenzakalelayo"</string>
+diff --git a/packages/apps/Settings/res/values/strings.xml b/packages/apps/Settings/res/values/strings.xml
+index 1d76e61..3a628dc 100644
+--- a/packages/apps/Settings/res/values/strings.xml
++++ b/packages/apps/Settings/res/values/strings.xml
+@@ -12759,9 +12759,9 @@
+     <!-- Debugging developer settings: enable angle as system driver? [CHAR LIMIT=50] -->
+     <string name="enable_angle_as_system_driver">Experimental: Enable ANGLE</string>
+     <!-- Debugging developer settings: enable angle as system driver summary [CHAR LIMIT=NONE] -->
+-    <string name="enable_angle_as_system_driver_summary">Warning: Enable ANGLE as default OpenGL ES driver. This feature is in experiment and may not be compatible with some camera and video apps.</string>
++    <string name="enable_angle_as_system_driver_summary">Warning: Enable ANGLE as default OpenGL ES driver. This feature is in experiment and may not be compatible with some camera and video apps. Please backup your device data before turning on the switch</string>
+     <!--Dialog body text used to explain a reboot is required after changing ANGLE as system GLES driver setting-->
+-    <string name="reboot_dialog_enable_angle_as_system_driver">A reboot is required to change the system OpenGL ES driver</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver">A reboot is required to change the system OpenGL ES driver. Please back up your device data before rebooting. In case the reboot failed, you need a factory reset to restore the device</string>
+ 
+     <!-- Title for App Compatibility Changes dashboard where developers can configure per-app overrides for compatibility changes [CHAR LIMIT=50] -->
+     <string name="platform_compat_dashboard_title">App Compatibility Changes</string>
+diff --git a/packages/apps/Settings/src/com/android/settings/nfc/DefaultPaymentSettings.java b/packages/apps/Settings/src/com/android/settings/nfc/DefaultPaymentSettings.java
+index 440f09e..b5057ed 100644
+--- a/packages/apps/Settings/src/com/android/settings/nfc/DefaultPaymentSettings.java
++++ b/packages/apps/Settings/src/com/android/settings/nfc/DefaultPaymentSettings.java
+@@ -156,7 +156,7 @@ public class DefaultPaymentSettings extends DefaultAppPickerFragment {
+             CharSequence label;
+             label = appInfo.label;
+             candidates.add(new NfcPaymentCandidateInfo(
+-                    appInfo.componentName.flattenToString(),
++                    appInfo.getKey(),
+                     label,
+                     appInfo.icon,
+                     appInfo.userHandle.getIdentifier(),
+@@ -196,7 +196,7 @@ public class DefaultPaymentSettings extends DefaultAppPickerFragment {
+ 
+         @Override
+         public String getKey() {
+-            return mKey + " " + mUserId;
++            return mKey;
+         }
+ 
+         public boolean isManagedProfile() {
+diff --git a/packages/apps/Settings/src/com/android/settings/nfc/SecureNfcEnabler.java b/packages/apps/Settings/src/com/android/settings/nfc/SecureNfcEnabler.java
+index b02c902..7d0c972 100644
+--- a/packages/apps/Settings/src/com/android/settings/nfc/SecureNfcEnabler.java
++++ b/packages/apps/Settings/src/com/android/settings/nfc/SecureNfcEnabler.java
+@@ -59,9 +59,8 @@ public class SecureNfcEnabler extends BaseNfcEnabler {
+                 break;
+         }
+     }
+-
+     private boolean isToggleable() {
+-        if (!mUserManager.isPrimaryUser()) {
++        if (mUserManager.isGuestUser()) {
+             return false;
+         }
+         return true;
+diff --git a/packages/apps/Settings/src/com/android/settings/nfc/SecureNfcPreferenceController.java b/packages/apps/Settings/src/com/android/settings/nfc/SecureNfcPreferenceController.java
+index 03eed68..d9f5f28 100644
+--- a/packages/apps/Settings/src/com/android/settings/nfc/SecureNfcPreferenceController.java
++++ b/packages/apps/Settings/src/com/android/settings/nfc/SecureNfcPreferenceController.java
+@@ -107,9 +107,8 @@ public class SecureNfcPreferenceController extends TogglePreferenceController
+             mSecureNfcEnabler.pause();
+         }
+     }
+-
+     private boolean isToggleable() {
+-        if (!mUserManager.isPrimaryUser()) {
++        if (mUserManager.isGuestUser()) {
+             return false;
+         }
+         return true;
+
 project packages/modules/Bluetooth/
 diff --git a/packages/modules/Bluetooth/android/app/src/com/android/bluetooth/btservice/AdapterService.java b/packages/modules/Bluetooth/android/app/src/com/android/bluetooth/btservice/AdapterService.java
 index 721d514..aefb849 100644
@@ -1205,4 +2535,3 @@ index 43e8c84..ef0d6e0 100644
          enforceModifyPermission();
  
          enforceTelephonyFeatureWithException(getCurrentPackageName(),
-
