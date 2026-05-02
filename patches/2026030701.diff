@@ -103,14 +103,16 @@ index 6351c0e63..f4f166238 100644
                  || size.getHeight() > DEFAULT_DECODE_HARD_LIMIT_PX) {
              // The image is larger than what we can reasonably expect to decode without filling up
 diff --git a/frameworks/base/core/res/res/values/arrays.xml b/frameworks/base/core/res/res/values/arrays.xml
-index 655c4637b..ae13341c5 100644
+index 655c4637b..fc52ddeb7 100644
 --- a/frameworks/base/core/res/res/values/arrays.xml
 +++ b/frameworks/base/core/res/res/values/arrays.xml
-@@ -268,4 +268,10 @@
+@@ -268,4 +268,12 @@
          <item>60%</item>
          <item>50%</item>
      </string-array>
 +
++    <!-- dummy
++     comment -->
 +     <string-array name="application_hidden_policy_exempt_apps">
 +        <item>com.android.nfc</item>
 +        <item>com.android.settings</item>
