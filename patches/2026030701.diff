@@ -1,5 +1,39 @@
 
 project external/dng_sdk/
+diff --git a/external/dng_sdk/Android.bp b/external/dng_sdk/Android.bp
+index 4aa330e..0899f49 100644
+--- a/external/dng_sdk/Android.bp
++++ b/external/dng_sdk/Android.bp
+@@ -104,7 +104,19 @@ cc_library {
+     sdk_version: "current",
+     defaults: ["libdng_sdk-defaults"],
+ 
+-    cflags: ["-DqDNGValidate=0"],
++    sanitize: {
++        // For now we want to disable the ubsan_minimal runtime so that we can
++        // inject our own that converts ubsan errors into C++ exceptions.
++        // Soong doesn't have a flag for that specifically, but setting
++        // 'never' in combination with `-fsanitize=` cflags works for
++        never: true,
++    },
++
++    cflags: [
++        "-DqDNGValidate=0",
++        "-fsanitize=signed-integer-overflow,unsigned-integer-overflow",
++        "-fno-sanitize-link-runtime",
++    ],
+ 
+     shared_libs: [
+         "libz",
+@@ -207,6 +219,8 @@ cc_library {
+         "source/dng_xmp.cpp",
+         "source/dng_xmp_sdk.cpp",
+         "source/dng_xy_coord.cpp",
++
++        "ubsan-replacement/ubsan_throwing_runtime.cpp"
+     ],
+ 
+     target: {
 diff --git a/external/dng_sdk/source/dng_misc_opcodes.cpp b/external/dng_sdk/source/dng_misc_opcodes.cpp
 index 38ee103..49e63a8 100644
 --- a/external/dng_sdk/source/dng_misc_opcodes.cpp
@@ -35,6 +69,39 @@ index 38ee103..49e63a8 100644
  			
  			DoMapArea16 (buffer.DirtyPixel_uint16 (overlap.t, overlap.l, plane),
  						 1,
+diff --git a/external/dng_sdk/ubsan-replacement/ubsan_throwing_runtime.cpp b/external/dng_sdk/ubsan-replacement/ubsan_throwing_runtime.cpp
+new file mode 100644
+index 0000000..aeaad0c
+--- /dev/null
++++ b/external/dng_sdk/ubsan-replacement/ubsan_throwing_runtime.cpp
+@@ -0,0 +1,27 @@
++/*
++ * Copyright (C) 2026 The Android Open Source Project
++ */
++
++#include <stdexcept>
++
++#define INTERFACE extern "C" __attribute__((visibility("hidden")))
++
++INTERFACE void __ubsan_handle_add_overflow() {
++    throw std::runtime_error("ubsan: add-overflow");
++}
++
++INTERFACE void __ubsan_handle_sub_overflow() {
++    throw std::runtime_error("ubsan: sub-overflow");
++}
++
++INTERFACE void __ubsan_handle_mul_overflow() {
++    throw std::runtime_error("ubsan: mul-overflow");
++}
++
++INTERFACE void __ubsan_handle_negate_overflow() {
++    throw std::runtime_error("ubsan: negate-overflow");
++}
++
++INTERFACE void __ubsan_handle_divrem_overflow() {
++    throw std::runtime_error("ubsan: divrem-overflow");
++}
 
 project frameworks/base/
 diff --git a/frameworks/base/core/java/com/android/internal/widget/LocalImageResolver.java b/frameworks/base/core/java/com/android/internal/widget/LocalImageResolver.java
@@ -2372,7 +2439,7 @@ index 3a95329..2f2aeb8 100644
 
 project packages/modules/adb/
 diff --git a/packages/modules/adb/daemon/auth.cpp b/packages/modules/adb/daemon/auth.cpp
-index c59d044..dce690d 100644
+index c59d0445..dce690d9 100644
 --- a/packages/modules/adb/daemon/auth.cpp
 +++ b/packages/modules/adb/daemon/auth.cpp
 @@ -362,12 +362,14 @@ int adbd_tls_verify_cert(X509_STORE_CTX* ctx, std::string* auth_key) {
@@ -2513,3 +2580,4 @@ index 43e8c84..ef0d6e0 100644
          enforceModifyPermission();
  
          enforceTelephonyFeatureWithException(getCurrentPackageName(),
+
