@@ -34,8 +34,246 @@ index 4aa330e..0899f49 100644
      ],
  
      target: {
+diff --git a/external/dng_sdk/source/dng_flags.h b/external/dng_sdk/source/dng_flags.h
+index ea34e18..77576a5 100644
+--- a/external/dng_sdk/source/dng_flags.h
++++ b/external/dng_sdk/source/dng_flags.h
+@@ -27,8 +27,8 @@
+ 
+ #define kDNGSDK_VersionString "1.7.1"
+ 
+-#define kDNGSDK_BuildVersion 2410
+-#define kDNGSDK_BuildString  "2410"
++#define kDNGSDK_BuildVersion 2471
++#define kDNGSDK_BuildString  "2471"
+ 
+ #define kDNGSDK_GetInfoVersion	"1.7.1 (" kDNGSDK_BuildString ")"
+ 
+diff --git a/external/dng_sdk/source/dng_gain_map.cpp b/external/dng_sdk/source/dng_gain_map.cpp
+index 6295584..799ba02 100644
+--- a/external/dng_sdk/source/dng_gain_map.cpp
++++ b/external/dng_sdk/source/dng_gain_map.cpp
+@@ -1323,7 +1323,7 @@ void dng_opcode_GainMap::ProcessArea (dng_negative &negative,
+ 			
+ 			blackOffset2 = ((real32) blackLevel) / 65535.0f;
+ 			blackScale2	 = 1.0f - blackOffset2;
+-			blackScale1	 = 1.0f / blackScale2;
++			blackScale1	 = (blackScale2 != 0.0) ? 1.0f / blackScale2 : 0.0;
+ 			blackOffset1 = 1.0f - blackScale1;
+ 			
+ 			}
+diff --git a/external/dng_sdk/source/dng_jxl.cpp b/external/dng_sdk/source/dng_jxl.cpp
+index efba363..82338e9 100644
+--- a/external/dng_sdk/source/dng_jxl.cpp
++++ b/external/dng_sdk/source/dng_jxl.cpp
+@@ -78,7 +78,23 @@ class jxl_memory_block
+ 
+ 				// See dng_memory_block::PhysicalSize.
+ 
+-				fPhysicalBuffer = allocator.Malloc (160u + bytesNeeded);
++				size_t mallocSize = (size_t) (160u + bytesNeeded);
++
++				if (mallocSize <= bytesNeeded)
++					{
++
++					ThrowOverflow ();
++
++					}
++
++				fPhysicalBuffer = allocator.Malloc (mallocSize);
++
++				if (!fPhysicalBuffer)
++					{
++
++					ThrowMemoryFull ();
++
++					}
+ 
+ 				fLogicalBuffer = (void *) DNG_ALIGN_SIMD (fPhysicalBuffer);
+ 
+@@ -905,29 +921,42 @@ class jxl_image_chunk_reader
+ 
+ 			#if qLogStreamIntput
+ 
+-			printf ("input: get_color_channel_data_at (x=%d, y=%d, w=%d, h=%d)\n",
+-					int (xpos),
+-					int (ypos),
+-					int (xsize),
+-					int (ysize));
++			printf ("input: get_color_channel_data_at (x=%zu, y=%zu, w=%zu, h=%zu)\n",
++					xpos,
++					ypos,
++					xsize,
++					ysize);
+ 
+ 			#endif
+-			
++
++			if (xpos  > 0x7fffffff ||
++				ypos  > 0x7fffffff ||
++				xsize > 0x7fffffff ||
++				ysize > 0x7fffffff)
++				{
++
++				ThrowOverflow ("coordinate too large");
++
++				}
++
+ 			dng_pixel_buffer buffer;
+ 
+ 			buffer.fArea.t = int32 (ypos);
+ 			buffer.fArea.l = int32 (xpos);
+-			buffer.fArea.b = int32 (ypos + ysize);
+-			buffer.fArea.r = int32 (xpos + xsize);
++			buffer.fArea.b = SafeInt32Add (int32 (ypos), int32 (ysize));
++			buffer.fArea.r = SafeInt32Add (int32 (xpos), int32 (xsize));
+ 
+ 			buffer.fPlanes = fImage.Planes ();
+ 
+ 			// Assume row-col-plane interleaved.
+-			
++
++			DNG_REQUIRE (buffer.fPlanes    <= 0x7fffffff, "planes too large");
++			DNG_REQUIRE (buffer.fArea.W () <= 0x7fffffff, "buffer too wide");
++
+ 			buffer.fPlaneStep = 1;
+ 			buffer.fColStep	  = buffer.fPlanes;
+-			buffer.fRowStep	  = SafeUint32Mult (buffer.fPlanes,
+-												buffer.fArea.W ());
++			buffer.fRowStep	  = SafeInt32Mult (buffer.fPlanes,
++											   buffer.fArea.W ());
+ 
+ 			buffer.fPixelType = fImage.PixelType ();
+ 			buffer.fPixelSize = TagTypeSize (buffer.fPixelType);
+@@ -1092,27 +1121,40 @@ class jxl_buffer_chunk_reader
+ 
+ 			#if qLogStreamIntput
+ 
+-			printf ("input: get_color_channel_data_at (x=%d, y=%d, w=%d, h=%d)\n",
+-					int (xpos),
+-					int (ypos),
+-					int (xsize),
+-					int (ysize));
++			printf ("input: get_color_channel_data_at (x=%zu, y=%zu, w=%zu, h=%zu)\n",
++					xpos,
++					ypos,
++					xsize,
++					ysize);
+ 
+ 			#endif
++
++			if (xpos  > 0x7fffffff ||
++				ypos  > 0x7fffffff ||
++				xsize > 0x7fffffff ||
++				ysize > 0x7fffffff)
++				{
++
++				ThrowOverflow ("coordinate too large");
++
++				}
+ 			
+ 			dng_pixel_buffer buffer = fBuffer;
+ 
+-			buffer.fArea.t = int32 (ypos) + fBuffer.fArea.t;
+-			buffer.fArea.l = int32 (xpos) + fBuffer.fArea.l;
+-			buffer.fArea.b = buffer.fArea.t + int32 (ysize);
+-			buffer.fArea.r = buffer.fArea.l + int32 (xsize);
++			buffer.fArea.t = SafeInt32Add (int32 (ypos),   fBuffer.fArea.t);
++			buffer.fArea.l = SafeInt32Add (int32 (xpos),   fBuffer.fArea.l);
++			buffer.fArea.b = SafeInt32Add (buffer.fArea.t, int32 (ysize));
++			buffer.fArea.r = SafeInt32Add (buffer.fArea.l, int32 (xsize));
+ 
+ 			// Assume row-col-plane interleaved.
+-			
++
++			DNG_REQUIRE (buffer.fPlanes    <= 0x7fffffff, "planes too large");
++			DNG_REQUIRE (buffer.fArea.W () <= 0x7fffffff, "buffer too wide");
++
+ 			buffer.fPlaneStep = 1;
+ 			buffer.fColStep	  = buffer.fPlanes;
+-			buffer.fRowStep	  = SafeUint32Mult (buffer.fPlanes,
+-												buffer.fArea.W ());
++			buffer.fRowStep	  = SafeInt32Mult (buffer.fPlanes,
++											   buffer.fArea.W ());
+ 
+ 			const uint32 bytesNeeded = SafeUint32Mult (buffer.fRowStep,
+ 													   buffer.fArea.H (),
+@@ -1955,16 +1997,20 @@ static JxlEncoderPtr EncodeJXL_Common (dng_host &host,
+ 
+ 	previewPixelBuffer.fPlanes = planes;
+ 
++	DNG_REQUIRE (previewPixelBuffer.fArea.W () <= 0x7fffffff,
++				 "fArea.W too large");
++
+ 	previewPixelBuffer.fPlaneStep = 1;
+ 	previewPixelBuffer.fColStep   = (int32) planes;
+-	previewPixelBuffer.fRowStep   = (int32) planes * (int32) previewPixelBuffer.fArea.W ();
++	previewPixelBuffer.fRowStep   = SafeInt32Mult ((int32) planes,
++												   (int32) previewPixelBuffer.fArea.W ());
+ 
+ 	previewPixelBuffer.fPixelType = srcPixelType;
+ 	previewPixelBuffer.fPixelSize = TagTypeSize (previewPixelBuffer.fPixelType);
+ 
+-	uint32 previewBytesNeeded = (previewPixelBuffer.fRowStep *
+-								 previewPixelBuffer.fArea.H () *
+-								 previewPixelBuffer.fPixelSize); 
++	uint32 previewBytesNeeded = SafeUint32Mult (previewPixelBuffer.fRowStep,
++												previewPixelBuffer.fArea.H (),
++												previewPixelBuffer.fPixelSize);
+ 
+ 	AutoPtr<dng_memory_block> previewBlock (host.Allocate (previewBytesNeeded));
+ 
+@@ -3288,6 +3334,10 @@ void dng_jxl_decoder::Decode (dng_host &host,
+ 
+ 			dng_point size;
+ 
++			DNG_REQUIRE (basicInfo.xsize <= 0x7fffffff &&
++						 basicInfo.ysize <= 0x7fffffff,
++						 "Image size exceeds supported size.");
++
+ 			size.h = basicInfo.xsize;
+ 			size.v = basicInfo.ysize;
+ 
+@@ -3301,7 +3351,8 @@ void dng_jxl_decoder::Decode (dng_host &host,
+ 			  
+ 			buffer.fPlaneStep = 1;
+ 			buffer.fColStep	  = totalPlanes;
+-			buffer.fRowStep	  = buffer.fColStep * size.h;
++			buffer.fRowStep	  = SafeInt32Mult (buffer.fColStep,
++											   size.h);
+ 
+ 			buffer.fPixelType = pixelType;
+ 			buffer.fPixelSize = TagTypeSize (buffer.fPixelType);
+@@ -3340,11 +3391,13 @@ void dng_jxl_decoder::Decode (dng_host &host,
+ 
+ 			wholeBuffer.fColStep   = 1;
+ 			wholeBuffer.fPlaneStep = size.h;
+-			wholeBuffer.fRowStep   = wholeBuffer.fPlaneStep * totalPlanes;
++			wholeBuffer.fRowStep   = SafeInt32Mult (wholeBuffer.fPlaneStep,
++													totalPlanes);
+ 
+-			const uint64 bytesNeeded = (uint64 (wholeBuffer.fRowStep) *
+-										uint64 (wholeBuffer.fArea.H ()) *
+-										uint64 (wholeBuffer.fPixelSize));
++			const uint64 bytesNeeded =
++				(uint64) SafeInt64Mult (int64 (wholeBuffer.fRowStep),
++										int64 (wholeBuffer.fArea.H ()),
++										int64 (wholeBuffer.fPixelSize));
+ 
+ 			cbData.fBlock.Reset (new jxl_memory_block (host.Allocator (),
+ 													   bytesNeeded));
+@@ -3374,6 +3427,9 @@ void dng_jxl_decoder::Decode (dng_host &host,
+ 						 "JxlDecoderImageOutBufferSize",
+ 						 &parallelData);
+ 
++			DNG_REQUIRE (size <= 0xffffffff,
++						 "JxlDecoderImageOutBufferSize too large");
++
+ 			block.Reset (host.Allocate ((uint32) size));
+ 
+ 			CheckResult (JxlDecoderSetImageOutBuffer (dec,
 diff --git a/external/dng_sdk/source/dng_misc_opcodes.cpp b/external/dng_sdk/source/dng_misc_opcodes.cpp
-index 38ee103..49e63a8 100644
+index 38ee103..5e52388 100644
 --- a/external/dng_sdk/source/dng_misc_opcodes.cpp
 +++ b/external/dng_sdk/source/dng_misc_opcodes.cpp
 @@ -254,6 +254,7 @@ dng_rect dng_area_spec::Overlap (const dng_rect &tile) const
@@ -46,6 +284,24 @@ index 38ee103..49e63a8 100644
  dng_rect dng_area_spec::ScaledOverlap (const dng_rect &tile) const
  	{
  	
+@@ -440,7 +441,7 @@ void dng_opcode_MapTable::ReplicateLastEntry ()
+ 	
+ 	uint16 *table = fTable->Buffer_uint16 ();
+ 		
+-	uint16 lastEntry = table [fCount];
++	uint16 lastEntry = table [fCount - 1];
+ 	
+ 	for (uint32 index = fCount; index < 0x10000; index++)
+ 		{
+@@ -511,7 +512,7 @@ void dng_opcode_MapTable::Prepare (dng_negative &negative,
+ 		
+ 		uint16 *dstTable = fBlackAdjustedTable->Buffer_uint16 ();
+ 		
+-		real64 srcScale = 65535.0 / (65535.0 - blackLevel);
++		real64 srcScale = (blackLevel < 65535) ? 65535.0 / (65535.0 - blackLevel) : 0.0;
+ 		
+ 		real64 dstScale = (65535.0 - blackLevel) / 65535.0;
+ 		
 @@ -560,12 +561,17 @@ void dng_opcode_MapTable::ProcessArea (dng_negative & /* negative */,
    
  		const uint16 *table = fBlackAdjustedTable.Get () ? fBlackAdjustedTable->Buffer_uint16 ()
@@ -69,6 +325,113 @@ index 38ee103..49e63a8 100644
  			
  			DoMapArea16 (buffer.DirtyPixel_uint16 (overlap.t, overlap.l, plane),
  						 1,
+diff --git a/external/dng_sdk/source/dng_ref_counted_block.cpp b/external/dng_sdk/source/dng_ref_counted_block.cpp
+index 951a6ee..32be356 100644
+--- a/external/dng_sdk/source/dng_ref_counted_block.cpp
++++ b/external/dng_sdk/source/dng_ref_counted_block.cpp
+@@ -52,8 +52,17 @@ void dng_ref_counted_block::Allocate (uint32 size)
+ 	
+ 	if (size)
+ 		{
+-		
+-		fBuffer = malloc (size + sizeof (header));
++
++		size_t mallocSize = size + sizeof (header);
++
++		if (mallocSize <= size)
++			{
++
++			ThrowOverflow ();
++
++			}
++
++		fBuffer = malloc (mallocSize);
+ 		
+ 		if (!fBuffer)
+ 			{
+diff --git a/external/dng_sdk/source/dng_reference.cpp b/external/dng_sdk/source/dng_reference.cpp
+index 6dcff9f..c93d2ca 100644
+--- a/external/dng_sdk/source/dng_reference.cpp
++++ b/external/dng_sdk/source/dng_reference.cpp
+@@ -2593,7 +2593,7 @@ void RefVignette32 (real32 *sPtr,
+ 		
+ 		blackOffset2 = ((real32) blackLevel) / 65535.0f;
+ 		blackScale2	 = 1.0f - blackOffset2;
+-		blackScale1	 = 1.0f / blackScale2;
++		blackScale1	 = (blackScale2 != 0.0) ? 1.0f / blackScale2 : 0.0;
+ 		blackOffset1 = 1.0f - blackScale1;
+  
+ 		for (uint32 plane = 0; plane < planes; plane++)
+@@ -3009,7 +3009,7 @@ void RefBaselineMapPoly32 (real32 *dPtr,
+ 		
+ 		blackOffset2 = ((real32) blackLevel) / 65535.0f;
+ 		blackScale2	 = 1.0f - blackOffset2;
+-		blackScale1	 = 1.0f / blackScale2;
++		blackScale1	 = (blackScale2 != 0.0) ? 1.0f / blackScale2 : 0.0;
+ 		blackOffset1 = 1.0f - blackScale1;
+ 		
+ 		}
+diff --git a/external/dng_sdk/source/dng_safe_arithmetic.cpp b/external/dng_sdk/source/dng_safe_arithmetic.cpp
+index 6f50aaf..b253742 100644
+--- a/external/dng_sdk/source/dng_safe_arithmetic.cpp
++++ b/external/dng_sdk/source/dng_safe_arithmetic.cpp
+@@ -245,6 +245,10 @@ int64 SafeInt64MultSlow(int64 arg1, int64 arg2) {
+ 
+ }  // namespace dng_internal
+ 
++int64 SafeInt64Mult(int64 arg1, int64 arg2, int64 arg3) {
++	return SafeInt64Mult (SafeInt64Mult (arg1, arg2), arg3);
++}
++
+ uint32 SafeUint32DivideUp(uint32 arg1, uint32 arg2) {
+ 	// It might seem more intuitive to implement this function simply as
+ 	//
+diff --git a/external/dng_sdk/source/dng_safe_arithmetic.h b/external/dng_sdk/source/dng_safe_arithmetic.h
+index 9e4ad1b..064c767 100644
+--- a/external/dng_sdk/source/dng_safe_arithmetic.h
++++ b/external/dng_sdk/source/dng_safe_arithmetic.h
+@@ -120,17 +120,7 @@ int64 SafeInt64MultSlow(int64 arg1, int64 arg2);
+ 
+ #if !qWinOS
+ #ifdef __clang__
+-#ifdef __ANDROID__
+-// While clang says it supports __builtin_smull_overflow, the Android NDK
+-// doesn't use the right runtime library per https://bugs.llvm.org/show_bug.cgi?id=28629
+-// Disable the __builtin_smull_overflow for now until we verify that it works fine for android.
+-// Currently we use it on other platforms like macOS, iOS and Linux so we should be good. We will
+-// revisit this when LrM android team has bandwidth to test it.
+-// krishnas - 11/9/2025
+-#define __USE_BUILTIN_SMULL_OVERFLOW (0 && __has_builtin(__builtin_smull_overflow))
+-#else
+ #define __USE_BUILTIN_SMULL_OVERFLOW __has_builtin(__builtin_smull_overflow)
+-#endif // __ANDROID__
+ #endif // __clang__
+ #endif // !qWinOS
+ 
+@@ -204,6 +194,11 @@ inline int64 SafeInt64Mult(int64 arg1, int64 arg2) {
+ #endif
+ }
+ 
++// Returns the result of multiplying arg1, ..., argn if it will fit in a
++// int64_t (without wraparound). Otherwise, throws a dng_exception with error
++// code dng_error_unknown.
++int64 SafeInt64Mult(int64 arg1, int64 arg2, int64 arg3);
++
+ // Returns the result of dividing arg1 by arg2; if the result is not an integer,
+ // rounds up to the next integer. If arg2 is zero, throws a dng_exception with
+ // error code dng_error_unknown.
+diff --git a/external/dng_sdk/source/dng_tag_codes.h b/external/dng_sdk/source/dng_tag_codes.h
+index 095f089..a231409 100644
+--- a/external/dng_sdk/source/dng_tag_codes.h
++++ b/external/dng_sdk/source/dng_tag_codes.h
+@@ -453,6 +453,7 @@ enum
+ 	tcCanonCR3,
+ 	tcJXL,
+ 	tcAVIF,
++	tcWebP,
+ 	
+ 	};
+ 
 diff --git a/external/dng_sdk/ubsan-replacement/ubsan_throwing_runtime.cpp b/external/dng_sdk/ubsan-replacement/ubsan_throwing_runtime.cpp
 new file mode 100644
 index 0000000..aeaad0c
@@ -102,6 +465,33 @@ index 0000000..aeaad0c
 +INTERFACE void __ubsan_handle_divrem_overflow() {
 +    throw std::runtime_error("ubsan: divrem-overflow");
 +}
+
+project external/libpng/
+diff --git a/external/libpng/pngread.c b/external/libpng/pngread.c
+index 25449db..ea2589f 100644
+--- a/external/libpng/pngread.c
++++ b/external/libpng/pngread.c
+@@ -4109,6 +4109,20 @@ png_image_finish_read(png_imagep image, png_const_colorp background,
+                   int result;
+                   png_image_read_control display;
+ 
++                  /* Reject bit depth mismatches to avoid buffer overflows. */
++                  png_uint_32 ihdr_bit_depth =
++                      image->opaque->png_ptr->bit_depth;
++                  int requested_linear =
++                      (image->format & PNG_FORMAT_FLAG_LINEAR) != 0;
++                  if (ihdr_bit_depth == 16 && !requested_linear)
++                     return png_image_error(image,
++                         "png_image_finish_read: "
++                         "16-bit PNG must use 16-bit output format");
++                  if (ihdr_bit_depth < 16 && requested_linear)
++                     return png_image_error(image,
++                         "png_image_finish_read: "
++                         "8-bit PNG must not use 16-bit output format");
++
+                   memset(&display, 0, (sizeof display));
+                   display.image = image;
+                   display.buffer = buffer;
 
 project frameworks/base/
 diff --git a/frameworks/base/core/java/com/android/internal/widget/LocalImageResolver.java b/frameworks/base/core/java/com/android/internal/widget/LocalImageResolver.java
@@ -325,6 +715,25 @@ index caa277baf..cce3bfa3e 100644
              mSplitLayout.setFreezeDividerWindow(false);
              final StageChangeRecord record = new StageChangeRecord();
              final int transitType = info.getType();
+diff --git a/frameworks/base/libs/androidfw/LoadedArsc.cpp b/frameworks/base/libs/androidfw/LoadedArsc.cpp
+index 070f0e2d2..848debf3e 100644
+--- a/frameworks/base/libs/androidfw/LoadedArsc.cpp
++++ b/frameworks/base/libs/androidfw/LoadedArsc.cpp
+@@ -486,7 +486,13 @@ std::unique_ptr<const LoadedPackage> LoadedPackage::Load(const Chunk& chunk,
+     loaded_package->property_flags_ |= PROPERTY_OVERLAY | PROPERTY_DYNAMIC;
+   }
+ 
+-  loaded_package->package_id_ = dtohl(header->id);
++  const uint32_t package_id = dtohl(header->id);
++  if (package_id > std::numeric_limits<uint8_t>::max()) {
++    LOG(ERROR) << "RES_TABLE_PACKAGE_TYPE package id is out of valid range";
++    return {};
++  }
++
++  loaded_package->package_id_ = static_cast<int>(package_id);
+   if (loaded_package->package_id_ == 0 ||
+       (loaded_package->package_id_ == kAppPackageId && (property_flags & PROPERTY_DYNAMIC) != 0)) {
+     loaded_package->property_flags_ |= PROPERTY_DYNAMIC;
 diff --git a/frameworks/base/libs/androidfw/ResourceTypes.cpp b/frameworks/base/libs/androidfw/ResourceTypes.cpp
 index f12966341..7f3d99c4b 100644
 --- a/frameworks/base/libs/androidfw/ResourceTypes.cpp
@@ -399,6 +808,41 @@ index f12966341..7f3d99c4b 100644
          return BAD_TYPE;
      }
  
+diff --git a/frameworks/base/libs/androidfw/tests/LoadedArsc_test.cpp b/frameworks/base/libs/androidfw/tests/LoadedArsc_test.cpp
+index eb90765cd..489635a90 100644
+--- a/frameworks/base/libs/androidfw/tests/LoadedArsc_test.cpp
++++ b/frameworks/base/libs/androidfw/tests/LoadedArsc_test.cpp
+@@ -421,6 +421,30 @@ TEST_P(LoadedArscParameterizedTest, FindSparseEntryApp) {
+   ASSERT_EQ(id.value(), fix_package_id(sparse::R::string::only_land, 0));
+ }
+ 
++TEST(LoadedArscTest, LoadArscWithInvalidPackageId) {
++  struct {
++    ResTable_header table_header;
++    ResTable_package package_header;
++  } __attribute__((packed)) data = {};
++
++  data.table_header.header.type = htods(RES_TABLE_TYPE);
++  data.table_header.header.headerSize = htods(sizeof(data.table_header));
++  data.table_header.header.size = htodl(sizeof(data));
++  data.table_header.packageCount = htodl(1);
++
++  data.package_header.header.type = htods(RES_TABLE_PACKAGE_TYPE);
++  data.package_header.header.headerSize = htods(sizeof(data.package_header));
++  data.package_header.header.size = htodl(sizeof(data.package_header));
++  data.package_header.id = htodl(256); // Invalid ID (> 255)
++  data.package_header.typeStrings = htodl(sizeof(data.package_header));
++  data.package_header.keyStrings = htodl(sizeof(data.package_header));
++
++  auto loaded_arsc = LoadedArsc::Load(&data, sizeof(data));
++  ASSERT_THAT(loaded_arsc, IsNull())
++      << "Expected to fail loading but got " << loaded_arsc->GetPackages().size()
++      << " packages, first ID " << loaded_arsc->GetPackages().at(0)->GetPackageId();
++}
++
+ INSTANTIATE_TEST_SUITE_P(
+         FrameWorkResourcesLoadedArscTests,
+         LoadedArscParameterizedTest,
 diff --git a/frameworks/base/packages/SystemUI/src/com/android/systemui/deviceentry/data/repository/DeviceEntryFaceAuthRepository.kt b/frameworks/base/packages/SystemUI/src/com/android/systemui/deviceentry/data/repository/DeviceEntryFaceAuthRepository.kt
 index 48a062c8c..95d93d1e8 100644
 --- a/frameworks/base/packages/SystemUI/src/com/android/systemui/deviceentry/data/repository/DeviceEntryFaceAuthRepository.kt
@@ -412,6 +856,59 @@ index 48a062c8c..95d93d1e8 100644
                  _authenticationStatus.value = SuccessFaceAuthenticationStatus(result)
                  faceAuthLogger.faceAuthSuccess(result)
                  onFaceAuthRequestCompleted()
+diff --git a/frameworks/base/services/core/java/com/android/server/appop/AppOpsService.java b/frameworks/base/services/core/java/com/android/server/appop/AppOpsService.java
+index 6c0e56aea..106c83cbc 100644
+--- a/frameworks/base/services/core/java/com/android/server/appop/AppOpsService.java
++++ b/frameworks/base/services/core/java/com/android/server/appop/AppOpsService.java
+@@ -46,6 +46,7 @@ import static android.app.AppOpsManager.OP_RECEIVE_AMBIENT_TRIGGER_AUDIO;
+ import static android.app.AppOpsManager.OP_RECORD_AUDIO;
+ import static android.app.AppOpsManager.OP_RECORD_AUDIO_HOTWORD;
+ import static android.app.AppOpsManager.OP_RECORD_AUDIO_SANDBOXED;
++import static android.app.AppOpsManager.OP_RESERVED_FOR_TESTING;
+ import static android.app.AppOpsManager.OP_VIBRATE;
+ import static android.app.AppOpsManager.OnOpStartedListener.START_TYPE_FAILED;
+ import static android.app.AppOpsManager.OnOpStartedListener.START_TYPE_STARTED;
+@@ -260,6 +261,7 @@ public class AppOpsService extends IAppOpsService.Stub {
+             OP_RECORD_AUDIO,
+             OP_CAMERA,
+             OP_VIBRATE,
++            OP_RESERVED_FOR_TESTING,
+     };
+ 
+     private static final int MAX_UNFORWARDED_OPS = 10;
+@@ -3430,6 +3432,10 @@ public class AppOpsService extends IAppOpsService.Stub {
+             return new SyncNotedAppOp(AppOpsManager.MODE_ERRORED, code, attributionTag,
+                     packageName);
+         }
++        if (isOpRestrictedDueToSuspend(code, packageName, uid)) {
++            return new SyncNotedAppOp(AppOpsManager.MODE_IGNORED, code, attributionTag,
++                    packageName);
++        }
+         if (proxyAttributionTag != null
+                 && !isAttributionTagDefined(packageName, proxyPackageName, proxyAttributionTag)) {
+             proxyAttributionTag = null;
+@@ -4090,6 +4096,10 @@ public class AppOpsService extends IAppOpsService.Stub {
+             return new SyncNotedAppOp(AppOpsManager.MODE_ERRORED, code, attributionTag,
+                     packageName);
+         }
++        if (isOpRestrictedDueToSuspend(code, packageName, uid)) {
++            return new SyncNotedAppOp(AppOpsManager.MODE_IGNORED, code, attributionTag,
++                    packageName);
++        }
+         if (proxyAttributionTag != null
+                 && !isAttributionTagDefined(packageName, proxyPackageName, proxyAttributionTag)) {
+             proxyAttributionTag = null;
+@@ -4230,6 +4240,10 @@ public class AppOpsService extends IAppOpsService.Stub {
+             return new SyncNotedAppOp(AppOpsManager.MODE_ERRORED, code, attributionTag,
+                     packageName);
+         }
++        if (isOpRestrictedDueToSuspend(code, packageName, uid)) {
++            return new SyncNotedAppOp(AppOpsManager.MODE_IGNORED, code, attributionTag,
++                    packageName);
++        }
+ 
+         boolean isRestricted = false;
+         synchronized (this) {
 diff --git a/frameworks/base/services/core/java/com/android/server/infra/AbstractMasterSystemService.java b/frameworks/base/services/core/java/com/android/server/infra/AbstractMasterSystemService.java
 index 88d027300..83b8f67ef 100644
 --- a/frameworks/base/services/core/java/com/android/server/infra/AbstractMasterSystemService.java
@@ -470,6 +967,26 @@ index c77db4fad..405bf2979 100644
                  params.installFlags |= PackageManager.INSTALL_INTERNAL;
  
                  // Resolve best location for install, based on combination of
+diff --git a/frameworks/base/services/core/java/com/android/server/pm/verify/domain/DomainVerificationService.java b/frameworks/base/services/core/java/com/android/server/pm/verify/domain/DomainVerificationService.java
+index 5c8215e4b..86c7d4322 100644
+--- a/frameworks/base/services/core/java/com/android/server/pm/verify/domain/DomainVerificationService.java
++++ b/frameworks/base/services/core/java/com/android/server/pm/verify/domain/DomainVerificationService.java
+@@ -2030,7 +2030,14 @@ public class DomainVerificationService extends SystemService
+                 }
+ 
+                 String domain = stateMap.keyAt(index);
+-                if (domain.startsWith("*.") && host.endsWith(domain.substring(2))) {
++                // Ensure that a wildcard domain (e.g. *.xyz.com) only matches the following:
++                // 1. The domain itself (in this case xyz.com exactly)
++                // 2. Subdomains ending in the domain (such as abc.xyz.com)
++                // This should not match every single domain ending in this string (xyz.com) e.g.
++                // *.xyz.com should not match abcxyz.com.
++                if (domain.startsWith("*.")
++                        && (host.endsWith(domain.substring(1))
++                            || host.equals(domain.substring(2)))) {
+                     if (debug) {
+                         debugApproval(packageName, debugObject, userId, true,
+                                 "host verified by wildcard");
 diff --git a/frameworks/base/services/core/java/com/android/server/wm/ActivityTaskManagerService.java b/frameworks/base/services/core/java/com/android/server/wm/ActivityTaskManagerService.java
 index ae3f85b76..4ea4c8a16 100644
 --- a/frameworks/base/services/core/java/com/android/server/wm/ActivityTaskManagerService.java
@@ -552,6 +1069,41 @@ index bf0df158a..78915f9c3 100644
                          return true;
                      }
                  }
+diff --git a/frameworks/base/services/core/java/com/android/server/wm/Letterbox.java b/frameworks/base/services/core/java/com/android/server/wm/Letterbox.java
+index f9b76df9d..9295928a4 100644
+--- a/frameworks/base/services/core/java/com/android/server/wm/Letterbox.java
++++ b/frameworks/base/services/core/java/com/android/server/wm/Letterbox.java
+@@ -289,8 +289,11 @@ public class Letterbox {
+                     ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                     : WindowManager.LayoutParams.TYPE_INPUT_CONSUMER;
+             mWindowHandle.dispatchingTimeoutMillis = DEFAULT_DISPATCHING_TIMEOUT_MILLIS;
+-            mWindowHandle.ownerPid = WindowManagerService.MY_PID;
+-            mWindowHandle.ownerUid = WindowManagerService.MY_UID;
++            // Set owner to the app's UID to prevent tapjacking. This ensures the letterbox is not
++            // treated as a trusted system window for input security checks, which could be used
++            // to bypass obscured touch logic.
++            mWindowHandle.ownerPid = win.mSession.mPid;
++            mWindowHandle.ownerUid = win.mSession.mUid;
+             mWindowHandle.scaleFactor = 1.0f;
+             mWindowHandle.inputConfig = InputConfig.NOT_FOCUSABLE
+                     | (Flags.scrollingFromLetterbox() ? InputConfig.SPY : InputConfig.SLIPPERY);
+diff --git a/frameworks/base/services/core/java/com/android/server/wm/WindowManagerService.java b/frameworks/base/services/core/java/com/android/server/wm/WindowManagerService.java
+index 686a2208a..b3832fa62 100644
+--- a/frameworks/base/services/core/java/com/android/server/wm/WindowManagerService.java
++++ b/frameworks/base/services/core/java/com/android/server/wm/WindowManagerService.java
+@@ -1879,6 +1879,12 @@ public class WindowManagerService extends IWindowManager.Stub
+                     ProtoLog.w(WM_ERROR, "Adding more than one toast window for UID at a time.");
+                     return WindowManagerGlobal.ADD_DUPLICATE_ADD;
+                 }
++                // Because a WindowToken of TYPE_TOAST only allows one toast window, block the
++                // addition of any other toast window to this token.
++                if (addToastWindowRequiresToken && !token.isEmpty()) {
++                    // ProtoLog.w(WM_ERROR, "Adding toast window with non-empty token.");
++                    return WindowManagerGlobal.ADD_BAD_APP_TOKEN;
++                }
+                 // Make sure this happens before we moved focus as one can make the
+                 // toast focusable to force it not being hidden after the timeout.
+                 // Focusable toasts are always timed out to prevent a focused app to
 diff --git a/frameworks/base/services/core/java/com/android/server/wm/WindowProcessController.java b/frameworks/base/services/core/java/com/android/server/wm/WindowProcessController.java
 index 347b30266..5219541ab 100644
 --- a/frameworks/base/services/core/java/com/android/server/wm/WindowProcessController.java
@@ -654,10 +1206,22 @@ index bc5c427e3..c550fd906 100644
              Slog.e(TAG, "Failed to remove secondary service: " + componentName);
          }
 diff --git a/frameworks/base/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java b/frameworks/base/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java
-index 941e2b60d..52e5bed0d 100644
+index 941e2b60d..3b520c251 100644
 --- a/frameworks/base/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java
 +++ b/frameworks/base/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java
-@@ -11817,6 +11817,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
+@@ -8863,7 +8863,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
+                 admin.globalProxySpec = null;
+                 admin.globalProxyExclusionList = null;
+             } else {
+-
++                PolicySizeVerifier.enforceMaxStringLength(proxySpec, "proxySpec");
++                if (exclusionList != null) {
++                    PolicySizeVerifier.enforceMaxStringLength(exclusionList, "exclusionList");
++                }
+                 admin.specifiesGlobalProxy = true;
+                 admin.globalProxySpec = proxySpec;
+                 admin.globalProxyExclusionList = exclusionList;
+@@ -11817,6 +11820,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                  R.array.config_packagesExemptFromSuspension);
          dumpResources(pw, mContext, "policy_exempt_apps", R.array.policy_exempt_apps);
          dumpResources(pw, mContext, "vendor_policy_exempt_apps", R.array.vendor_policy_exempt_apps);
@@ -666,7 +1230,7 @@ index 941e2b60d..52e5bed0d 100644
          pw.decreaseIndent();
          pw.println();
      }
-@@ -13932,6 +13934,17 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
+@@ -13932,6 +13937,17 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
          return new ArrayList<>(apps);
      }
  
@@ -684,7 +1248,7 @@ index 941e2b60d..52e5bed0d 100644
      @Override
      public void setUserRestriction(
              ComponentName who, String callerPackage, String key, boolean enabledFromThisOwner,
-@@ -14275,7 +14288,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
+@@ -14275,7 +14291,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
          mPermissions.enforce(MANAGE_DEVICE_POLICY_PACKAGE_STATE, caller, targetUser);
  
          List<String> exemptApps = listPolicyExemptAppsUnchecked(mContext);
@@ -693,6 +1257,435 @@ index 941e2b60d..52e5bed0d 100644
              Slogf.d(LOG_TAG, "setApplicationHidden(): ignoring %s as it's on policy-exempt list",
                      packageName);
              return false;
+@@ -14731,6 +14747,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
+         if (!mHasFeature) {
+             return;
+         }
++        if (policy != null) {
++            enforcePackagePolicyPackageNamesLength(policy);
++        }
+         final CallerIdentity caller = getCallerIdentity();
+         Preconditions.checkCallAuthorization((isProfileOwner(caller)
+                 && isManagedProfile(caller.getUserId())));
+@@ -14781,6 +14800,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
+         if (!mHasFeature) {
+             return;
+         }
++        if (policy != null) {
++            enforcePackagePolicyPackageNamesLength(policy);
++        }
+         final CallerIdentity caller = getCallerIdentity();
+         Preconditions.checkCallAuthorization((isProfileOwner(caller)
+                 && isManagedProfile(caller.getUserId())));
+@@ -17066,6 +17088,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
+         if (!mHasFeature) {
+             return;
+         }
++        if (policy != null) {
++            enforcePackagePolicyPackageNamesLength(policy);
++        }
+         final CallerIdentity caller = getCallerIdentity();
+         Preconditions.checkCallAuthorization(canWriteCredentialManagerPolicy(caller));
+ 
+@@ -17086,6 +17111,15 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
+                         || hasCallingOrSelfPermission(MANAGE_PROFILE_AND_DEVICE_OWNERS);
+     }
+ 
++    private void enforcePackagePolicyPackageNamesLength(@NonNull PackagePolicy policy) {
++        for (String pkg : policy.getPackageNames()) {
++            if (pkg == null) {
++                continue;
++            }
++            PolicySizeVerifier.enforceMaxPackageNameLength(pkg);
++        }
++    }
++
+     @Override
+     public PackagePolicy getCredentialManagerPolicy(int userId) {
+         if (!mHasFeature) {
+diff --git a/frameworks/base/services/tests/PackageManagerServiceTests/unit/src/com/android/server/pm/test/verify/domain/DomainVerificationPackageTest.kt b/frameworks/base/services/tests/PackageManagerServiceTests/unit/src/com/android/server/pm/test/verify/domain/DomainVerificationPackageTest.kt
+index e0407c154..d1732672d 100644
+--- a/frameworks/base/services/tests/PackageManagerServiceTests/unit/src/com/android/server/pm/test/verify/domain/DomainVerificationPackageTest.kt
++++ b/frameworks/base/services/tests/PackageManagerServiceTests/unit/src/com/android/server/pm/test/verify/domain/DomainVerificationPackageTest.kt
+@@ -899,6 +899,31 @@ class DomainVerificationPackageTest {
+         }
+     }
+ 
++    @Test
++    fun testWildcardDomain() {
++        val wildcardDomain = "*.xyz.com"
++        val pkg = mockPkgState(
++            PKG_ONE, UUID_ONE, SIGNATURE_ONE,
++            autoVerifyDomains = listOf(wildcardDomain)
++        )
++
++        val service = makeService(pkg)
++        service.addPackage(pkg, null)
++        service.setStatus(pkg.domainSetId, setOf(wildcardDomain), STATE_SUCCESS)
++
++        // Only "xyz.com" exactly or subdomains should match. "abcxyz.com" should not match.
++        assertThat(
++            service.getOwnersForDomain("abcxyz.com", USER_ID))
++            .isEmpty()
++        assertThat(
++            service.getOwnersForDomain("abc.xyz.com", USER_ID))
++            .containsExactly(DomainOwner(PKG_ONE, false))
++        assertThat(
++            service.getOwnersForDomain("xyz.com", USER_ID))
++            .containsExactly(DomainOwner(PKG_ONE, false))
++    }
++
++
+     private fun verifiedUnapproved_unverifiedSelected_approvalCausesUnselect(
+             setStatusBlock: DomainVerificationService.(PackageStateInternal) -> Unit
+     ) {
+diff --git a/frameworks/base/services/tests/servicestests/res/xml/device_admin_sample.xml b/frameworks/base/services/tests/servicestests/res/xml/device_admin_sample.xml
+index 032debbb9..663d2612c 100644
+--- a/frameworks/base/services/tests/servicestests/res/xml/device_admin_sample.xml
++++ b/frameworks/base/services/tests/servicestests/res/xml/device_admin_sample.xml
+@@ -25,5 +25,6 @@
+         <encrypted-storage />
+         <disable-camera />
+         <disable-keyguard-features />
++        <set-global-proxy />
+     </uses-policies>
+ </device-admin>
+diff --git a/frameworks/base/services/tests/servicestests/src/com/android/server/devicepolicy/DevicePolicyManagerTest.java b/frameworks/base/services/tests/servicestests/src/com/android/server/devicepolicy/DevicePolicyManagerTest.java
+index 852738e74..704507c67 100644
+--- a/frameworks/base/services/tests/servicestests/src/com/android/server/devicepolicy/DevicePolicyManagerTest.java
++++ b/frameworks/base/services/tests/servicestests/src/com/android/server/devicepolicy/DevicePolicyManagerTest.java
+@@ -8762,6 +8762,25 @@ public class DevicePolicyManagerTest extends DpmTestBase {
+         assertThrows(SecurityException.class, () -> dpm.setRecommendedGlobalProxy(admin1, null));
+     }
+ 
++    @Test
++    public void testSetGlobalProxy_tooLongStrings() throws Exception {
++        setDeviceOwner();
++        // PolicySizeVerifier uses ModifiedUtf8.countBytes() to check the length of strings
++        // which is max 65535 UTF bytes.
++        final String tooLong = new String(new char[65536]).replace('\0', 'A');
++
++        // Test long proxy spec
++        Proxy proxy = new Proxy(Proxy.Type.HTTP, InetSocketAddress.createUnresolved(tooLong, 8080));
++        assertThrows(IllegalArgumentException.class,
++                () -> dpm.setGlobalProxy(admin1, proxy, Collections.emptyList()));
++
++        // Test long exclusion list
++        Proxy validProxy = new Proxy(Proxy.Type.HTTP,
++                InetSocketAddress.createUnresolved("example.com", 8080));
++        assertThrows(IllegalArgumentException.class,
++                () -> dpm.setGlobalProxy(admin1, validProxy, Collections.singletonList(tooLong)));
++    }
++
+     @Test
+     public void testSetAlwaysOnVpnPackage_clearsAdminVpn() throws Exception {
+         setDeviceOwner();
+diff --git a/frameworks/base/services/tests/servicestests/src/com/android/server/pm/SuspendPackagesTest.java b/frameworks/base/services/tests/servicestests/src/com/android/server/pm/SuspendPackagesTest.java
+index 2e5feffd8..749f1fd55 100644
+--- a/frameworks/base/services/tests/servicestests/src/com/android/server/pm/SuspendPackagesTest.java
++++ b/frameworks/base/services/tests/servicestests/src/com/android/server/pm/SuspendPackagesTest.java
+@@ -18,9 +18,9 @@ package com.android.server.pm;
+ 
+ import static android.app.AppOpsManager.MODE_ALLOWED;
+ import static android.app.AppOpsManager.MODE_IGNORED;
+-import static android.app.AppOpsManager.OP_CAMERA;
+ import static android.app.AppOpsManager.OP_PLAY_AUDIO;
+-import static android.app.AppOpsManager.OP_RECORD_AUDIO;
++import static android.app.AppOpsManager.OP_RESERVED_FOR_TESTING;
++import static android.app.AppOpsManager.OP_VIBRATE;
+ import static android.app.AppOpsManager.opToName;
+ 
+ import static org.junit.Assert.assertEquals;
+@@ -30,12 +30,14 @@ import static org.junit.Assert.assertTrue;
+ import static org.junit.Assert.fail;
+ 
+ import android.app.AppGlobals;
++import android.app.AppOpsManager;
+ import android.content.Context;
+ import android.content.pm.IPackageManager;
+ import android.content.pm.LauncherApps;
+ import android.content.pm.PackageManager;
+ import android.content.pm.SuspendDialogInfo;
+ import android.os.BaseBundle;
++import android.os.Binder;
+ import android.os.Bundle;
+ import android.os.Handler;
+ import android.os.Looper;
+@@ -253,18 +255,18 @@ public class SuspendPackagesTest {
+     }
+ 
+     @Test
+-    public void testCameraBlockedOnSuspend() throws Exception {
+-        assertOpBlockedOnSuspend(OP_CAMERA);
++    public void testReservedForTestingOpBlockedOnSuspend() throws Exception {
++        assertOpBlockedOnSuspend(OP_RESERVED_FOR_TESTING);
+     }
+ 
+     @Test
+-    public void testPlayAudioBlockedOnSuspend() throws Exception {
+-        assertOpBlockedOnSuspend(OP_PLAY_AUDIO);
++    public void testVibrateOpBlockedOnSuspend() throws Exception {
++        assertOpBlockedOnSuspend(OP_VIBRATE);
+     }
+ 
+     @Test
+-    public void testRecordAudioBlockedOnSuspend() throws Exception {
+-        assertOpBlockedOnSuspend(OP_RECORD_AUDIO);
++    public void testPlayAudioOpBlockedOnSuspend() throws Exception {
++        assertOpBlockedOnSuspend(OP_PLAY_AUDIO);
+     }
+ 
+     private void assertOpBlockedOnSuspend(int code) throws Exception {
+@@ -282,13 +284,27 @@ public class SuspendPackagesTest {
+         iAppOps.startWatchingMode(code, TEST_APP_PACKAGE_NAME, watcher);
+         final int testPackageUid = mPackageManager.getPackageUid(TEST_APP_PACKAGE_NAME, 0);
+         int opMode = iAppOps.checkOperation(code, testPackageUid, TEST_APP_PACKAGE_NAME);
+-        assertEquals("Op " + opToName(code) + " disallowed for unsuspended package", MODE_ALLOWED,
+-                opMode);
++        assertEquals("checkOperation: Op " + opToName(code) + " disallowed for unsuspended package",
++                MODE_ALLOWED, opMode);
+         suspendTestPackage(null, null, null);
+         assertTrue("AppOpsWatcher did not callback", latch.await(5, TimeUnit.SECONDS));
++
+         opMode = iAppOps.checkOperation(code, testPackageUid, TEST_APP_PACKAGE_NAME);
+-        assertEquals("Op " + opToName(code) + " allowed for suspended package", MODE_IGNORED,
+-                opMode);
++        assertEquals("checkOperation: Op " + opToName(code) + " allowed for suspended package",
++                MODE_IGNORED, opMode);
++
++        opMode = iAppOps.noteOperation(code, testPackageUid, TEST_APP_PACKAGE_NAME, null, false,
++                "test", false).getOpMode();
++        assertEquals("noteOperation: Op " + opToName(code) + " allowed for suspended package",
++                MODE_IGNORED, opMode);
++
++        opMode = iAppOps.startOperation(new Binder(), code, testPackageUid,
++                TEST_APP_PACKAGE_NAME, null, false, false, "test", false,
++                AppOpsManager.ATTRIBUTION_FLAGS_NONE, AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE)
++                .getOpMode();
++        assertEquals("startOperation: Op " + opToName(code) + " allowed for suspended package",
++                MODE_IGNORED, opMode);
++
+         iAppOps.stopWatchingMode(watcher);
+     }
+ 
+diff --git a/frameworks/base/services/tests/wmtests/src/com/android/server/wm/WindowManagerServiceTests.java b/frameworks/base/services/tests/wmtests/src/com/android/server/wm/WindowManagerServiceTests.java
+index bea5b4e9e..c2410d9df 100644
+--- a/frameworks/base/services/tests/wmtests/src/com/android/server/wm/WindowManagerServiceTests.java
++++ b/frameworks/base/services/tests/wmtests/src/com/android/server/wm/WindowManagerServiceTests.java
+@@ -68,6 +68,7 @@ import static org.junit.Assert.assertTrue;
+ import static org.mockito.ArgumentMatchers.any;
+ import static org.mockito.ArgumentMatchers.anyBoolean;
+ import static org.mockito.ArgumentMatchers.anyInt;
++import static org.mockito.ArgumentMatchers.anyLong;
+ import static org.mockito.ArgumentMatchers.anyString;
+ import static org.mockito.ArgumentMatchers.argThat;
+ import static org.mockito.ArgumentMatchers.eq;
+@@ -83,6 +84,7 @@ import android.app.ActivityManager;
+ import android.app.ActivityThread;
+ import android.app.IApplicationThread;
+ import android.content.pm.ActivityInfo;
++import android.content.pm.ApplicationInfo;
+ import android.content.pm.PackageManager;
+ import android.graphics.Rect;
+ import android.os.Binder;
+@@ -2004,4 +2006,74 @@ public class WindowManagerServiceTests extends WindowTestsBase {
+         mWm.mAppCompatConfiguration.setLetterboxBackgroundTypeOverride(letterboxBackgroundType);
+         return mWm.isLetterboxBackgroundMultiColored();
+     }
++
++    @Test
++    public void testAddToastWindow_singleWindowPerToken() {
++        final IBinder token = new Binder();
++        mWm.addWindowToken(token, TYPE_TOAST, DEFAULT_DISPLAY, null /* options */);
++
++        final int uid1 = 1234;
++        final int pid1 = 1234;
++        final Session session1 = createTestSession(mAtm, pid1, uid1);
++        final WindowManager.LayoutParams params1 = new WindowManager.LayoutParams(TYPE_TOAST);
++        params1.token = token;
++        params1.packageName = "test1";
++
++        final ApplicationInfo appInfo1 = new ApplicationInfo();
++        appInfo1.targetSdkVersion = android.os.Build.VERSION_CODES.O;
++        doReturn(appInfo1)
++                .when(mWm.mPmInternal)
++                .getApplicationInfo(eq("test1"), anyLong(), anyInt(), anyInt());
++        doReturn(true).when(mWm.mPmInternal).isSameApp(eq("test1"), eq(uid1), anyInt());
++
++        final IWindow client1 = new TestIWindow();
++        final int res1 =
++                mWm.addWindow(
++                        session1,
++                        client1,
++                        params1,
++                        View.VISIBLE,
++                        DEFAULT_DISPLAY,
++                        0 /* requestUserId */,
++                        WindowInsets.Type.defaultVisible(),
++                        null,
++                        new InsetsState(),
++                        new InsetsSourceControl.Array(),
++                        new Rect(),
++                        new float[1]);
++        assertThat(res1).isAtLeast(WindowManagerGlobal.ADD_OKAY);
++
++        // Add second window with same token but different UID to bypass the canAddToastWindowForUid
++        // check
++        final int uid2 = 1235;
++        final int pid2 = 1235;
++        final Session session2 = createTestSession(mAtm, pid2, uid2);
++        final WindowManager.LayoutParams params2 = new WindowManager.LayoutParams(TYPE_TOAST);
++        params2.token = token;
++        params2.packageName = "test2";
++
++        final ApplicationInfo appInfo2 = new ApplicationInfo();
++        appInfo2.targetSdkVersion = android.os.Build.VERSION_CODES.O;
++        doReturn(appInfo2)
++                .when(mWm.mPmInternal)
++                .getApplicationInfo(eq("test2"), anyLong(), anyInt(), anyInt());
++        doReturn(true).when(mWm.mPmInternal).isSameApp(eq("test2"), eq(uid2), anyInt());
++
++        final IWindow client2 = new TestIWindow();
++        final int res2 =
++                mWm.addWindow(
++                        session2,
++                        client2,
++                        params2,
++                        View.VISIBLE,
++                        DEFAULT_DISPLAY,
++                        0 /* requestUserId */,
++                        WindowInsets.Type.defaultVisible(),
++                        null,
++                        new InsetsState(),
++                        new InsetsSourceControl.Array(),
++                        new Rect(),
++                        new float[1]);
++        assertThat(res2).isEqualTo(WindowManagerGlobal.ADD_BAD_APP_TOKEN);
++    }
+ }
+
+project packages/apps/CertInstaller/
+diff --git a/packages/apps/CertInstaller/src/com/android/certinstaller/CertInstaller.java b/packages/apps/CertInstaller/src/com/android/certinstaller/CertInstaller.java
+index 883c897..1eff53f 100644
+--- a/packages/apps/CertInstaller/src/com/android/certinstaller/CertInstaller.java
++++ b/packages/apps/CertInstaller/src/com/android/certinstaller/CertInstaller.java
+@@ -414,7 +414,7 @@ public class CertInstaller extends Activity {
+             return null;
+         }
+ 
+-        return appInfo.loadLabel(pm);
++        return appInfo.loadSafeLabel(pm);
+     }
+ 
+     private Dialog createRedirectCaCertificateDialog() {
+
+project packages/apps/DocumentsUI/
+diff --git a/packages/apps/DocumentsUI/src/com/android/documentsui/base/Shared.java b/packages/apps/DocumentsUI/src/com/android/documentsui/base/Shared.java
+index 4b9fbfa..840861b 100644
+--- a/packages/apps/DocumentsUI/src/com/android/documentsui/base/Shared.java
++++ b/packages/apps/DocumentsUI/src/com/android/documentsui/base/Shared.java
+@@ -228,16 +228,9 @@ public final class Shared {
+         return sCollator.compare(lhs, rhs);
+     }
+ 
+-    private static boolean isSystemApp(ApplicationInfo ai) {
+-        return (ai.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
+-    }
+-
+-    private static boolean isUpdatedSystemApp(ApplicationInfo ai) {
+-        return (ai.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0;
+-    }
+-
+     /**
+      * Returns the calling package, possibly overridden by EXTRA_PACKAGE_NAME.
++     *
+      * @param activity
+      * @return
+      */
+@@ -247,9 +240,9 @@ public final class Shared {
+         try {
+             ApplicationInfo info =
+                     activity.getPackageManager().getApplicationInfo(callingPackage, 0);
+-            if (isSystemApp(info) || isUpdatedSystemApp(info)) {
+-                final String extra = activity.getIntent().getStringExtra(
+-                        Intent.EXTRA_PACKAGE_NAME);
++            if (activity.getIntent() != null
++                    && isTrustedSystemSignature(activity.getPackageManager(), info.uid)) {
++                final String extra = activity.getIntent().getStringExtra(Intent.EXTRA_PACKAGE_NAME);
+                 if (extra != null && !TextUtils.isEmpty(extra)) {
+                     callingPackage = extra;
+                 }
+@@ -263,6 +256,21 @@ public final class Shared {
+         return callingPackage;
+     }
+ 
++    /**
++     * Verifies if a package is signed with the device's platform certificate.
++     *
++     * @param pm PackageManager instance.
++     * @param callingUid The UID of the package to verify.
++     * @return {@code true} if the package matches the platform system signature.
++     */
++    private static boolean isTrustedSystemSignature(PackageManager pm, int callingUid) {
++        // Only allow name spoofing if the calling app is signed with the device's platform key
++        // (the same key used by the Android OS itself). Compare the caller's signature with
++        // the system UID (UID 1000), which represents the platform signature.
++        return pm.checkSignatures(callingUid, android.os.Process.SYSTEM_UID)
++                == PackageManager.SIGNATURE_MATCH;
++    }
++
+     /**
+      * Returns the calling app name.
+      * @param activity
+
+project packages/apps/KeyChain/
+diff --git a/packages/apps/KeyChain/src/com/android/keychain/KeyChainActivity.java b/packages/apps/KeyChain/src/com/android/keychain/KeyChainActivity.java
+index 5732be4..bbec317 100644
+--- a/packages/apps/KeyChain/src/com/android/keychain/KeyChainActivity.java
++++ b/packages/apps/KeyChain/src/com/android/keychain/KeyChainActivity.java
+@@ -27,6 +27,7 @@ import android.app.admin.IDevicePolicyManager;
+ import android.content.Context;
+ import android.content.DialogInterface;
+ import android.content.Intent;
++import android.content.pm.PackageItemInfo;
+ import android.content.pm.PackageManager;
+ import android.content.pm.UserInfo;
+ import android.content.res.Resources;
+@@ -42,6 +43,7 @@ import android.os.UserManager;
+ import android.security.IKeyChainAliasCallback;
+ import android.security.KeyChain;
+ import android.stats.devicepolicy.DevicePolicyEnums;
++import android.text.TextUtils;
+ import android.util.Log;
+ import android.view.LayoutInflater;
+ import android.view.View;
+@@ -576,11 +578,23 @@ public class KeyChainActivity extends AppCompatActivity {
+ 
+     private String getApplicationLabel() {
+         PackageManager pm = getPackageManager();
++        String label;
+         try {
+-            return pm.getApplicationLabel(pm.getApplicationInfo(mSenderPackageName, 0)).toString();
++            label = pm.getApplicationLabel(pm.getApplicationInfo(mSenderPackageName, 0)).toString();
+         } catch (PackageManager.NameNotFoundException e) {
+-            return mSenderPackageName;
+-        }
++            label = mSenderPackageName;
++        }
++        // Sanitize newlines, tabs, and other vertical space characters, replacing them with a
++        // single space. Also consolidate any multiple spaces into a single space and trim.
++        if (label != null) {
++            label = TextUtils.makeSafeForPresentation(
++                    label,
++                    PackageItemInfo.MAX_SAFE_LABEL_LENGTH,
++                    PackageItemInfo.DEFAULT_MAX_LABEL_SIZE_PX,
++                    TextUtils.SAFE_STRING_FLAG_TRIM | TextUtils.SAFE_STRING_FLAG_FIRST_LINE)
++                        .toString();
++        }
++        return label;
+     }
+ 
+     @VisibleForTesting
 
 project packages/apps/Launcher3/
 diff --git a/packages/apps/Launcher3/quickstep/src/com/android/quickstep/LauncherProcessImageListener.kt b/packages/apps/Launcher3/quickstep/src/com/android/quickstep/LauncherProcessImageListener.kt
@@ -2198,7 +3191,7 @@ index 769762a..f92ddee 100644
      <string name="platform_compat_dashboard_summary" msgid="4036546607938791337">"Guqula ushintsho lokuhambisana kohlelo lokusebenza"</string>
      <string name="platform_compat_default_enabled_title" msgid="8973137337738388024">"Ushintsho olunikwe amandla oluzenzakalelayo"</string>
 diff --git a/packages/apps/Settings/res/values/strings.xml b/packages/apps/Settings/res/values/strings.xml
-index 1d76e61..3a628dc 100644
+index 1d76e61..bac6b03 100644
 --- a/packages/apps/Settings/res/values/strings.xml
 +++ b/packages/apps/Settings/res/values/strings.xml
 @@ -12759,9 +12759,9 @@
@@ -2206,13 +3199,39 @@ index 1d76e61..3a628dc 100644
      <string name="enable_angle_as_system_driver">Experimental: Enable ANGLE</string>
      <!-- Debugging developer settings: enable angle as system driver summary [CHAR LIMIT=NONE] -->
 -    <string name="enable_angle_as_system_driver_summary">Warning: Enable ANGLE as default OpenGL ES driver. This feature is in experiment and may not be compatible with some camera and video apps.</string>
-+    <string name="enable_angle_as_system_driver_summary">Warning: Enable ANGLE as default OpenGL ES driver. This feature is in experiment and may not be compatible with some camera and video apps. Please backup your device data before turning on the switch</string>
++    <string name="enable_angle_as_system_driver_summary">Warning: ANGLE will be set as the default OpenGL ES driver. This feature is experimental and may not be compatible with some camera or video apps. Back up any important data before turning this on.</string>
      <!--Dialog body text used to explain a reboot is required after changing ANGLE as system GLES driver setting-->
 -    <string name="reboot_dialog_enable_angle_as_system_driver">A reboot is required to change the system OpenGL ES driver</string>
-+    <string name="reboot_dialog_enable_angle_as_system_driver">A reboot is required to change the system OpenGL ES driver. Please back up your device data before rebooting. In case the reboot failed, you need a factory reset to restore the device</string>
++    <string name="reboot_dialog_enable_angle_as_system_driver">To change the system OpenGL ES driver, the device will restart. Back up any important data before restarting. If restarting fails, a factory reset will be needed to use the device.</string>
  
      <!-- Title for App Compatibility Changes dashboard where developers can configure per-app overrides for compatibility changes [CHAR LIMIT=50] -->
      <string name="platform_compat_dashboard_title">App Compatibility Changes</string>
+diff --git a/packages/apps/Settings/src/com/android/settings/bluetooth/ForgetDeviceDialogFragment.java b/packages/apps/Settings/src/com/android/settings/bluetooth/ForgetDeviceDialogFragment.java
+index 7cfa5ea..e37f80c 100644
+--- a/packages/apps/Settings/src/com/android/settings/bluetooth/ForgetDeviceDialogFragment.java
++++ b/packages/apps/Settings/src/com/android/settings/bluetooth/ForgetDeviceDialogFragment.java
+@@ -26,6 +26,7 @@ import android.companion.AssociationInfo;
+ import android.companion.CompanionDeviceManager;
+ import android.content.Context;
+ import android.content.DialogInterface;
++import android.content.pm.PackageItemInfo;
+ import android.content.pm.PackageManager;
+ import android.icu.text.ListFormatter;
+ import android.os.Bundle;
+@@ -166,8 +167,11 @@ public class ForgetDeviceDialogFragment extends InstrumentedDialogFragment {
+ 
+     private CharSequence getAppLabel(String packageName) {
+         try {
+-            return mPackageManager.getApplicationLabel(
+-                    mPackageManager.getApplicationInfo(packageName, 0));
++            return mPackageManager.getApplicationInfo(packageName, 0).loadSafeLabel(
++                    mPackageManager,
++                    PackageItemInfo.MAX_SAFE_LABEL_LENGTH,
++                    TextUtils.SAFE_STRING_FLAG_TRIM
++                            | TextUtils.SAFE_STRING_FLAG_FIRST_LINE);
+         } catch (PackageManager.NameNotFoundException e) {
+             Log.e(TAG, "Package Not Found", e);
+             return "";
 diff --git a/packages/apps/Settings/src/com/android/settings/nfc/DefaultPaymentSettings.java b/packages/apps/Settings/src/com/android/settings/nfc/DefaultPaymentSettings.java
 index 440f09e..b5057ed 100644
 --- a/packages/apps/Settings/src/com/android/settings/nfc/DefaultPaymentSettings.java
@@ -2265,6 +3284,106 @@ index 03eed68..d9f5f28 100644
              return false;
          }
          return true;
+diff --git a/packages/apps/Settings/src/com/android/settings/security/CredentialManagementAppAdapter.java b/packages/apps/Settings/src/com/android/settings/security/CredentialManagementAppAdapter.java
+index 567cffd..5c9172b 100644
+--- a/packages/apps/Settings/src/com/android/settings/security/CredentialManagementAppAdapter.java
++++ b/packages/apps/Settings/src/com/android/settings/security/CredentialManagementAppAdapter.java
+@@ -16,6 +16,10 @@
+ 
+ package com.android.settings.security;
+ 
++import static android.content.pm.PackageItemInfo.DEFAULT_MAX_LABEL_SIZE_PX;
++import static android.text.TextUtils.SAFE_STRING_FLAG_FIRST_LINE;
++import static android.text.TextUtils.SAFE_STRING_FLAG_TRIM;
++
+ import android.content.Context;
+ import android.content.pm.ApplicationInfo;
+ import android.content.pm.PackageManager;
+@@ -89,7 +93,11 @@ public class CredentialManagementAppAdapter extends RecyclerView.Adapter<Recycle
+                 mAppIconView.setImageDrawable(mPackageManager.getApplicationIcon(applicationInfo));
+                 mTitleView.setText(TextUtils.expandTemplate(
+                         mContext.getText(R.string.request_manage_credentials_title),
+-                        applicationInfo.loadLabel(mPackageManager)));
++                        applicationInfo.loadSafeLabel(
++                                mPackageManager,
++                                DEFAULT_MAX_LABEL_SIZE_PX,
++                                SAFE_STRING_FLAG_TRIM | SAFE_STRING_FLAG_FIRST_LINE
++                        )));
+             } catch (PackageManager.NameNotFoundException e) {
+                 mAppIconView.setImageDrawable(null);
+                 mTitleView.setText(TextUtils.expandTemplate(
+@@ -148,7 +156,11 @@ public class CredentialManagementAppAdapter extends RecyclerView.Adapter<Recycle
+             try {
+                 ApplicationInfo applicationInfo = mPackageManager.getApplicationInfo(appName, 0);
+                 mAppIconView.setImageDrawable(mPackageManager.getApplicationIcon(applicationInfo));
+-                mAppNameView.setText(String.valueOf(applicationInfo.loadLabel(mPackageManager)));
++                mAppNameView.setText(String.valueOf(applicationInfo.loadSafeLabel(
++                        mPackageManager,
++                        DEFAULT_MAX_LABEL_SIZE_PX,
++                        SAFE_STRING_FLAG_TRIM | SAFE_STRING_FLAG_FIRST_LINE
++                )));
+             } catch (PackageManager.NameNotFoundException e) {
+                 mAppIconView.setImageDrawable(null);
+                 mAppNameView.setText(appName);
+diff --git a/packages/apps/Settings/src/com/android/settings/security/RequestManageCredentials.java b/packages/apps/Settings/src/com/android/settings/security/RequestManageCredentials.java
+index 2c1b452..9867a47 100644
+--- a/packages/apps/Settings/src/com/android/settings/security/RequestManageCredentials.java
++++ b/packages/apps/Settings/src/com/android/settings/security/RequestManageCredentials.java
+@@ -16,6 +16,9 @@
+ 
+ package com.android.settings.security;
+ 
++import static android.content.pm.PackageItemInfo.DEFAULT_MAX_LABEL_SIZE_PX;
++import static android.text.TextUtils.SAFE_STRING_FLAG_FIRST_LINE;
++import static android.text.TextUtils.SAFE_STRING_FLAG_TRIM;
+ import static android.view.WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS;
+ 
+ import android.app.Activity;
+@@ -248,7 +251,11 @@ public class RequestManageCredentials extends Activity {
+             mAppIconView.setImageDrawable(getPackageManager().getApplicationIcon(applicationInfo));
+             mTitleView.setText(TextUtils.expandTemplate(
+                     getText(R.string.request_manage_credentials_title),
+-                    applicationInfo.loadLabel(getPackageManager())));
++                    applicationInfo.loadSafeLabel(
++                            getPackageManager(),
++                            DEFAULT_MAX_LABEL_SIZE_PX,
++                            SAFE_STRING_FLAG_TRIM | SAFE_STRING_FLAG_FIRST_LINE
++                    )));
+         } catch (PackageManager.NameNotFoundException e) {
+             mAppIconView.setImageDrawable(null);
+             mTitleView.setText(TextUtils.expandTemplate(
+diff --git a/packages/apps/Settings/tests/robotests/src/com/android/settings/bluetooth/ForgetDeviceDialogFragmentTest.java b/packages/apps/Settings/tests/robotests/src/com/android/settings/bluetooth/ForgetDeviceDialogFragmentTest.java
+index 3190349..681fd4c 100644
+--- a/packages/apps/Settings/tests/robotests/src/com/android/settings/bluetooth/ForgetDeviceDialogFragmentTest.java
++++ b/packages/apps/Settings/tests/robotests/src/com/android/settings/bluetooth/ForgetDeviceDialogFragmentTest.java
+@@ -32,12 +32,14 @@ import android.companion.CompanionDeviceManager;
+ import android.content.Context;
+ import android.content.DialogInterface;
+ import android.content.pm.ApplicationInfo;
++import android.content.pm.PackageItemInfo;
+ import android.content.pm.PackageManager;
+ import android.net.MacAddress;
+ import android.os.Bundle;
+ import android.platform.test.annotations.RequiresFlagsEnabled;
+ import android.platform.test.flag.junit.CheckFlagsRule;
+ import android.platform.test.flag.junit.DeviceFlagsValueProvider;
++import android.text.TextUtils;
+ 
+ import androidx.appcompat.app.AlertDialog;
+ import androidx.fragment.app.FragmentActivity;
+@@ -217,7 +219,11 @@ public class ForgetDeviceDialogFragmentTest {
+         ApplicationInfo appInfo = mock(ApplicationInfo.class);
+         try {
+             when(mPackageManager.getApplicationInfo(packageName, 0)).thenReturn(appInfo);
+-            when(mPackageManager.getApplicationLabel(appInfo)).thenReturn(appName);
++            when(appInfo.loadSafeLabel(
++                    mPackageManager,
++                    PackageItemInfo.MAX_SAFE_LABEL_LENGTH,
++                    TextUtils.SAFE_STRING_FLAG_TRIM | TextUtils.SAFE_STRING_FLAG_FIRST_LINE))
++                    .thenReturn(appName);
+         } catch (PackageManager.NameNotFoundException e) {
+             throw new RuntimeException(e);
+         }
 
 project packages/modules/Bluetooth/
 diff --git a/packages/modules/Bluetooth/android/app/src/com/android/bluetooth/btservice/AdapterService.java b/packages/modules/Bluetooth/android/app/src/com/android/bluetooth/btservice/AdapterService.java
@@ -2326,8 +3445,338 @@ index 4d2eb8e..8aca6f9 100644
 -        purpose: PURPOSE_BUGFIX
 -    }
 -}
+diff --git a/packages/modules/Bluetooth/system/stack/l2cap/l2c_fcr.cc b/packages/modules/Bluetooth/system/stack/l2cap/l2c_fcr.cc
+index c3af7ad..4e8d699 100644
+--- a/packages/modules/Bluetooth/system/stack/l2cap/l2c_fcr.cc
++++ b/packages/modules/Bluetooth/system/stack/l2cap/l2c_fcr.cc
+@@ -229,7 +229,7 @@ BT_HDR* l2c_fcr_clone_buf(BT_HDR* p_buf, uint16_t new_offset, uint16_t no_of_byt
+    * NOTE: We allocate extra L2CAP_FCS_LEN octets, in case we need to put
+    * the FCS (Frame Check Sequence) at the end of the buffer.
+    */
+-  uint16_t buf_size = no_of_bytes + sizeof(BT_HDR) + new_offset + L2CAP_FCS_LEN;
++  uint32_t buf_size = no_of_bytes + sizeof(BT_HDR) + new_offset + L2CAP_FCS_LEN;
+   BT_HDR* p_buf2 = (BT_HDR*)osi_malloc(buf_size);
+ 
+   p_buf2->offset = new_offset;
+diff --git a/packages/modules/Bluetooth/system/stack/sdp/sdp_discovery.cc b/packages/modules/Bluetooth/system/stack/sdp/sdp_discovery.cc
+index 984e8e4..cd67a21 100644
+--- a/packages/modules/Bluetooth/system/stack/sdp/sdp_discovery.cc
++++ b/packages/modules/Bluetooth/system/stack/sdp/sdp_discovery.cc
+@@ -140,8 +140,8 @@ static void sdp_snd_service_search_req(tCONN_CB* p_ccb, uint8_t cont_len, uint8_
+    * continuation state */
+   const uint16_t base_bytes =
+           (sizeof(BT_HDR) + L2CAP_MIN_OFFSET + 3u + /* service search request header */
+-           2u +                                     /* param len */
+-           3u + ((p_cont) ? cont_len : 0));
++           2u + 2u +                                /* param len, max service records */
++           1u + ((p_cont) ? cont_len : 0));         /* continuation state */
+ 
+   if (base_bytes > bytes_left) {
+     DCHECK(0) << "SDP: Overran SDP data buffer";
+@@ -676,13 +676,11 @@ static void process_service_search_attr_rsp(tCONN_CB* p_ccb, uint8_t* p_reply,
+     p_param_len = p;
+     p += 2;
+ 
+-    /* Account for header size, max service record count and
+-     * continuation state */
++    /* Account for header size, max attr count and continuation state */
+     const uint16_t base_bytes =
+-            (sizeof(BT_HDR) + L2CAP_MIN_OFFSET + 3u + /* service search request header */
+-             2u +                                     /* param len */
+-             3u +                                     /* max service record count */
+-             ((p_reply) ? (*p_reply) : 0));
++            (sizeof(BT_HDR) + L2CAP_MIN_OFFSET + 3u + /* service search attr request header */
++             2u + 2u +                                /* param len, max attr count */
++             1u + ((p_reply) ? (*p_reply) : 0));      /* continuation state */
+ 
+     if (base_bytes > bytes_left) {
+       sdp_disconnect(p_ccb, tSDP_STATUS::SDP_INVALID_CONT_STATE);
+@@ -701,9 +699,10 @@ static void process_service_search_attr_rsp(tCONN_CB* p_ccb, uint8_t* p_reply,
+ 
+     /* If no attribute filters, build a wildcard attribute sequence */
+     if (p_ccb->p_db->num_attr_filters) {
+-      p = sdpu_build_attrib_seq(p, p_ccb->p_db->attr_filters, p_ccb->p_db->num_attr_filters);
++      p = sdpu_build_attrib_seq(p, p_ccb->p_db->attr_filters, p_ccb->p_db->num_attr_filters,
++                                bytes_left);
+     } else {
+-      p = sdpu_build_attrib_seq(p, NULL, 0);
++      p = sdpu_build_attrib_seq(p, NULL, 0, bytes_left);
+     }
+ 
+     /* No continuation for first request */
+@@ -850,6 +849,7 @@ static void process_service_attr_rsp(tCONN_CB* p_ccb, uint8_t* p_reply, uint8_t*
+   if (p_ccb->cur_handle < p_ccb->num_handles) {
+     BT_HDR* p_msg = (BT_HDR*)osi_malloc(SDP_DATA_BUF_SIZE);
+     uint8_t* p;
++    uint16_t bytes_left = SDP_DATA_BUF_SIZE;
+ 
+     p_msg->offset = L2CAP_MIN_OFFSET;
+     p = p_start = (uint8_t*)(p_msg + 1) + L2CAP_MIN_OFFSET;
+@@ -863,6 +863,19 @@ static void process_service_attr_rsp(tCONN_CB* p_ccb, uint8_t* p_reply, uint8_t*
+     p_param_len = p;
+     p += 2;
+ 
++    /* Account for header size, handles, max attr count and continuation state */
++    const uint16_t base_bytes =
++            (sizeof(BT_HDR) + L2CAP_MIN_OFFSET + 3u + /* service attr request header */
++             2u + 4u + 2u +                           /* param len, handles, max attr count */
++             1u + ((p_reply) ? (*p_reply) : 0));      /* continuation state */
++
++    if (base_bytes > bytes_left) {
++      sdp_disconnect(p_ccb, tSDP_STATUS::SDP_INVALID_CONT_STATE);
++      osi_free(p_msg);
++      return;
++    }
++    bytes_left -= base_bytes;
++
+     UINT32_TO_BE_STREAM(p, p_ccb->handles[p_ccb->cur_handle]);
+ 
+     /* Max attribute byte count */
+@@ -870,9 +883,10 @@ static void process_service_attr_rsp(tCONN_CB* p_ccb, uint8_t* p_reply, uint8_t*
+ 
+     /* If no attribute filters, build a wildcard attribute sequence */
+     if (p_ccb->p_db->num_attr_filters) {
+-      p = sdpu_build_attrib_seq(p, p_ccb->p_db->attr_filters, p_ccb->p_db->num_attr_filters);
++      p = sdpu_build_attrib_seq(p, p_ccb->p_db->attr_filters, p_ccb->p_db->num_attr_filters,
++                                bytes_left);
+     } else {
+-      p = sdpu_build_attrib_seq(p, NULL, 0);
++      p = sdpu_build_attrib_seq(p, NULL, 0, bytes_left);
+     }
+ 
+     /* Was this a continuation request ? */
+diff --git a/packages/modules/Bluetooth/system/stack/sdp/sdp_utils.cc b/packages/modules/Bluetooth/system/stack/sdp/sdp_utils.cc
+index 66a19e4..15271df 100644
+--- a/packages/modules/Bluetooth/system/stack/sdp/sdp_utils.cc
++++ b/packages/modules/Bluetooth/system/stack/sdp/sdp_utils.cc
+@@ -313,11 +313,10 @@ void sdpu_log_attribute_metrics(const RawAddress& bda, tSDP_DISCOVERY_DB* p_db)
+  *
+  ******************************************************************************/
+ tCONN_CB* sdpu_find_ccb_by_cid(uint16_t cid) {
+-  uint16_t xx;
+-  tCONN_CB* p_ccb{};
++  tCONN_CB* p_ccb = sdp_cb.ccb;
+ 
+   /* Look through each connection control block */
+-  for (xx = 0, p_ccb = sdp_cb.ccb; xx < SDP_MAX_CONNECTIONS; xx++, p_ccb++) {
++  for (uint16_t xx = 0; xx < SDP_MAX_CONNECTIONS; xx++, p_ccb++) {
+     if ((p_ccb->con_state != tSDP_STATE::IDLE) && (p_ccb->con_state != tSDP_STATE::CONN_PEND) &&
+         (p_ccb->connection_id == cid)) {
+       return p_ccb;
+@@ -339,12 +338,11 @@ tCONN_CB* sdpu_find_ccb_by_cid(uint16_t cid) {
+  *
+  ******************************************************************************/
+ tCONN_CB* sdpu_find_ccb_by_db(const tSDP_DISCOVERY_DB* p_db) {
+-  uint16_t xx;
+-  tCONN_CB* p_ccb{};
++  tCONN_CB* p_ccb = sdp_cb.ccb;
+ 
+   if (p_db) {
+     /* Look through each connection control block */
+-    for (xx = 0, p_ccb = sdp_cb.ccb; xx < SDP_MAX_CONNECTIONS; xx++, p_ccb++) {
++    for (uint16_t xx = 0; xx < SDP_MAX_CONNECTIONS; xx++, p_ccb++) {
+       if ((p_ccb->con_state != tSDP_STATE::IDLE) && (p_ccb->p_db == p_db)) {
+         return p_ccb;
+       }
+@@ -364,11 +362,10 @@ tCONN_CB* sdpu_find_ccb_by_db(const tSDP_DISCOVERY_DB* p_db) {
+  *
+  ******************************************************************************/
+ tCONN_CB* sdpu_allocate_ccb(void) {
+-  uint16_t xx;
+-  tCONN_CB* p_ccb{};
++  tCONN_CB* p_ccb = sdp_cb.ccb;
+ 
+   /* Look through each connection control block for a free one */
+-  for (xx = 0, p_ccb = sdp_cb.ccb; xx < SDP_MAX_CONNECTIONS; xx++, p_ccb++) {
++  for (uint16_t xx = 0; xx < SDP_MAX_CONNECTIONS; xx++, p_ccb++) {
+     if (p_ccb->con_state == tSDP_STATE::IDLE) {
+       alarm_t* alarm = p_ccb->sdp_conn_timer;
+       *p_ccb = {};
+@@ -432,10 +429,9 @@ void sdpu_release_ccb(tCONN_CB& ccb) {
+  *
+  ******************************************************************************/
+ void sdpu_dump_all_ccb() {
+-  uint16_t xx{};
+-  tCONN_CB* p_ccb{};
++  tCONN_CB* p_ccb = sdp_cb.ccb;
+ 
+-  for (xx = 0, p_ccb = sdp_cb.ccb; xx < SDP_MAX_CONNECTIONS; xx++, p_ccb++) {
++  for (uint16_t xx = 0; xx < SDP_MAX_CONNECTIONS; xx++, p_ccb++) {
+     log::info("peer:{} cid:{} state:{} flags:{} ", p_ccb->device_address, p_ccb->connection_id,
+               sdp_state_text(p_ccb->con_state), sdp_flags_text(p_ccb->con_flags));
+   }
+@@ -454,11 +450,10 @@ void sdpu_dump_all_ccb() {
+  *
+  ******************************************************************************/
+ uint16_t sdpu_get_active_ccb_cid(const RawAddress& bd_addr) {
+-  uint16_t xx;
+-  tCONN_CB* p_ccb{};
++  tCONN_CB* p_ccb = sdp_cb.ccb;
+ 
+   // Look through each connection control block for active sdp on given remote
+-  for (xx = 0, p_ccb = sdp_cb.ccb; xx < SDP_MAX_CONNECTIONS; xx++, p_ccb++) {
++  for (uint16_t xx = 0; xx < SDP_MAX_CONNECTIONS; xx++, p_ccb++) {
+     if ((p_ccb->con_state == tSDP_STATE::CONN_SETUP) ||
+         (p_ccb->con_state == tSDP_STATE::CFG_SETUP) ||
+         (p_ccb->con_state == tSDP_STATE::CONNECTED)) {
+@@ -485,11 +480,10 @@ uint16_t sdpu_get_active_ccb_cid(const RawAddress& bd_addr) {
+  *
+  ******************************************************************************/
+ bool sdpu_process_pend_ccb_same_cid(const tCONN_CB& ccb) {
+-  uint16_t xx;
+-  tCONN_CB* p_ccb{};
++  tCONN_CB* p_ccb = sdp_cb.ccb;
+ 
+   // Look through each connection control block for active sdp on given remote
+-  for (xx = 0, p_ccb = sdp_cb.ccb; xx < SDP_MAX_CONNECTIONS; xx++, p_ccb++) {
++  for (uint16_t xx = 0; xx < SDP_MAX_CONNECTIONS; xx++, p_ccb++) {
+     if ((p_ccb->con_state == tSDP_STATE::CONN_PEND) &&
+         (p_ccb->connection_id == ccb.connection_id) && (p_ccb->con_flags & SDP_FLAGS_IS_ORIG)) {
+       p_ccb->con_state = tSDP_STATE::CONNECTED;
+@@ -514,13 +508,12 @@ bool sdpu_process_pend_ccb_same_cid(const tCONN_CB& ccb) {
+  *
+  ******************************************************************************/
+ bool sdpu_process_pend_ccb_new_cid(const tCONN_CB& ccb) {
+-  uint16_t xx;
+-  tCONN_CB* p_ccb{};
++  tCONN_CB* p_ccb = sdp_cb.ccb;
+   uint16_t new_cid = 0;
+   bool new_conn = false;
+ 
+   // Look through each ccb to replace the obsolete cid with a new one.
+-  for (xx = 0, p_ccb = sdp_cb.ccb; xx < SDP_MAX_CONNECTIONS; xx++, p_ccb++) {
++  for (uint16_t xx = 0; xx < SDP_MAX_CONNECTIONS; xx++, p_ccb++) {
+     if ((p_ccb->con_state == tSDP_STATE::CONN_PEND) &&
+         (p_ccb->connection_id == ccb.connection_id) && (p_ccb->con_flags & SDP_FLAGS_IS_ORIG)) {
+       if (!new_conn) {
+@@ -555,11 +548,10 @@ bool sdpu_process_pend_ccb_new_cid(const tCONN_CB& ccb) {
+  *
+  ******************************************************************************/
+ void sdpu_clear_pend_ccb(const tCONN_CB& ccb) {
+-  uint16_t xx;
+-  tCONN_CB* p_ccb{};
++  tCONN_CB* p_ccb = sdp_cb.ccb;
+ 
+   // Look through each connection control block for active sdp on given remote
+-  for (xx = 0, p_ccb = sdp_cb.ccb; xx < SDP_MAX_CONNECTIONS; xx++, p_ccb++) {
++  for (uint16_t xx = 0; xx < SDP_MAX_CONNECTIONS; xx++, p_ccb++) {
+     if ((p_ccb->con_state == tSDP_STATE::CONN_PEND) &&
+         (p_ccb->connection_id == ccb.connection_id) && (p_ccb->con_flags & SDP_FLAGS_IS_ORIG)) {
+       sdpu_callback(*p_ccb, tSDP_STATUS::SDP_CONN_FAILED);
+@@ -596,6 +588,7 @@ void sdpu_clear_all_ccbs_for_cid(uint16_t cid) {
+ 
+ /*******************************************************************************
+  *
++
+  * Function         sdpu_build_attrib_seq
+  *
+  * Description      This function builds an attribute sequence from the list of
+@@ -605,23 +598,36 @@ void sdpu_clear_all_ccbs_for_cid(uint16_t cid) {
+  * Returns          Pointer to next byte in the output buffer.
+  *
+  ******************************************************************************/
+-uint8_t* sdpu_build_attrib_seq(uint8_t* p_out, uint16_t* p_attr, uint16_t num_attrs) {
+-  uint16_t xx;
++uint8_t* sdpu_build_attrib_seq(uint8_t* p_out, uint16_t* p_attr, uint16_t num_attrs,
++                               uint16_t& bytes_left) {
++  int content_len, header_len;
+ 
+-  /* First thing is the data element header. See if the length fits 1 byte */
+   /* If no attributes, assume a 4-byte wildcard */
+   if (!p_attr) {
+-    xx = 5;
++    content_len = 5;
+   } else {
+-    xx = num_attrs * 3;
++    content_len = num_attrs * 3;
+   }
+ 
+-  if (xx > 255) {
++  /* First thing is the data element header. See if the length fits 1 byte */
++  if (content_len > 255) {
++    header_len = 3;
++  } else {
++    header_len = 2;
++  }
++
++  if (bytes_left < content_len + header_len) {
++    DCHECK(0) << "SDP: No space for attrib seq";
++    return p_out;
++  }
++  bytes_left -= (header_len + content_len);
++
++  if (content_len > 255) {
+     UINT8_TO_BE_STREAM(p_out, (DATA_ELE_SEQ_DESC_TYPE << 3) | SIZE_IN_NEXT_WORD);
+-    UINT16_TO_BE_STREAM(p_out, xx);
++    UINT16_TO_BE_STREAM(p_out, content_len);
+   } else {
+     UINT8_TO_BE_STREAM(p_out, (DATA_ELE_SEQ_DESC_TYPE << 3) | SIZE_IN_NEXT_BYTE);
+-    UINT8_TO_BE_STREAM(p_out, xx);
++    UINT8_TO_BE_STREAM(p_out, content_len);
+   }
+ 
+   /* If there are no attributes specified, assume caller wants wildcard */
+@@ -631,7 +637,7 @@ uint8_t* sdpu_build_attrib_seq(uint8_t* p_out, uint16_t* p_attr, uint16_t num_at
+     UINT16_TO_BE_STREAM(p_out, 0xFFFF);
+   } else {
+     /* Loop through and put in all the attributes(s) */
+-    for (xx = 0; xx < num_attrs; xx++, p_attr++) {
++    for (uint16_t xx = 0; xx < num_attrs; xx++, p_attr++) {
+       UINT8_TO_BE_STREAM(p_out, (UINT_DESC_TYPE << 3) | SIZE_TWO_BYTES);
+       UINT16_TO_BE_STREAM(p_out, *p_attr);
+     }
+@@ -1115,9 +1121,7 @@ uint8_t* sdpu_get_len_from_type(uint8_t* p, uint8_t* p_end, uint8_t type, uint32
+  *
+  ******************************************************************************/
+ bool sdpu_is_base_uuid(uint8_t* p_uuid) {
+-  uint16_t xx;
+-
+-  for (xx = 4; xx < Uuid::kNumBytes128; xx++) {
++  for (uint16_t xx = 4; xx < Uuid::kNumBytes128; xx++) {
+     if (p_uuid[xx] != sdp_base_uuid[xx]) {
+       return false;
+     }
+@@ -1328,11 +1332,10 @@ uint16_t sdpu_get_list_len(tSDP_UUID_SEQ* uid_seq, tSDP_ATTR_SEQ* attr_seq) {
+ uint16_t sdpu_get_attrib_seq_len(const tSDP_RECORD* p_rec, const tSDP_ATTR_SEQ* attr_seq) {
+   const tSDP_ATTRIBUTE* p_attr;
+   uint16_t len1 = 0;
+-  uint16_t xx;
+   bool is_range = false;
+   uint16_t start_id = 0, end_id = 0;
+ 
+-  for (xx = 0; xx < attr_seq->num_attr; xx++) {
++  for (uint16_t xx = 0; xx < attr_seq->num_attr; xx++) {
+     if (!is_range) {
+       start_id = attr_seq->attr_entry[xx].start;
+       end_id = attr_seq->attr_entry[xx].end;
+diff --git a/packages/modules/Bluetooth/system/stack/sdp/sdpint.h b/packages/modules/Bluetooth/system/stack/sdp/sdpint.h
+index 1bc7c3b..e12e0e7 100644
+--- a/packages/modules/Bluetooth/system/stack/sdp/sdpint.h
++++ b/packages/modules/Bluetooth/system/stack/sdp/sdpint.h
+@@ -254,7 +254,8 @@ tCONN_CB* sdpu_allocate_ccb(void);
+ void sdpu_release_ccb(tCONN_CB& p_ccb);
+ void sdpu_dump_all_ccb();
+ 
+-uint8_t* sdpu_build_attrib_seq(uint8_t* p_out, uint16_t* p_attr, uint16_t num_attrs);
++uint8_t* sdpu_build_attrib_seq(uint8_t* p_out, uint16_t* p_attr, uint16_t num_attrs,
++                               uint16_t& bytes_left);
+ uint8_t* sdpu_build_attrib_entry(uint8_t* p_out, const tSDP_ATTRIBUTE* p_attr);
+ void sdpu_build_n_send_error(tCONN_CB* p_ccb, uint16_t trans_num, tSDP_STATUS error_code,
+                              char* p_error_text);
 
 project packages/modules/Nfc/
+diff --git a/packages/modules/Nfc/NfcNci/proto/event.proto b/packages/modules/Nfc/NfcNci/proto/event.proto
+index eab7327..8d37a2c 100644
+--- a/packages/modules/Nfc/NfcNci/proto/event.proto
++++ b/packages/modules/Nfc/NfcNci/proto/event.proto
+@@ -160,6 +160,7 @@ enum BindState {
+   SERVICE_CONNECTED = 0;
+   SERVICE_DISCONNECTED = 1;
+   SERVICE_BINDING_DIED = 2;
++  SERVICE_NULL_BINDING = 3;
+ }
+ 
+ message NfcPaymentServiceBindState {
 diff --git a/packages/modules/Nfc/NfcNci/src/com/android/nfc/DeviceConfigFacade.java b/packages/modules/Nfc/NfcNci/src/com/android/nfc/DeviceConfigFacade.java
 index e229291..c6b32ba 100644
 --- a/packages/modules/Nfc/NfcNci/src/com/android/nfc/DeviceConfigFacade.java
@@ -2436,10 +3885,65 @@ index 3a95329..2f2aeb8 100644
                      mDeviceConfigFacade.getDefaultSecureNfcState())
                      && mIsSecureNfcCapable;
              mDeviceHost.setNfcSecure(mIsSecureNfcEnabled);
+diff --git a/packages/modules/Nfc/NfcNci/src/com/android/nfc/cardemulation/HostEmulationManager.java b/packages/modules/Nfc/NfcNci/src/com/android/nfc/cardemulation/HostEmulationManager.java
+index f25bfde..59242ac 100644
+--- a/packages/modules/Nfc/NfcNci/src/com/android/nfc/cardemulation/HostEmulationManager.java
++++ b/packages/modules/Nfc/NfcNci/src/com/android/nfc/cardemulation/HostEmulationManager.java
+@@ -1711,6 +1711,29 @@ public class HostEmulationManager {
+                                     .build())
+                             .build());
+         }
++
++        @Override
++        public void onNullBinding(ComponentName name) {
++            Log.i(TAG, "onNullBinding: " + name);
++            synchronized (mLock) {
++                mContext.unbindService(this);
++            }
++
++            NfcInjector.getInstance().getNfcEventLog().logEvent(
++                    NfcEventProto.EventType.newBuilder()
++                            .setPaymentServiceBindState(
++                                NfcEventProto.NfcPaymentServiceBindState.newBuilder()
++                                    .setBindState(NfcEventProto.BindState.SERVICE_NULL_BINDING)
++                                    .setComponentInfo(
++                                        NfcEventProto.NfcComponentInfo.newBuilder()
++                                            .setPackageName(
++                                                name.getPackageName())
++                                            .setClassName(
++                                                name.getClassName())
++                                            .build())
++                                    .build())
++                            .build());
++        }
+     };
+ 
+     class HostEmulationServiceConnection implements ServiceConnection {
+@@ -1801,6 +1824,20 @@ public class HostEmulationManager {
+                 }
+             }
+         }
++
++        @Override
++        public void onBindingDied(ComponentName name) {
++            Log.i(TAG, "onBindingDied: " + name);
++            unbindServiceIfNeededLocked();
++        }
++
++        @Override
++        public void onNullBinding(ComponentName name) {
++            Log.i(TAG, "onNullBinding: " + name);
++            synchronized (mLock) {
++                mContext.unbindService(this);
++            }
++        }
+     };
+ 
+     private ServiceConnection mConnection =
 
 project packages/modules/adb/
 diff --git a/packages/modules/adb/daemon/auth.cpp b/packages/modules/adb/daemon/auth.cpp
-index c59d0445..dce690d9 100644
+index c59d044..dce690d 100644
 --- a/packages/modules/adb/daemon/auth.cpp
 +++ b/packages/modules/adb/daemon/auth.cpp
 @@ -362,12 +362,14 @@ int adbd_tls_verify_cert(X509_STORE_CTX* ctx, std::string* auth_key) {
@@ -2562,6 +4066,120 @@ index 30fafa2..83e3667 100644
          if (VERBOSE_LOGGING) {
              Log.v(TAG, "query: uri=" + uri + "  projection=" + Arrays.toString(projection) +
                      "  selection=[" + selection + "]  args=" + Arrays.toString(selectionArgs) +
+diff --git a/packages/providers/ContactsProvider/src/com/android/providers/contacts/DataRowHandler.java b/packages/providers/ContactsProvider/src/com/android/providers/contacts/DataRowHandler.java
+index b9becf1..6474c24 100644
+--- a/packages/providers/ContactsProvider/src/com/android/providers/contacts/DataRowHandler.java
++++ b/packages/providers/ContactsProvider/src/com/android/providers/contacts/DataRowHandler.java
+@@ -445,11 +445,34 @@ public abstract class DataRowHandler {
+ 
+     protected static void applySimpleFieldMaxSize(ContentValues cv, String column) {
+         final int maxSize = ContactsDatabaseHelper.getSimpleFieldMaxSize();
+-        String v = cv.getAsString(column);
++        String key = findKey(cv, column);
++        String v = cv.getAsString(key);
+         if (v == null || v.length() <= maxSize) {
+             return;
+         }
+         Log.w(TAG, "Truncating field " + column + ": length=" + v.length() + " max=" + maxSize);
+         cv.put(column, v.substring(0, maxSize));
+     }
++
++    /**
++     * Returns the key from {@code cv} matching {@code column}, ignoring case.
++     *
++     * <p>Examples:
++     * <ul>
++     * <li>{@code findKey({"data1": "v"}, "data1")} &rarr; "data1"
++     * <li>{@code findKey({"DaTa1": "v"}, "data1")} &rarr; "DaTa1"
++     * <li>{@code findKey({}, "data1")} &rarr; "data1"
++     * </ul>
++     */
++    private static String findKey(ContentValues cv, String column) {
++        if (cv.containsKey(column)) {
++            return column;
++        }
++        for (String key : cv.keySet()) {
++            if (key.equalsIgnoreCase(column)) {
++                return key;
++            }
++        }
++        return column;
++    }
+ }
+diff --git a/packages/providers/ContactsProvider/tests/src/com/android/providers/contacts/ContactsProvider2Test.java b/packages/providers/ContactsProvider/tests/src/com/android/providers/contacts/ContactsProvider2Test.java
+index ff0bd72..d19627b 100644
+--- a/packages/providers/ContactsProvider/tests/src/com/android/providers/contacts/ContactsProvider2Test.java
++++ b/packages/providers/ContactsProvider/tests/src/com/android/providers/contacts/ContactsProvider2Test.java
+@@ -168,8 +168,6 @@ public class ContactsProvider2Test extends BaseContactsProvider2Test {
+ 
+     private int mOldMinMatch1;
+     private int mOldMinMatch2;
+-
+-    ContactsDatabaseHelper mMockContactsDatabaseHelper;
+     private ContactsProvider2 mContactsProvider2;
+     private ContactsDatabaseHelper mDbHelper;
+     private BroadcastReceiver mBroadcastReceiver;
+@@ -1575,6 +1573,60 @@ public class ContactsProvider2Test extends BaseContactsProvider2Test {
+         assertNetworkNotified(true);
+     }
+ 
++    @Test
++    public void testUpdateFailsWithOnlyCaseMismatchedColumn() {
++        long rawContactId = RawContactUtil.createRawContactWithName(mResolver, "John", "Doe");
++        Uri nameUri = DataUtil.insertStructuredName(mResolver, rawContactId, "Jane", "Smith");
++
++        ContentValues values = new ContentValues();
++        values.put("daTa1", "New Display Name"); // "data1" is the correct case but we used "daTa1"
++        int updateCount = mResolver.update(nameUri, values, null, null);
++
++        // Verify the update was rejected.
++        assertEquals(0, updateCount);
++        assertStoredValue(nameUri, Data.DATA1, "Jane Smith");
++    }
++
++    @Test
++    public void testUpdateSucceedsWithAtLeastOneCaseSensitiveColumn() {
++        long rawContactId = RawContactUtil.createRawContactWithName(mResolver, "John", "Doe");
++        Uri nameUri = DataUtil.insertStructuredName(mResolver, rawContactId, "Jane", "Smith");
++
++        ContentValues values = new ContentValues();
++        values.put("daTa1", "New Display Name"); // Mismatched case
++        values.put("data14", "Some Data");      // Exact case match
++        int updateCount = mResolver.update(nameUri, values, null, null);
++
++        assertEquals(1, updateCount);
++        // Verify both values were updated, including the one with the case-mismatched key.
++        assertStoredValue(nameUri, Data.DATA1, "New Display Name");
++        assertStoredValue(nameUri, Data.DATA14, "Some Data");
++    }
++
++
++    @Test
++    public void testCaseMismatchingFieldUpdatesAreTruncatedToMaxSize() {
++        int maxSize = ContactsDatabaseHelper.getSimpleFieldMaxSize();
++        String tooLong = "D".repeat(maxSize + 100);
++        String expectedTruncated = tooLong.substring(0, maxSize);
++
++        String[] columnVariants = new String[] { "data1", "daTa1", "DATA1", "Data1" };
++
++        for (String column : columnVariants) {
++            long rawContactId = RawContactUtil.createRawContactWithName(mResolver, "John", "Doe");
++            Uri nameUri = DataUtil.insertStructuredName(mResolver, rawContactId, "Jane", "Smith");
++
++            ContentValues values = new ContentValues();
++            values.put(column, tooLong);
++            // At least one case sensitive column match is required for successful update
++            values.put("data14", "Sample Data");
++            mResolver.update(nameUri, values, null, null);
++
++            // Verify data1 was updated and truncated to maxSize
++            assertStoredValue(nameUri, Data.DATA1, expectedTruncated);
++        }
++    }
++
+     @Test
+     public void testDataInsertAndUpdateHashId() {
+         long rawContactId = RawContactUtil.createRawContactWithName(mResolver, "John", "Doe");
 
 project packages/services/Telephony/
 diff --git a/packages/services/Telephony/src/com/android/phone/PhoneInterfaceManager.java b/packages/services/Telephony/src/com/android/phone/PhoneInterfaceManager.java
