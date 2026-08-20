@@ -279,9 +279,9 @@ def diff(file1: Path | str, file2: Path | str):
         # ELF file
         # Compare content, but ignore the build id
         buildid1 = get_elf_buildid(file1.open("rb"))
-        assert buildid1
+        assert buildid1, file1
         buildid2 = get_elf_buildid(file2.open("rb"))
-        assert buildid2
+        assert buildid2, file2
         data1 = file1.read_bytes().split(buildid1, maxsplit=1)
         data2 = file2.read_bytes().split(buildid2, maxsplit=1)
         if data1 == data2:
