@@ -1,0 +1,4128 @@
+
+project art/
+diff --git a/art/runtime/runtime_image.cc b/art/runtime/runtime_image.cc
+index cd002aa0a8..58b6d2329f 100644
+--- a/art/runtime/runtime_image.cc
++++ b/art/runtime/runtime_image.cc
+@@ -1914,6 +1914,11 @@ bool RuntimeImage::WriteImageToDisk(std::string* error_msg) {
+     return false;
+   }
+ 
++  if (fchmod(image_file->Fd(), 0444) != 0) {
++    *error_msg = "Failed to make runtime image read-only: " + std::string(strerror(errno));
++    return false;
++  }
++
+   std::vector<uint8_t> full_data(image->GetHeader()->GetImageSize());
+   image->FillData(full_data);
+ 
+
+project bionic/
+diff --git a/bionic/libc/bionic/malloc_limit.cpp b/bionic/libc/bionic/malloc_limit.cpp
+index 85ddc79..d89d4c4 100644
+--- a/bionic/libc/bionic/malloc_limit.cpp
++++ b/bionic/libc/bionic/malloc_limit.cpp
+@@ -201,8 +201,6 @@ static void* LimitRealloc(void* old_mem, size_t bytes) {
+   if (bytes > old_usable_size && !CheckLimit(bytes - old_usable_size)) {
+     warning_log("malloc_limit: realloc(%p, %zu) exceeds limit %" PRId64, old_mem, bytes,
+                 gAllocLimit);
+-    // Free the old pointer.
+-    LimitFree(old_mem);
+     return nullptr;
+   }
+ 
+
+project build/release/
+diff --git a/build/release/aconfig/cp2a/com.android.bluetooth.flags/btsec_sdp_database_thread_sync_flag_values.textproto b/build/release/aconfig/cp2a/com.android.bluetooth.flags/btsec_sdp_database_thread_sync_flag_values.textproto
+deleted file mode 100644
+index af4ddd0..0000000
+--- a/build/release/aconfig/cp2a/com.android.bluetooth.flags/btsec_sdp_database_thread_sync_flag_values.textproto
++++ /dev/null
+@@ -1,6 +0,0 @@
+-flag_value {
+-  package: "com.android.bluetooth.flags"
+-  name: "btsec_sdp_database_thread_sync"
+-  state: ENABLED
+-  permission: READ_ONLY
+-}
+diff --git a/build/release/aconfig/trunk_staging/com.android.bluetooth.flags/btsec_sdp_database_thread_sync_flag_values.textproto b/build/release/aconfig/trunk_staging/com.android.bluetooth.flags/btsec_sdp_database_thread_sync_flag_values.textproto
+deleted file mode 100644
+index efb24d0..0000000
+--- a/build/release/aconfig/trunk_staging/com.android.bluetooth.flags/btsec_sdp_database_thread_sync_flag_values.textproto
++++ /dev/null
+@@ -1,6 +0,0 @@
+-flag_value {
+-  package: "com.android.bluetooth.flags"
+-  name: "btsec_sdp_database_thread_sync"
+-  state: ENABLED
+-  permission: READ_WRITE
+-}
+diff --git a/build/release/aconfig/trunk_staging/com.android.bluetooth.flags/remove_bond_caller_info_flag_values.textproto b/build/release/aconfig/trunk_staging/com.android.bluetooth.flags/remove_bond_caller_info_flag_values.textproto
+deleted file mode 100644
+index 37cce78..0000000
+--- a/build/release/aconfig/trunk_staging/com.android.bluetooth.flags/remove_bond_caller_info_flag_values.textproto
++++ /dev/null
+@@ -1,6 +0,0 @@
+-flag_value {
+-  package: "com.android.bluetooth.flags"
+-  name: "remove_bond_caller_info"
+-  state: ENABLED
+-  permission: READ_WRITE
+-}
+
+project external/aac/
+diff --git a/external/aac/cpp/libSBRdec/src/psdec.cpp b/external/aac/cpp/libSBRdec/src/psdec.cpp
+index 13a21bf..3b8afc9 100644
+--- a/external/aac/cpp/libSBRdec/src/psdec.cpp
++++ b/external/aac/cpp/libSBRdec/src/psdec.cpp
+@@ -136,22 +136,24 @@ SBR_ERROR ResetPsDec(HANDLE_PS_DEC h_ps_d);
+   \return Error info
+ 
+ ****************************************************************************/
+-int CreatePsDec(HANDLE_PS_DEC *h_PS_DEC, /*!< pointer to the module state */
+-                int aacSamplesPerFrame) {
+-  SBR_ERROR errorInfo = SBRDEC_OK;
+-  HANDLE_PS_DEC h_ps_d;
+-  int i;
+-
+-  if (*h_PS_DEC == NULL) {
+-    /* Get ps dec ram */
+-    h_ps_d = GetRam_ps_dec();
+-    if (h_ps_d == NULL) {
+-      goto bail;
+-    }
+-  } else {
+-    /* Reset an open instance */
+-    h_ps_d = *h_PS_DEC;
+-  }
++ int CreatePsDec(HANDLE_PS_DEC *h_PS_DEC, /*!< pointer to the module state */
++                 int aacSamplesPerFrame) {
++   SBR_ERROR errorInfo = SBRDEC_OK;
++   HANDLE_PS_DEC h_ps_d;
++   int i;
++
++   HANDLE_PS_DEC originalPSDec = *h_PS_DEC;
++
++   if (originalPSDec == NULL) {
++     /* Get ps dec ram */
++     h_ps_d = GetRam_ps_dec();
++     if (h_ps_d == NULL) {
++       goto bail;
++     }
++   } else {
++     /* Reset an open instance */
++     h_ps_d = originalPSDec;
++   }
+ 
+   /*
+    * Create Analysis Hybrid filterbank.
+@@ -205,7 +207,7 @@ int CreatePsDec(HANDLE_PS_DEC *h_PS_DEC, /*!< pointer to the module state */
+   return 0;
+ 
+ bail:
+-  if (h_ps_d != NULL) {
++  if (originalPSDec == NULL) {
+     DeletePsDec(&h_ps_d);
+   }
+ 
+diff --git a/external/aac/cpp/libSBRdec/src/sbrdecoder.cpp b/external/aac/cpp/libSBRdec/src/sbrdecoder.cpp
+index 7718695..495e412 100644
+--- a/external/aac/cpp/libSBRdec/src/sbrdecoder.cpp
++++ b/external/aac/cpp/libSBRdec/src/sbrdecoder.cpp
+@@ -401,6 +401,7 @@ static SBR_ERROR sbrDecoder_ResetElement(HANDLE_SBRDECODER self,
+       case AOT_DRM_AAC:
+       case AOT_DRM_SURROUND:
+         if (CreatePsDec(&self->hParametricStereoDec, samplesPerFrame)) {
++          DeletePsDec(&self->hParametricStereoDec);
+           sbrError = SBRDEC_CREATE_ERROR;
+           goto bail;
+         }
+
+project external/freetype/
+diff --git a/external/freetype/src/smooth/ftsmooth.c b/external/freetype/src/smooth/ftsmooth.c
+index f0acc1ea4..bc4c963c2 100644
+--- a/external/freetype/src/smooth/ftsmooth.c
++++ b/external/freetype/src/smooth/ftsmooth.c
+@@ -141,6 +141,10 @@
+     TOrigin            target;
+ 
+ 
++    /* Reject bitmaps that are too wide. */
++    if ( bitmap->width >> 15 > 2 )
++      return FT_THROW( Raster_Overflow );
++
+     /* Render 3 separate coverage bitmaps, shifting the outline.  */
+     /* Set up direct rendering to record them on each third byte. */
+     params.source     = outline;
+@@ -208,6 +212,9 @@
+     FT_Raster_Params  params;
+ 
+ 
++    /* Reject bitmaps that are too tall. */
++    if ( bitmap->rows >> 15 > 2 )
++      return FT_THROW( Raster_Overflow );
+     params.target = bitmap;
+     params.source = outline;
+     params.flags  = FT_RASTER_FLAG_AA;
+
+project external/libhevc/
+diff --git a/external/libhevc/decoder/ihevcd_utils.c b/external/libhevc/decoder/ihevcd_utils.c
+index b73f247..98c50e9 100755
+--- a/external/libhevc/decoder/ihevcd_utils.c
++++ b/external/libhevc/decoder/ihevcd_utils.c
+@@ -318,7 +318,7 @@ WORD32 ihevcd_get_tu_data_size(WORD32 num_luma_samples)
+     tu_data_size += (num_ctb + 1) * sizeof(WORD32);
+ 
+     /* Size for storing tu map */
+-    tu_data_size += num_luma_tu * sizeof(UWORD8);
++    tu_data_size += num_tu * sizeof(UWORD8);
+ 
+     /* Size for storing tu_t for each TU */
+     tu_data_size += num_tu * sizeof(tu_t);
+
+project frameworks/av/
+diff --git a/frameworks/av/media/codec2/components/apv/C2SoftApvDec.cpp b/frameworks/av/media/codec2/components/apv/C2SoftApvDec.cpp
+index e32766ee1..c52f7163d 100644
+--- a/frameworks/av/media/codec2/components/apv/C2SoftApvDec.cpp
++++ b/frameworks/av/media/codec2/components/apv/C2SoftApvDec.cpp
+@@ -972,18 +972,20 @@ void C2SoftApvDec::process(const std::unique_ptr<C2Work>& work,
+             oapv_frm_info_t* finfo = &aui.frm_info[i];
+             oapv_frm_t* frm = &mOutFrames.frm[i];
+ 
+-            if (mWidth != finfo->w || mHeight != finfo->h) {
+-                mWidth = finfo->w;
+-                mHeight = finfo->h;
+-                reportResolutionChange = true;
+-            }
+-
+-            if (mWidth > MAX_SUPPORTED_WIDTH || mHeight > MAX_SUPPORTED_HEIGHT) {
+-                ALOGE("Stream resolution of %dx%d is not supported.", mWidth, mHeight);
++            if (finfo->w > MAX_SUPPORTED_WIDTH || finfo->h > MAX_SUPPORTED_HEIGHT) {
++                ALOGE("Stream resolution of %dx%d is not supported.", finfo->w, finfo->h);
+                 work->result = C2_CORRUPTED;
+                 return;
+             }
+ 
++            if (finfo->pbu_type == OAPV_PBU_TYPE_PRIMARY_FRAME && !reportResolutionChange) {
++                if (mWidth != finfo->w || mHeight != finfo->h) {
++                    mWidth = finfo->w;
++                    mHeight = finfo->h;
++                    reportResolutionChange = true;
++                }
++            }
++
+             if (frm->imgb != NULL && (frm->imgb->w[0] != finfo->w || frm->imgb->h[0] != finfo->h)) {
+                 frm->imgb->release(frm->imgb);
+                 frm->imgb = NULL;
+@@ -1331,6 +1333,21 @@ status_t C2SoftApvDec::outputBuffer(const std::shared_ptr<C2BlockPool>& pool,
+     }
+     ALOGV("mHalPixelFormat: %u, format: %d", mHalPixelFormat, format);
+ 
++    uint32_t imgWidth = imgbOutput->w[0];
++    uint32_t imgHeight = imgbOutput->h[0];
++    if (imgWidth < 1 || imgWidth > MAX_SUPPORTED_WIDTH ||
++        imgHeight < 1 || imgHeight > MAX_SUPPORTED_HEIGHT) {
++        ALOGE("Primary-frame imgb dimensions invalid: %ux%u", imgWidth, imgHeight);
++        work->result = C2_CORRUPTED;
++        return UNKNOWN_ERROR;
++    }
++    if (imgWidth != mWidth || imgHeight != mHeight) {
++        ALOGW("Output dimensions mismatch: imgb(%ux%u) vs mWidth/mHeight(%ux%u)",
++              imgWidth, imgHeight, mWidth, mHeight);
++        mWidth = imgWidth;
++        mHeight = imgHeight;
++    }
++
+     C2MemoryUsage usage = {C2MemoryUsage::CPU_READ, C2MemoryUsage::CPU_WRITE};
+ 
+     // check. align height to 2 times does not work.
+diff --git a/frameworks/av/media/libeffects/dynamicsproc/EffectDynamicsProcessing.cpp b/frameworks/av/media/libeffects/dynamicsproc/EffectDynamicsProcessing.cpp
+index c03c6edf1..b9e527a4e 100644
+--- a/frameworks/av/media/libeffects/dynamicsproc/EffectDynamicsProcessing.cpp
++++ b/frameworks/av/media/libeffects/dynamicsproc/EffectDynamicsProcessing.cpp
+@@ -1090,6 +1090,11 @@ int DP_setParameter(DynamicsProcessingContext *pContext,
+         const float cutoffFrequency = values[1].f;
+         const float gain = values[2].f;
+ 
++        if (!std::isfinite(cutoffFrequency) || cutoffFrequency < 0.0f ||
++                cutoffFrequency > pContext->mConfig.inputCfg.samplingRate * 0.5f) {
++            status = -EINVAL;
++            break;
++        }
+ 
+         ALOGVV(" %s channel: %d, band::%d, enabled:%d, cutoffFrequency:%f, gain%f\n",
+                 (command == DP_PARAM_PRE_EQ_BAND ? "preEqBand" : "postEqBand"), channel, band,
+@@ -1181,6 +1186,12 @@ int DP_setParameter(DynamicsProcessingContext *pContext,
+         const float preGain = values[9].f;
+         const float postGain = values[10].f;
+ 
++        if (!std::isfinite(cutoffFrequency) || cutoffFrequency < 0.0f ||
++                cutoffFrequency > pContext->mConfig.inputCfg.samplingRate * 0.5f) {
++            status = -EINVAL;
++            break;
++        }
++
+         ALOGVV(" mbcBand channel: %d, band::%d, enabled:%d, cutoffFrequency:%f, attackTime:%f,"
+                 "releaseTime:%f, ratio:%f, threshold:%f, kneeWidth:%f, noiseGateThreshold:%f,"
+                 "expanderRatio:%f, preGain:%f, postGain:%f\n",
+diff --git a/frameworks/av/media/libeffects/dynamicsproc/aidl/DynamicsProcessingContext.cpp b/frameworks/av/media/libeffects/dynamicsproc/aidl/DynamicsProcessingContext.cpp
+index 00538b403..e1bd314fa 100644
+--- a/frameworks/av/media/libeffects/dynamicsproc/aidl/DynamicsProcessingContext.cpp
++++ b/frameworks/av/media/libeffects/dynamicsproc/aidl/DynamicsProcessingContext.cpp
+@@ -409,6 +409,11 @@ bool DynamicsProcessingContext::validateBandConfig(const std::vector<T>& bands,
+             LOG(ERROR) << __func__ << " " << band.toString() << " found duplicate";
+             return false;
+         }
++        if (!std::isfinite(band.cutoffFrequencyHz) || band.cutoffFrequencyHz < 0.0f ||
++                band.cutoffFrequencyHz > mCommon.input.base.sampleRate * 0.5f) {
++            LOG(ERROR) << __func__ << " " << band.toString() << " invalid cutoffFrequencyHz";
++            return false;
++        }
+         freqs[band.band] = band.cutoffFrequencyHz;
+     }
+     return true;
+diff --git a/frameworks/av/media/libeffects/dynamicsproc/dsp/DPFrequency.cpp b/frameworks/av/media/libeffects/dynamicsproc/dsp/DPFrequency.cpp
+index ae5c02069..2232c0372 100644
+--- a/frameworks/av/media/libeffects/dynamicsproc/dsp/DPFrequency.cpp
++++ b/frameworks/av/media/libeffects/dynamicsproc/dsp/DPFrequency.cpp
+@@ -91,7 +91,14 @@ void ChannelBuffer::initBuffers(unsigned int blockSize, unsigned int overlapSize
+ void ChannelBuffer::computeBinStartStop(BandParams &bp, size_t binStart) {
+ 
+     bp.binStart = binStart;
+-    bp.binStop = (int)(0.5 + bp.freqCutoffHz * mBlockSize / mSamplingRate);
++    const size_t halfBlockSize = mBlockSize / 2;
++    float binStopFloat = 0.5f + bp.freqCutoffHz * mBlockSize / mSamplingRate;
++    if (!std::isfinite(binStopFloat) || binStopFloat < 0.0f) {
++        bp.binStop = 0;
++    } else {
++        bp.binStop = binStopFloat > (float)halfBlockSize ?
++                halfBlockSize : (size_t)binStopFloat;
++    }
+ }
+ 
+ //== LinkedLimiters Helper
+@@ -506,7 +513,8 @@ size_t DPFrequency::processFirstStages(ChannelBuffer &cb) {
+             float preGainFactor = dBtoLinear(pMbcBandParams->gainPreDb);
+             float preGainSquared = preGainFactor * preGainFactor;
+ 
+-            for (size_t k = pMbcBandParams->binStart; k <= pMbcBandParams->binStop; k++) {
++            for (size_t k = pMbcBandParams->binStart;
++                    k <= pMbcBandParams->binStop && k < maxBin; k++) {
+                 fEnergySum += std::norm(cb.complexTemp[k]) * preGainSquared; //mag squared
+             }
+ 
+@@ -567,7 +575,8 @@ size_t DPFrequency::processFirstStages(ChannelBuffer &cb) {
+             newFactor *= dBtoLinear(pMbcBandParams->gainPostDb);
+ 
+             //apply to this band
+-            for (size_t k = pMbcBandParams->binStart; k <= pMbcBandParams->binStop; k++) {
++            for (size_t k = pMbcBandParams->binStart;
++                    k <= pMbcBandParams->binStop && k < maxBin; k++) {
+                 cb.complexTemp[k] *= newFactor;
+             }
+ 
+diff --git a/frameworks/av/media/libmediaplayerservice/MediaPlayerService.cpp b/frameworks/av/media/libmediaplayerservice/MediaPlayerService.cpp
+index b6a4464dd..9f16a4713 100644
+--- a/frameworks/av/media/libmediaplayerservice/MediaPlayerService.cpp
++++ b/frameworks/av/media/libmediaplayerservice/MediaPlayerService.cpp
+@@ -238,15 +238,12 @@ void unmarshallAudioAttributes(const Parcel& parcel, audio_attributes_t *attribu
+         // the tags are UTF16, convert to UTF8
+         String16 tags = parcel.readString16();
+         ssize_t realTagSize = utf16_to_utf8_length(tags.c_str(), tags.size());
+-        if (realTagSize <= 0) {
++        if (realTagSize <= 0 || realTagSize >= AUDIO_ATTRIBUTES_TAGS_MAX_SIZE) {
+             strcpy(attributes->tags, "");
+         } else {
+             // copy the flattened string into the attributes as the destination for the conversion:
+-            // copying array size -1, array for tags was calloc'd, no need to NULL-terminate it
+-            size_t tagSize = realTagSize > AUDIO_ATTRIBUTES_TAGS_MAX_SIZE - 1 ?
+-                    AUDIO_ATTRIBUTES_TAGS_MAX_SIZE - 1 : realTagSize;
+-            utf16_to_utf8(tags.c_str(), tagSize, attributes->tags,
+-                    sizeof(attributes->tags) / sizeof(attributes->tags[0]));
++            // the array for tags was calloc'd, no need to NULL-terminate it
++            utf16_to_utf8(tags.c_str(), tags.size(), attributes->tags, realTagSize);
+         }
+     } else {
+         ALOGE("unmarshallAudioAttributes() received unflattened tags, ignoring tag values");
+diff --git a/frameworks/av/media/libmediaplayerservice/StagefrightMetadataRetriever.cpp b/frameworks/av/media/libmediaplayerservice/StagefrightMetadataRetriever.cpp
+index 86791419d..03332d85e 100644
+--- a/frameworks/av/media/libmediaplayerservice/StagefrightMetadataRetriever.cpp
++++ b/frameworks/av/media/libmediaplayerservice/StagefrightMetadataRetriever.cpp
+@@ -614,7 +614,7 @@ void StagefrightMetadataRetriever::parseMetaData() {
+ 
+     float captureFps;
+     if (meta->findFloat(kKeyCaptureFramerate, &captureFps)) {
+-        sprintf(tmp, "%f", captureFps);
++        snprintf(tmp, sizeof(tmp), "%f", captureFps);
+         mMetaData.add(METADATA_KEY_CAPTURE_FRAMERATE, String8(tmp));
+     }
+ 
+diff --git a/frameworks/av/media/libstagefright/FrameDecoder.cpp b/frameworks/av/media/libstagefright/FrameDecoder.cpp
+index 5cd46ce75..84e2bb23e 100644
+--- a/frameworks/av/media/libstagefright/FrameDecoder.cpp
++++ b/frameworks/av/media/libstagefright/FrameDecoder.cpp
+@@ -1352,6 +1352,21 @@ status_t MediaImageDecoder::onOutputReceived(
+         height = slice_height;
+     }
+ 
++    if (crop_left < 0 || crop_top < 0 ||
++            crop_right < crop_left || crop_bottom < crop_top ||
++            width < 1 || height < 1 ||
++            crop_bottom >= height || crop_right >= width ||
++            stride < 0) {
++        ALOGE("Invalid crop, width and height in outputFormat. crop_left: %d, crop_right: %d, "
++              "crop_top: %d, crop_bottom: %d, width: %d, height: %d",
++              crop_left, crop_right, crop_top, crop_bottom, width, height);
++        return ERROR_MALFORMED;
++    }
++    if (stride & 1) {
++        ALOGE("Invalid stride in outputFormat: %d", stride);
++        return ERROR_MALFORMED;
++    }
++
+     int32_t crop_width, crop_height;
+     crop_width = crop_right - crop_left + 1;
+     crop_height = crop_bottom - crop_top + 1;
+diff --git a/frameworks/av/media/libstagefright/include/media/stagefright/MediaBuffer.h b/frameworks/av/media/libstagefright/include/media/stagefright/MediaBuffer.h
+index f070aace1..717d0adc7 100644
+--- a/frameworks/av/media/libstagefright/include/media/stagefright/MediaBuffer.h
++++ b/frameworks/av/media/libstagefright/include/media/stagefright/MediaBuffer.h
+@@ -52,7 +52,8 @@ public:
+          //       (see declaration for details).
+          //       Either document why it is safe in this case or address the
+          //       issue (e.g. by copying).
+-        MediaBuffer((uint8_t *)mem->unsecurePointer() + sizeof(SharedControl), mem->size()) {
++        MediaBuffer((uint8_t *)mem->unsecurePointer() + sizeof(SharedControl),
++                mem->size() > sizeof(SharedControl) ? mem->size() - sizeof(SharedControl) : 0) {
+         // delegate and override mMemory
+         mMemory = mem;
+     }
+diff --git a/frameworks/av/media/module/extractors/mp4/HeifCleanAperture.cpp b/frameworks/av/media/module/extractors/mp4/HeifCleanAperture.cpp
+index f0a086703..f72020c5d 100644
+--- a/frameworks/av/media/module/extractors/mp4/HeifCleanAperture.cpp
++++ b/frameworks/av/media/module/extractors/mp4/HeifCleanAperture.cpp
+@@ -142,14 +142,15 @@ bool convertCleanApertureToRect(uint32_t imageW, uint32_t imageH, const CleanApe
+ 
+     *left = centerX.getInt32();
+     *top = centerY.getInt32();
+-    *right = *left + clapW;
+-    *bottom = *top + clapH;
+ 
+     // Make sure that the crop rect is within the image bounds.
+-    if (*left > (UINT32_MAX - clapW) || *right > imageW || *top > (UINT32_MAX - clapH) ||
+-        *bottom > imageH) {
++    if (static_cast<int64_t>(*left) + clapW > imageW ||
++        static_cast<int64_t>(*top) + clapH > imageH) {
+         return false;
+     }
++
++    *right = *left + clapW;
++    *bottom = *top + clapH;
+     return true;
+ }
+ 
+diff --git a/frameworks/av/media/module/extractors/mp4/MPEG4Extractor.cpp b/frameworks/av/media/module/extractors/mp4/MPEG4Extractor.cpp
+index 0396fe797..d00605581 100644
+--- a/frameworks/av/media/module/extractors/mp4/MPEG4Extractor.cpp
++++ b/frameworks/av/media/module/extractors/mp4/MPEG4Extractor.cpp
+@@ -201,7 +201,7 @@ private:
+     uint64_t mElstInitialEmptyEditTicks;
+ 
+     size_t parseNALSize(const uint8_t *data) const;
+-    status_t parseChunk(off64_t *offset);
++    status_t parseChunk(off64_t *offset, int depth);
+     status_t parseTrackFragmentHeader(off64_t offset, off64_t size);
+     status_t parseTrackFragmentRun(off64_t offset, off64_t size);
+     status_t parseSampleAuxiliaryInformationSizes(off64_t offset, off64_t size);
+@@ -5832,7 +5832,7 @@ MPEG4Source::MPEG4Source(
+ status_t MPEG4Source::init() {
+     if (mFirstMoofOffset != 0) {
+         off64_t offset = mFirstMoofOffset;
+-        return parseChunk(&offset);
++        return parseChunk(&offset, 0);
+     }
+     return OK;
+ }
+@@ -5903,7 +5903,10 @@ media_status_t MPEG4Source::stop() {
+     return AMEDIA_OK;
+ }
+ 
+-status_t MPEG4Source::parseChunk(off64_t *offset) {
++status_t MPEG4Source::parseChunk(off64_t *offset, int depth) {
++    if (depth > 100) {
++        return ERROR_MALFORMED;
++    }
+     uint32_t hdr[2];
+     if (mDataSource->readAt(*offset, hdr, 8) < 8) {
+         return ERROR_IO;
+@@ -5944,7 +5947,7 @@ status_t MPEG4Source::parseChunk(off64_t *offset) {
+                 mCurrentMoofSize = chunk_data_size;
+             }
+             while (*offset < stop_offset) {
+-                status_t err = parseChunk(offset);
++                status_t err = parseChunk(offset, depth + 1);
+                 if (err != OK) {
+                     return err;
+                 }
+@@ -5982,7 +5985,7 @@ status_t MPEG4Source::parseChunk(off64_t *offset) {
+                         mNextMoofOffset = *offset;
+                         break;
+                     } else if (chunk_type == FOURCC("mdat") && chunk_size > 0) {
+-                        status_t err = parseChunk(offset);
++                        status_t err = parseChunk(offset, depth + 1);
+                         if (err != OK) {
+                             return err;
+                         }
+@@ -7366,7 +7369,7 @@ media_status_t MPEG4Source::fragmentedRead(
+             mNextMoofOffset = -1;
+             mCurrentSamples.clear();
+             mCurrentSampleIndex = 0;
+-            status_t err = parseChunk(&totalOffset);
++            status_t err = parseChunk(&totalOffset, 0);
+             if (err != OK) {
+                 return AMEDIA_ERROR_UNKNOWN;
+             }
+@@ -7378,7 +7381,7 @@ media_status_t MPEG4Source::fragmentedRead(
+             mCurrentSamples.clear();
+             mCurrentSampleIndex = 0;
+             off64_t tmp = mCurrentMoofOffset;
+-            status_t err = parseChunk(&tmp);
++            status_t err = parseChunk(&tmp, 0);
+             if (err != OK) {
+                 return AMEDIA_ERROR_UNKNOWN;
+             }
+@@ -7414,7 +7417,7 @@ media_status_t MPEG4Source::fragmentedRead(
+             mCurrentMoofOffset = nextMoof;
+             mCurrentSamples.clear();
+             mCurrentSampleIndex = 0;
+-            status_t err = parseChunk(&nextMoof);
++            status_t err = parseChunk(&nextMoof, 0);
+             if (err != OK) {
+                 return AMEDIA_ERROR_UNKNOWN;
+             }
+diff --git a/frameworks/av/services/camera/libcameraservice/device3/DistortionMapper.cpp b/frameworks/av/services/camera/libcameraservice/device3/DistortionMapper.cpp
+index 9a4e9e34b..b2205048c 100644
+--- a/frameworks/av/services/camera/libcameraservice/device3/DistortionMapper.cpp
++++ b/frameworks/av/services/camera/libcameraservice/device3/DistortionMapper.cpp
+@@ -143,7 +143,7 @@ status_t DistortionMapper::correctCaptureRequest(CameraMetadata *request) {
+     if (e.count != 0 && e.data.u8[0] != ANDROID_DISTORTION_CORRECTION_MODE_OFF) {
+         for (auto region : kMeteringRegionsToCorrect) {
+             e = request->find(region);
+-            for (size_t j = 0; j < e.count; j += 5) {
++            for (size_t j = 0; j + 5 <= e.count; j += 5) {
+                 int32_t weight = e.data.i32[j + 4];
+                 if (weight == 0) {
+                     continue;
+@@ -182,7 +182,7 @@ status_t DistortionMapper::correctCaptureResult(CameraMetadata *result) {
+     if (e.count != 0 && e.data.u8[0] != ANDROID_DISTORTION_CORRECTION_MODE_OFF) {
+         for (auto region : kMeteringRegionsToCorrect) {
+             e = result->find(region);
+-            for (size_t j = 0; j < e.count; j += 5) {
++            for (size_t j = 0; j + 5 <= e.count; j += 5) {
+                 int32_t weight = e.data.i32[j + 4];
+                 if (weight == 0) {
+                     continue;
+diff --git a/frameworks/av/services/camera/libcameraservice/device3/RotateAndCropMapper.cpp b/frameworks/av/services/camera/libcameraservice/device3/RotateAndCropMapper.cpp
+index 1ea077c30..256a6f8d5 100644
+--- a/frameworks/av/services/camera/libcameraservice/device3/RotateAndCropMapper.cpp
++++ b/frameworks/av/services/camera/libcameraservice/device3/RotateAndCropMapper.cpp
+@@ -163,7 +163,7 @@ status_t RotateAndCropMapper::updateCaptureRequest(CameraMetadata *request) {
+ 
+     for (auto regionTag : kMeteringRegionsToCorrect) {
+         entry = request->find(regionTag);
+-        for (size_t i = 0; i < entry.count; i += 5) {
++        for (size_t i = 0; i + 5 <= entry.count; i += 5) {
+             int32_t weight = entry.data.i32[i + 4];
+             if (weight == 0) {
+                 continue;
+@@ -292,7 +292,7 @@ status_t RotateAndCropMapper::updateCaptureResult(CameraMetadata *result) {
+ 
+     for (auto regionTag : kMeteringRegionsToCorrect) {
+         entry = result->find(regionTag);
+-        for (size_t i = 0; i < entry.count; i += 5) {
++        for (size_t i = 0; i + 5 <= entry.count; i += 5) {
+             int32_t weight = entry.data.i32[i + 4];
+             if (weight == 0) {
+                 continue;
+diff --git a/frameworks/av/services/camera/libcameraservice/device3/ZoomRatioMapper.cpp b/frameworks/av/services/camera/libcameraservice/device3/ZoomRatioMapper.cpp
+index ef2109adf..d9c7bef62 100644
+--- a/frameworks/av/services/camera/libcameraservice/device3/ZoomRatioMapper.cpp
++++ b/frameworks/av/services/camera/libcameraservice/device3/ZoomRatioMapper.cpp
+@@ -386,7 +386,7 @@ status_t ZoomRatioMapper::separateZoomFromCropLocked(CameraMetadata* metadata, b
+     camera_metadata_entry_t entry;
+     for (auto region : kMeteringRegionsToCorrect) {
+         entry = metadata->find(region);
+-        for (size_t j = 0; j < entry.count; j += 5) {
++        for (size_t j = 0; j + 5 <= entry.count; j += 5) {
+             int32_t weight = entry.data.i32[j + 4];
+             if (weight == 0) {
+                 continue;
+@@ -424,7 +424,7 @@ status_t ZoomRatioMapper::combineZoomAndCropLocked(CameraMetadata* metadata, boo
+     // Unscale regions with zoomRatio
+     for (auto region : kMeteringRegionsToCorrect) {
+         entry = metadata->find(region);
+-        for (size_t j = 0; j < entry.count; j += 5) {
++        for (size_t j = 0; j + 5 <= entry.count; j += 5) {
+             int32_t weight = entry.data.i32[j + 4];
+             if (weight == 0) {
+                 continue;
+
+project frameworks/base/
+diff --git a/frameworks/base/core/java/android/accounts/GrantCredentialsPermissionActivity.java b/frameworks/base/core/java/android/accounts/GrantCredentialsPermissionActivity.java
+index d67bff2c0..30d7d9af5 100644
+--- a/frameworks/base/core/java/android/accounts/GrantCredentialsPermissionActivity.java
++++ b/frameworks/base/core/java/android/accounts/GrantCredentialsPermissionActivity.java
+@@ -38,6 +38,7 @@ import java.io.IOException;
+ /**
+  * @hide
+  */
++// PADDING
+ public class GrantCredentialsPermissionActivity extends Activity implements View.OnClickListener {
+     public static final String EXTRAS_ACCOUNT = "account";
+     public static final String EXTRAS_AUTH_TOKEN_TYPE = "authTokenType";
+@@ -126,7 +127,7 @@ public class GrantCredentialsPermissionActivity extends Activity implements View
+                         runOnUiThread(new Runnable() {
+                             public void run() {
+                                 if (!isFinishing()) {
+-                                    authTokenTypeView.setText(authTokenLabel);
++                                    authTokenTypeView.setText(makeSafe(authTokenLabel));
+                                     authTokenTypeView.setVisibility(View.VISIBLE);
+                                 }
+                             }
+@@ -156,11 +157,22 @@ public class GrantCredentialsPermissionActivity extends Activity implements View
+             } catch (PackageManager.NameNotFoundException e) {
+                 packageLabel = pkg;
+             }
+-            packagesListView.addView(newPackageView(packageLabel));
++            packagesListView.addView(newPackageView(makeSafe(packageLabel)));
+         }
+ 
+-        ((TextView) findViewById(R.id.account_name)).setText(mAccount.name);
+-        ((TextView) findViewById(R.id.account_type)).setText(accountTypeLabel);
++        ((TextView) findViewById(R.id.account_name)).setText(makeSafe(mAccount.name));
++        ((TextView) findViewById(R.id.account_type)).setText(makeSafe(accountTypeLabel));
++    }
++
++    private String makeSafe(String label) {
++        if (TextUtils.isEmpty(label)) {
++            return label;
++        }
++        return TextUtils.makeSafeForPresentation(
++                label,
++                1000,
++                1000.0f,
++                5).toString();
+     }
+ 
+     private String getAccountLabel(Account account) {
+diff --git a/frameworks/base/core/java/android/app/admin/BundlePolicyTypeVerifier.java b/frameworks/base/core/java/android/app/admin/BundlePolicyTypeVerifier.java
+new file mode 100644
+index 000000000..21f809836
+--- /dev/null
++++ b/frameworks/base/core/java/android/app/admin/BundlePolicyTypeVerifier.java
+@@ -0,0 +1,83 @@
++/*
++ * Copyright (C) 2024 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package android.app.admin;
++
++import android.os.Bundle;
++import android.os.Parcelable;
++
++import java.util.ArrayDeque;
++import java.util.Queue;
++
++/**
++ * Verifies that {@link Bundle} values passed to DPM only contain allowed types.
++ *
++ * @hide
++ */
++public class BundlePolicyTypeVerifier {
++
++    /**
++     * Validates that values inside the given bundle are of allowed types.
++     *
++     * @throws IllegalArgumentException if any value has an unsupported type
++     */
++    public static void enforceValidTypes(Bundle bundle) {
++        Queue<Bundle> queue = new ArrayDeque<>();
++        queue.add(bundle);
++
++        while (!queue.isEmpty()) {
++            Bundle current = queue.remove();
++            for (String key : current.keySet()) {
++                Object value = getUntypedValue(current, key);
++
++                if (value == null || value instanceof Boolean || value instanceof Integer || value instanceof String || value instanceof String[]) {
++                        // String[] values cannot contain nested bundles
++                        // and are therefore treated as valid.
++                        // The check below accepts only Bundle elements.
++                        // Skip String[] values entirely.
++                        continue;
++                } else if (value instanceof Bundle) { Bundle b = (Bundle) value;
++                    queue.add(b);
++                } else if (value instanceof Parcelable[]) { Parcelable[] parcelableArray = (Parcelable[]) value;
++                    for (Parcelable parcelable : parcelableArray) {
++                        if (!(parcelable instanceof Bundle)) {
++                            throw new IllegalArgumentException("bundle-array can only hold Bundles, found: "
++
++                                    + (parcelable == null
++                                            ? "null"
++                                            : parcelable.getClass().getName()));
++                        }
++                        queue.add((Bundle) parcelable);
++                    }
++
++                } else { throw new IllegalArgumentException(new StringBuilder().append(
++                        "Invalid type inside Bundle: ").append(value.getClass().getName()).append(" for key: ").append(key).toString());
++                }
++            }
++        }
++    }
++
++
++
++
++
++
++
++
++    private static Object getUntypedValue(Bundle bundle, String key) {
++        return bundle.get(key);
++    }
++}
+\ No newline at end of file
+diff --git a/frameworks/base/core/java/android/app/admin/BundlePolicyValue.java b/frameworks/base/core/java/android/app/admin/BundlePolicyValue.java
+index 23a7a9a6c..05a43d70a 100644
+--- a/frameworks/base/core/java/android/app/admin/BundlePolicyValue.java
++++ b/frameworks/base/core/java/android/app/admin/BundlePolicyValue.java
+@@ -38,6 +38,7 @@ public final class BundlePolicyValue extends PolicyValue<Bundle> {
+ 
+     public BundlePolicyValue(Bundle value) {
+         super(value);
++        BundlePolicyTypeVerifier.enforceValidTypes(value);
+         PolicySizeVerifier.enforceMaxBundleFieldsLength(value);
+     }
+ 
+diff --git a/frameworks/base/core/java/android/app/admin/DeviceAdminInfo.java b/frameworks/base/core/java/android/app/admin/DeviceAdminInfo.java
+index 7616d805c..710e850c4 100644
+--- a/frameworks/base/core/java/android/app/admin/DeviceAdminInfo.java
++++ b/frameworks/base/core/java/android/app/admin/DeviceAdminInfo.java
+@@ -483,6 +483,17 @@ public final class DeviceAdminInfo implements Parcelable {
+         throw new NotFoundException();
+     }
+ 
++    // PADDING
++    // PADDING
++    // PADDING
++    // PADDING
++    // PADDING
++    // PADDING
++    /** @hide */
++    public CharSequence loadDescriptionSafe(PackageManager pm) throws NotFoundException {
++        return mActivityInfo.loadDescription(pm);
++    }
++
+     /**
+      * Load the user-displayed icon for this device admin.
+      *
+diff --git a/frameworks/base/core/java/android/appwidget/AppWidgetConfigActivityProxy.java b/frameworks/base/core/java/android/appwidget/AppWidgetConfigActivityProxy.java
+index d6a87d3d6..0e1ad4ba6 100644
+--- a/frameworks/base/core/java/android/appwidget/AppWidgetConfigActivityProxy.java
++++ b/frameworks/base/core/java/android/appwidget/AppWidgetConfigActivityProxy.java
+@@ -28,11 +28,7 @@ import android.view.WindowManagerWrapper;
+ 
+ import androidx.annotation.Nullable;
+ 
+-/**
+- * Activity to proxy config activity launches
+- *
+- * @hide
+- */
++/** @hide */
+ public class AppWidgetConfigActivityProxy extends Activity {
+ 
+     private static final int CONFIG_ACTIVITY_REQUEST_CODE = 1;
+@@ -62,9 +58,12 @@ public class AppWidgetConfigActivityProxy extends Activity {
+         }
+     }
+ 
++    // PADDING
++    // PADDING
+     @Override
+     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+-        setResult(resultCode, data);
++        Intent result = data != null ? new Intent().putExtras(data) : null;
++        setResult(resultCode, result);
+         int widgetId = getIntent().getIntExtra(
+                 AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+         AppWidgetManager.getInstance(this).setConfigActivityComplete(widgetId);
+diff --git a/frameworks/base/core/java/android/content/pm/ComponentInfo.java b/frameworks/base/core/java/android/content/pm/ComponentInfo.java
+index 893cf86c6..66e9868de 100644
+--- a/frameworks/base/core/java/android/content/pm/ComponentInfo.java
++++ b/frameworks/base/core/java/android/content/pm/ComponentInfo.java
+@@ -24,12 +24,15 @@ import android.content.BroadcastReceiver;
+ import android.content.ComponentName;
+ import android.content.ContentResolver;
+ import android.content.Context;
++import android.content.res.Resources;
+ import android.graphics.drawable.Drawable;
+ import android.os.Build;
+ import android.os.Parcel;
+ import android.text.TextUtils;
+ import android.util.Printer;
+ 
++import java.util.Objects;
++
+ /**
+  * Base class containing information common to all application components
+  * ({@link ActivityInfo}, {@link ServiceInfo}).  This class is not intended
+@@ -84,7 +87,8 @@ public class ComponentInfo extends PackageItemInfo {
+      * attribute or, if not set, 0.
+      */
+     public int descriptionRes;
+-
++    /** @hide */
++    public static final int MAX_SAFE_DESCRIPTION_LENGTH = 1024;
+     /**
+      * Indicates whether or not this component may be instantiated.  Note that this value can be
+      * overridden by the one in its parent {@link ApplicationInfo}.
+@@ -118,6 +122,9 @@ public class ComponentInfo extends PackageItemInfo {
+     private static final int FLAG_INHERIT_LOGO = 1 << 9;
+     private static final int FLAG_INHERIT_BANNER = 1 << 10;
+ 
++    // PADDING
++    // PADDING
++    // PADDING
+     public ComponentInfo() {
+     }
+ 
+@@ -158,6 +165,21 @@ public class ComponentInfo extends PackageItemInfo {
+         return name;
+     }
+ 
++    /** @hide */
++    public CharSequence loadDescription(PackageManager pm) {
++        Objects.requireNonNull(pm);
++        if (descriptionRes != 0) {
++            try {
++                return TextUtils.trimToSize(
++                        pm.getText(packageName, descriptionRes, applicationInfo),
++                        MAX_SAFE_DESCRIPTION_LENGTH);
++            } catch (OutOfMemoryError e) {
++                throw new Resources.NotFoundException();
++            }
++        }
++        throw new Resources.NotFoundException();
++    }
++
+     /**
+      * Return whether this component and its enclosing application are enabled.
+      */
+diff --git a/frameworks/base/core/java/android/content/pm/ShortcutInfo.java b/frameworks/base/core/java/android/content/pm/ShortcutInfo.java
+index 5779a4480..9202c24a1 100644
+--- a/frameworks/base/core/java/android/content/pm/ShortcutInfo.java
++++ b/frameworks/base/core/java/android/content/pm/ShortcutInfo.java
+@@ -509,10 +509,13 @@ public final class ShortcutInfo implements Parcelable {
+         mCapabilityBindings =
+                 cloneCapabilityBindings(b.mCapabilityBindings);
+         mStartingThemeResName = b.mStartingThemeResId != 0
+-                ? b.mContext.getResources().getResourceName(b.mStartingThemeResId) : null;
++                ? b.mContext.getResources().getResourceName(b.mStartingThemeResId)
++                : b.mStartingThemeResName;
+         updateTimestamp();
+     }
+ 
++    // PADDING
++
+     /**
+      * Extract extras from {@link #mIntents} and set them to {@link #mIntentPersistableExtrases}
+      * as {@link PersistableBundle}, and remove extras from the original intents.
+@@ -613,6 +616,14 @@ public final class ShortcutInfo implements Parcelable {
+         Preconditions.checkArgument(mIntents.length > 0, "Shortcut Intent must be provided");
+     }
+ 
++    /**
++     * Copy constructor.
++     * @hide
++     */
++    public ShortcutInfo(@NonNull ShortcutInfo source) {
++        this(source, 0);
++    }
++
+     /**
+      * Copy constructor.
+      */
+@@ -1092,11 +1103,13 @@ public final class ShortcutInfo implements Parcelable {
+ 
+         private int mStartingThemeResId;
+ 
++        @Nullable
++        private String mStartingThemeResName;
++
+         @Nullable
+         private Map<String, Map<String, List<String>>> mCapabilityBindings;
+ 
+         private int mExcludedSurfaces;
+-
+         /**
+          * Old style constructor.
+          * @hide
+@@ -1128,6 +1141,38 @@ public final class ShortcutInfo implements Parcelable {
+             mId = Preconditions.checkStringNotEmpty(id, "id cannot be empty");
+         }
+ 
++        /**
++         * Constructor.
++         *
++         * @param context Client context.
++         * @param source ShortcutInfo to copy from.
++         *
++         * @hide
++         */
++        public Builder(@NonNull Context context, @NonNull ShortcutInfo source) {
++            mContext = Objects.requireNonNull(context, "context cannot be null");
++            Objects.requireNonNull(source, "source cannot be null");
++            mId = source.mId;
++            mActivity = source.mActivity;
++            mIcon = source.mIcon;
++            mTitleResId = source.mTitleResId;
++            mTitle = source.mTitle;
++            mTextResId = source.mTextResId;
++            mText = source.mText;
++            mDisabledMessageResId = source.mDisabledMessageResId;
++            mDisabledMessage = source.mDisabledMessage;
++            mCategories = cloneCategories(source.mCategories);
++            mIntents = cloneIntents(source.mIntents);
++            mPersons = clonePersons(source.mPersons);
++            mIsLongLived = source.isLongLived();
++            mRank = source.mRank;
++            mExtras = source.mExtras;
++            mLocusId = source.mLocusId;
++            mStartingThemeResName = source.mStartingThemeResName;
++            mCapabilityBindings = cloneCapabilityBindings(source.mCapabilityBindings);
++            mExcludedSurfaces = source.mExcludedSurfaces;
++        }
++
+         /**
+          * Sets the {@link LocusId} associated with this shortcut.
+          *
+@@ -1793,6 +1838,16 @@ public final class ShortcutInfo implements Parcelable {
+         mRank = rank;
+     }
+ 
++    /** @hide */
++    public void setPersons(@NonNull Person[] persons) {
++        mPersons = clonePersons(persons);
++    }
++
++    /** @hide */
++    public void setExtras(PersistableBundle extras) {
++        mExtras = extras;
++    }
++
+     /** @hide */
+     public void clearImplicitRankAndRankChangedFlag() {
+         mImplicitRank = 0;
+diff --git a/frameworks/base/core/java/android/database/sqlite/SQLiteTokenizer.java b/frameworks/base/core/java/android/database/sqlite/SQLiteTokenizer.java
+index 7e7c3fb97..e1ced44ac 100644
+--- a/frameworks/base/core/java/android/database/sqlite/SQLiteTokenizer.java
++++ b/frameworks/base/core/java/android/database/sqlite/SQLiteTokenizer.java
+@@ -69,6 +69,11 @@ public class SQLiteTokenizer {
+      */
+     public static final int OPTION_TOKEN_ONLY = 1 << 0;
+ 
++    /**
++     * Require that SQL contains only balanced brackets.
++     */
++    public static final int OPTION_CHECK_BRACKETS = 1 << 1;
++
+     /**
+      * Tokenize the given SQL, returning the list of each encountered token.
+      *
+@@ -91,6 +96,7 @@ public class SQLiteTokenizer {
+             return;
+         }
+         int pos = 0;
++        int level = 0;
+         final int len = sql.length();
+         while (pos < len) {
+             final char ch = peek(sql, pos);
+@@ -105,7 +111,9 @@ public class SQLiteTokenizer {
+                 final int end = pos;
+ 
+                 final String token = sql.substring(start, end);
+-                checker.accept(token);
++                if (checker != null) {
++                    checker.accept(token);
++                }
+ 
+                 continue;
+             }
+@@ -142,9 +150,11 @@ public class SQLiteTokenizer {
+                     } else {
+                         token = tokenUnquoted;
+                     }
+-                    checker.accept(token);
++                    if (checker != null) {
++                        checker.accept(token);
++                    }
+                 } else {
+-                    if ((options &= OPTION_TOKEN_ONLY) != 0) {
++                    if ((options & OPTION_TOKEN_ONLY) != 0) {
+                         throw genException("Non-token detected", sql);
+                     }
+                 }
+@@ -164,10 +174,12 @@ public class SQLiteTokenizer {
+ 
+                 final String token = sql.substring(quoteStart + 1, quoteEnd);
+ 
+-                checker.accept(token);
++                if (checker != null) {
++                    checker.accept(token);
++                }
+                 continue;
+             }
+-            if ((options &= OPTION_TOKEN_ONLY) != 0) {
++            if ((options & OPTION_TOKEN_ONLY) != 0) {
+                 throw genException("Non-token detected", sql);
+             }
+ 
+@@ -199,10 +211,24 @@ public class SQLiteTokenizer {
+                 throw genException("Semicolon is not allowed", sql);
+             }
+ 
+-            // For this purpose, we can simply ignore other characters.
+-            // (Note it doesn't handle the X'' literal properly and reports this X as a token,
+-            // but that should be fine...)
+-            pos++;
++            if (ch == '(') {
++                pos++;
++                level++;
++            } else if (ch == ')') {
++                pos++;
++                level--;
++                if (level < 0 && (options & OPTION_CHECK_BRACKETS) != 0) {
++                    throw genException("Unbalanced brackets", sql);
++                }
++            } else {
++                // For this purpose, we can simply ignore other characters.
++                // (Note it doesn't handle the X'' literal properly and reports this X as a token,
++                // but that should be fine...)
++                pos++;
++            }
++        }
++        if (level != 0 && (options & OPTION_CHECK_BRACKETS) != 0) {
++            throw genException("Unbalanced brackets", sql);
+         }
+     }
+ 
+diff --git a/frameworks/base/core/java/android/os/BaseBundle.java b/frameworks/base/core/java/android/os/BaseBundle.java
+index 837cb5360..2b3dd71a0 100644
+--- a/frameworks/base/core/java/android/os/BaseBundle.java
++++ b/frameworks/base/core/java/android/os/BaseBundle.java
+@@ -557,6 +557,19 @@ public class BaseBundle implements Parcel.ClassLoaderProvider {
+     /**
+      * @hide
+      */
++    // PADDING
++    // PADDING
++    public int getSize() {
++        if (mParcelledData != null) {
++            return mParcelledData.dataSize();
++        }
++        return 0;
++    }
++
++    /**
++     * @hide
++     */
++    // PADDING
+     public boolean isEmptyParcel() {
+         return isEmptyParcel(mParcelledData);
+     }
+diff --git a/frameworks/base/core/java/android/os/Bundle.java b/frameworks/base/core/java/android/os/Bundle.java
+index 4db29c221..71a803d92 100644
+--- a/frameworks/base/core/java/android/os/Bundle.java
++++ b/frameworks/base/core/java/android/os/Bundle.java
+@@ -417,17 +417,15 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
+      * @hide
+      */
+     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
++    @Override
+     public int getSize() {
+-        if (mParcelledData != null) {
+-            return mParcelledData.dataSize();
+-        } else {
+-            return 0;
+-        }
++        return super.getSize();
+     }
+ 
+     /**
+      * Reports whether the bundle contains any parcelled file descriptors.
+      */
++    // PADDING
+     public boolean hasFileDescriptors() {
+         if ((mFlags & FLAG_HAS_FDS_KNOWN) == 0) {
+             Parcel p = mParcelledData;
+diff --git a/frameworks/base/core/java/android/util/MemoryIntArray.java b/frameworks/base/core/java/android/util/MemoryIntArray.java
+index 790b52730..0ae3ed628 100644
+--- a/frameworks/base/core/java/android/util/MemoryIntArray.java
++++ b/frameworks/base/core/java/android/util/MemoryIntArray.java
+@@ -55,6 +55,8 @@ public final class MemoryIntArray implements Parcelable, Closeable {
+ 
+     private static final int MAX_SIZE = 1024;
+ 
++    // PADDING
++
+     private final CloseGuard mCloseGuard = CloseGuard.get();
+ 
+     private final boolean mIsOwner;
+@@ -76,13 +78,13 @@ public final class MemoryIntArray implements Parcelable, Closeable {
+         mIsOwner = true;
+         final String name = UUID.randomUUID().toString();
+         mFd = nativeCreate(name, size);
+-        mMemoryAddr = nativeOpen(mFd, mIsOwner);
+-        // Note that we use the effective size after allocation, rather than the provided size,
+-        // preserving compat with the original behavior. In practice these should be equivalent.
+         mSize = nativeSize(mFd);
++        mMemoryAddr = nativeOpen(mFd, mIsOwner, mSize);
+         mCloseGuard.open("MemoryIntArray.close");
+     }
+ 
++    // PADDING
++
+     private MemoryIntArray(Parcel parcel) throws IOException {
+         mIsOwner = false;
+         ParcelFileDescriptor pfd = parcel.readParcelable(null, android.os.ParcelFileDescriptor.class);
+@@ -90,8 +92,8 @@ public final class MemoryIntArray implements Parcelable, Closeable {
+             throw new IOException("No backing file descriptor");
+         }
+         mFd = pfd.detachFd();
+-        mMemoryAddr = nativeOpen(mFd, mIsOwner);
+         mSize = nativeSize(mFd);
++        mMemoryAddr = nativeOpen(mFd, mIsOwner, mSize);
+         mCloseGuard.open("MemoryIntArray.close");
+     }
+ 
+@@ -152,7 +154,7 @@ public final class MemoryIntArray implements Parcelable, Closeable {
+     @Override
+     public void close() throws IOException {
+         if (!isClosed()) {
+-            nativeClose(mFd, mMemoryAddr);
++            nativeClose(mFd, mMemoryAddr, mSize);
+             mFd = -1;
+             mCloseGuard.close();
+         }
+@@ -232,14 +234,16 @@ public final class MemoryIntArray implements Parcelable, Closeable {
+     }
+ 
+     private native int nativeCreate(String name, int size);
+-    private native long nativeOpen(int fd, boolean owner);
+-    private native void nativeClose(int fd, long memoryAddr);
++    private native long nativeOpen(int fd, boolean owner, int size);
++    private native void nativeClose(int fd, long memoryAddr, int size);
+     @FastNative
+     private native int nativeGet(long memoryAddr, int index);
+     @FastNative
+     private native void nativeSet(long memoryAddr, int index, int value);
+     private native int nativeSize(int fd);
+ 
++    // PADDING
++
+     /**
+      * @return The max array size.
+      */
+diff --git a/frameworks/base/core/java/android/widget/RemoteViews.java b/frameworks/base/core/java/android/widget/RemoteViews.java
+index 09a2fd1c5..a82a47372 100644
+--- a/frameworks/base/core/java/android/widget/RemoteViews.java
++++ b/frameworks/base/core/java/android/widget/RemoteViews.java
+@@ -357,13 +357,6 @@ public class RemoteViews implements Parcelable, Filter {
+     static final int FLAG_MASK_TO_PROPAGATE =
+             FLAG_WIDGET_IS_COLLECTION_CHILD | FLAG_USE_LIGHT_BACKGROUND_LAYOUT;
+ 
+-    /**
+-     * A ReadWriteHelper which has the same behavior as ReadWriteHelper.DEFAULT, but which is
+-     * intentionally a different instance in order to trick Bundle reader so that it doesn't allow
+-     * lazy initialization.
+-     */
+-    private static final Parcel.ReadWriteHelper ALTERNATIVE_DEFAULT = new Parcel.ReadWriteHelper();
+-
+     /**
+      * Used to restrict the views which can be inflated
+      *
+@@ -380,6 +373,11 @@ public class RemoteViews implements Parcelable, Filter {
+     @UnsupportedAppUsage
+     public ApplicationInfo mApplication;
+ 
++    // PADDING
++    // PADDING
++    // PADDING
++    private int mApplicationId = -1;
++
+     /**
+      * The resource ID of the layout file. (Added to the parcel)
+      */
+@@ -1263,40 +1261,65 @@ public class RemoteViews implements Parcelable, Filter {
+      * Cache of {@link ApplicationInfo}s that can be used to ensure that the same
+      * {@link ApplicationInfo} instance is used throughout the RemoteViews.
+      */
++    // PADDING
+     private static class ApplicationInfoCache {
+-        private final Map<Pair<String, Integer>, ApplicationInfo> mPackageUserToApplicationInfo;
+-
++        private final List<ApplicationInfo> mCachedApplicationInfos;
+         ApplicationInfoCache() {
+-            mPackageUserToApplicationInfo = new ArrayMap<>();
++            mCachedApplicationInfos = new ArrayList<>();
+         }
+ 
+-        /**
+-         * Adds the {@link ApplicationInfo} to the cache if it's not present. Returns either the
+-         * provided {@code applicationInfo} or a previously added value with the same package name
+-         * and uid.
+-         */
+-        @Nullable
+-        ApplicationInfo getOrPut(@Nullable ApplicationInfo applicationInfo) {
+-            Pair<String, Integer> key = getPackageUserKey(applicationInfo);
+-            if (key == null) return null;
+-            return mPackageUserToApplicationInfo.computeIfAbsent(key, ignored -> applicationInfo);
++        ApplicationInfoCache(Parcel parcel) {
++            mCachedApplicationInfos = parcel.createTypedArrayList(ApplicationInfo.CREATOR);
+         }
+ 
+-        /** Puts the {@link ApplicationInfo} in the cache, replacing any previously stored value. */
+-        void put(@Nullable ApplicationInfo applicationInfo) {
+-            Pair<String, Integer> key = getPackageUserKey(applicationInfo);
+-            if (key == null) return;
+-            mPackageUserToApplicationInfo.put(key, applicationInfo);
++        // PADDING
++        // PADDING
++        // PADDING
++        // PADDING
++        int getOrPut(@Nullable ApplicationInfo applicationInfo) {
++            if (applicationInfo == null) return -1;
++            int id = findId(applicationInfo);
++            if (id != -1) return id;
++            mCachedApplicationInfos.add(applicationInfo);
++            return mCachedApplicationInfos.size() - 1;
+         }
+ 
+-        /**
+-         * Returns the currently stored {@link ApplicationInfo} from the cache matching
+-         * {@code  applicationInfo}, or null if there wasn't any.
+-         */
+-        @Nullable ApplicationInfo get(@Nullable ApplicationInfo applicationInfo) {
+-            Pair<String, Integer> key = getPackageUserKey(applicationInfo);
+-            if (key == null) return null;
+-            return mPackageUserToApplicationInfo.get(key);
++        int findId(@Nullable ApplicationInfo applicationInfo) {
++            if (applicationInfo == null) return -1;
++            for (int i = 0; i < mCachedApplicationInfos.size(); i++) {
++                ApplicationInfo cachedApplicationInfo = mCachedApplicationInfos.get(i);
++                if (Objects.equals(cachedApplicationInfo.packageName,
++                        applicationInfo.packageName)
++                        && cachedApplicationInfo.uid == applicationInfo.uid) { return i;
++                }
++            }
++            return -1;
++        }
++
++        // PADDING
++        int updateAndGetId(@Nullable ApplicationInfo applicationInfo) {
++            if (applicationInfo == null) return -1;
++            int id = findId(applicationInfo);
++            if (id != -1) {
++                mCachedApplicationInfos.set(id, applicationInfo);
++                return id;
++            }
++            mCachedApplicationInfos.add(applicationInfo);
++            return mCachedApplicationInfos.size() - 1;
++        }
++
++
++
++        @Nullable
++
++
++        ApplicationInfo get(int id) {
++            return (id < 0 || id >= mCachedApplicationInfos.size()) ? null
++                    : mCachedApplicationInfos.get(id);
++        }
++
++        void writeToParcel(Parcel dest, int flags) {
++            dest.writeTypedList(mCachedApplicationInfos, flags);
+         }
+     }
+ 
+@@ -3026,18 +3049,7 @@ public class RemoteViews implements Parcelable, Filter {
+                     this.mValue = in.readTypedObject(Bitmap.CREATOR);
+                     break;
+                 case BUNDLE:
+-                    // Because we use Parcel.allowSquashing() when writing, and that affects
+-                    //  how the contents of Bundles are written, we need to ensure the bundle is
+-                    //  unparceled immediately, not lazily.  Setting a custom ReadWriteHelper
+-                    //  just happens to have that effect on Bundle.readFromParcel().
+-                    // TODO(b/212731590): build this state tracking into Bundle
+-                    if (in.hasReadWriteHelper()) {
+-                        this.mValue = in.readBundle();
+-                    } else {
+-                        in.setReadWriteHelper(ALTERNATIVE_DEFAULT);
+-                        this.mValue = in.readBundle();
+-                        in.setReadWriteHelper(null);
+-                    }
++                    this.mValue = in.readBundle();
+                     break;
+                 case INTENT:
+                     this.mValue = in.readTypedObject(Intent.CREATOR);
+@@ -5904,6 +5916,18 @@ public class RemoteViews implements Parcelable, Filter {
+             dest.writeInt(mCheckedId);
+         }
+ 
++        private static void forAllCompoundButtons(ViewGroup group,
++                Consumer<CompoundButton> consumer) {
++            for (int i = 0; i < group.getChildCount(); i++) {
++                View child = group.getChildAt(i);
++                if (child instanceof CompoundButton) { CompoundButton cb = (CompoundButton) child;
++                    consumer.accept(cb); }
++                else if (child instanceof ViewGroup) { ViewGroup vg = (ViewGroup) child;
++                    forAllCompoundButtons(vg, consumer);
++                }
++            }
++        }
++
+         @Override
+         public void apply(View root, ViewGroup rootParent, ActionApplyParams params)
+                 throws ActionException {
+@@ -5918,29 +5942,23 @@ public class RemoteViews implements Parcelable, Filter {
+             RadioGroup group = (RadioGroup) target;
+ 
+             // Temporarily unset all the checked change listeners while we check the group.
+-            for (int i = 0; i < group.getChildCount(); i++) {
+-                View child = group.getChildAt(i);
+-                if (!(child instanceof CompoundButton)) continue;
+-
+-                Object tag = child.getTag(R.id.remote_checked_change_listener_tag);
+-                if (!(tag instanceof OnCheckedChangeListener)) continue;
+-
+-                // Clear the checked change listener, we'll restore it after the check.
+-                ((CompoundButton) child).setOnCheckedChangeListener(null);
+-            }
++            forAllCompoundButtons(group, cb -> {
++                Object tag = cb.getTag(R.id.remote_checked_change_listener_tag);
++                if (tag instanceof OnCheckedChangeListener) {
++                    cb.setOnCheckedChangeListener(null);
++                }
++            });
+ 
+             group.check(mCheckedId);
+ 
+             // Loop through the children again and restore the checked change listeners.
+-            for (int i = 0; i < group.getChildCount(); i++) {
+-                View child = group.getChildAt(i);
+-                if (!(child instanceof CompoundButton)) continue;
+-
+-                Object tag = child.getTag(R.id.remote_checked_change_listener_tag);
+-                if (!(tag instanceof OnCheckedChangeListener)) continue;
+-
+-                ((CompoundButton) child).setOnCheckedChangeListener((OnCheckedChangeListener) tag);
+-            }
++            forAllCompoundButtons(group, cb -> {
++                Object tag = cb.getTag(R.id.remote_checked_change_listener_tag);
++                if (tag instanceof OnCheckedChangeListener) {
++                    OnCheckedChangeListener listener = (OnCheckedChangeListener) tag;
++                    cb.setOnCheckedChangeListener(listener);
++                }
++            });
+         }
+ 
+         @Override
+@@ -6275,7 +6293,6 @@ public class RemoteViews implements Parcelable, Filter {
+             out.end(token);
+         }
+     }
+-
+     @FlaggedApi(FLAG_DRAW_DATA_PARCEL)
+     private PendingResources<Action> createSetDrawInstructionActionFromProto(ProtoInputStream in)
+             throws Exception {
+@@ -6334,7 +6351,7 @@ public class RemoteViews implements Parcelable, Filter {
+     protected RemoteViews(ApplicationInfo application, @LayoutRes int layoutId) {
+         mApplication = application;
+         mLayoutId = layoutId;
+-        mApplicationInfoCache.put(application);
++        mApplicationId = mApplicationInfoCache.updateAndGetId(application);
+     }
+ 
+     private boolean hasMultipleLayouts() {
+@@ -6384,6 +6401,7 @@ public class RemoteViews implements Parcelable, Filter {
+                     "Both RemoteViews must share the same package and user");
+         }
+         mApplication = portrait.mApplication;
++        mApplicationId = mApplicationInfoCache.updateAndGetId(mApplication);
+         mLayoutId = portrait.mLayoutId;
+         mViewId = portrait.mViewId;
+         mLightBackgroundLayoutId = portrait.mLightBackgroundLayoutId;
+@@ -6437,6 +6455,7 @@ public class RemoteViews implements Parcelable, Filter {
+ 
+         RemoteViews smallestView = findSmallestRemoteView();
+         mApplication = smallestView.mApplication;
++        mApplicationId = mApplicationInfoCache.updateAndGetId(mApplication);
+         mLayoutId = smallestView.mLayoutId;
+         mViewId = smallestView.mViewId;
+         mLightBackgroundLayoutId = smallestView.mLightBackgroundLayoutId;
+@@ -6522,6 +6541,7 @@ public class RemoteViews implements Parcelable, Filter {
+             mIsRoot = false;
+         }
+         mApplication = src.mApplication;
++        mApplicationId = mApplicationInfoCache.updateAndGetId(mApplication);
+         mLayoutId = src.mLayoutId;
+         mLightBackgroundLayoutId = src.mLightBackgroundLayoutId;
+         mApplyFlags = src.mApplyFlags;
+@@ -6599,13 +6619,15 @@ public class RemoteViews implements Parcelable, Filter {
+             mBitmapCache = new BitmapCache(parcel);
+             // Store the class cookies such that they are available when we clone this RemoteView.
+             mClassCookies = parcel.copyClassCookies();
++            mApplicationInfoCache = new ApplicationInfoCache(parcel);
+             mCollectionCache = new RemoteCollectionCache(parcel);
+         } else {
+             configureAsChild(rootData);
+         }
+ 
+         if (mode == MODE_NORMAL) {
+-            mApplication = parcel.readTypedObject(ApplicationInfo.CREATOR);
++            mApplicationId = parcel.readInt();
++            mApplication = mApplicationInfoCache.get(mApplicationId);
+             mIdealSize = parcel.readInt() == 0 ? null : SizeF.CREATOR.createFromParcel(parcel);
+             mLayoutId = parcel.readInt();
+             mViewId = parcel.readInt();
+@@ -6627,6 +6649,7 @@ public class RemoteViews implements Parcelable, Filter {
+             initializeSizedRemoteViews(remoteViews.iterator());
+             RemoteViews smallestView = findSmallestRemoteView();
+             mApplication = smallestView.mApplication;
++            mApplicationId = mApplicationInfoCache.updateAndGetId(mApplication);
+             mLayoutId = smallestView.mLayoutId;
+             mViewId = smallestView.mViewId;
+             mLightBackgroundLayoutId = smallestView.mLightBackgroundLayoutId;
+@@ -6636,6 +6659,7 @@ public class RemoteViews implements Parcelable, Filter {
+             mPortrait =
+                     new RemoteViews(parcel, getHierarchyRootData(), mLandscape.mApplication, depth);
+             mApplication = mPortrait.mApplication;
++            mApplicationId = mApplicationInfoCache.updateAndGetId(mApplication);
+             mLayoutId = mPortrait.mLayoutId;
+             mViewId = mPortrait.mViewId;
+             mLightBackgroundLayoutId = mPortrait.mLightBackgroundLayoutId;
+@@ -6780,7 +6804,8 @@ public class RemoteViews implements Parcelable, Filter {
+         // Before propagating down the tree, replace our application from the root application info
+         // cache, to ensure the same instance is present throughout the hierarchy to allow for
+         // squashing.
+-        mApplication = mApplicationInfoCache.getOrPut(mApplication);
++        mApplicationId = mApplicationInfoCache.getOrPut(mApplication);
++        mApplication = mApplicationInfoCache.get(mApplicationId);
+ 
+         HierarchyRootData rootData = getHierarchyRootData();
+         if (hasSizedRemoteViews()) {
+@@ -6807,7 +6832,8 @@ public class RemoteViews implements Parcelable, Filter {
+         if (!mIsRoot) return;
+         mBitmapCache = new BitmapCache();
+         mApplicationInfoCache = new ApplicationInfoCache();
+-        mApplication = mApplicationInfoCache.getOrPut(mApplication);
++        mApplicationId = mApplicationInfoCache.getOrPut(mApplication);
++        mApplication = mApplicationInfoCache.get(mApplicationId);
+         configureDescendantsAsChildren();
+     }
+ 
+@@ -9032,7 +9058,8 @@ public class RemoteViews implements Parcelable, Filter {
+ 
+     /** @hide */
+     public void updateAppInfo(@NonNull ApplicationInfo info) {
+-        ApplicationInfo existing = mApplicationInfoCache.get(info);
++        ApplicationInfo existing = mApplicationInfoCache.get(
++                mApplicationInfoCache.findId(info));
+         if (existing != null && !existing.sourceDir.equals(info.sourceDir)) {
+             // Overlay paths are generated against a particular version of an application.
+             // The overlays paths of a newly upgraded application are incompatible with the
+@@ -9042,10 +9069,9 @@ public class RemoteViews implements Parcelable, Filter {
+ 
+         // If we can update to the new AppInfo, put it in the cache and propagate the change
+         // throughout the hierarchy.
+-        mApplicationInfoCache.put(info);
++        mApplicationInfoCache.updateAndGetId(info);
+         configureDescendantsAsChildren();
+     }
+-
+     private Context getContextForResourcesEnsuringCorrectCachedApkPaths(Context context) {
+         if (mApplication != null) {
+             if (context.getUserId() == UserHandle.getUserId(mApplication.uid)
+@@ -9429,17 +9455,17 @@ public class RemoteViews implements Parcelable, Filter {
+ 
+     private void writeToParcel(Parcel dest, int flags,
+             @Nullable SparseArray<Intent> intentsToIgnore) {
+-        boolean prevSquashingAllowed = dest.allowSquashing();
+-
++        // PADDING
+         if (!hasMultipleLayouts()) {
+             dest.writeInt(MODE_NORMAL);
+             // We only write the bitmap cache if we are the root RemoteViews, as this cache
+             // is shared by all children.
+             if (mIsRoot) {
+                 mBitmapCache.writeBitmapsToParcel(dest, flags);
++                mApplicationInfoCache.writeToParcel(dest, flags);
+                 mCollectionCache.writeToParcel(dest, flags, intentsToIgnore);
+             }
+-            dest.writeTypedObject(mApplication, flags);
++            dest.writeInt(mApplicationId);
+             if (mIsRoot || mIdealSize == null) {
+                 dest.writeInt(0);
+             } else {
+@@ -9454,6 +9480,7 @@ public class RemoteViews implements Parcelable, Filter {
+             dest.writeInt(MODE_HAS_SIZED_REMOTEVIEWS);
+             if (mIsRoot) {
+                 mBitmapCache.writeBitmapsToParcel(dest, flags);
++                mApplicationInfoCache.writeToParcel(dest, flags);
+                 mCollectionCache.writeToParcel(dest, flags, intentsToIgnore);
+             }
+             dest.writeInt(mSizedRemoteViews.size());
+@@ -9466,6 +9493,7 @@ public class RemoteViews implements Parcelable, Filter {
+             // is shared by all children.
+             if (mIsRoot) {
+                 mBitmapCache.writeBitmapsToParcel(dest, flags);
++                mApplicationInfoCache.writeToParcel(dest, flags);
+                 mCollectionCache.writeToParcel(dest, flags, intentsToIgnore);
+             }
+             mLandscape.writeToParcel(dest, flags);
+@@ -9476,8 +9504,6 @@ public class RemoteViews implements Parcelable, Filter {
+         dest.writeLong(mProviderInstanceId);
+         dest.writeBoolean(mHasDrawInstructions);
+         dest.writeFloat(mOriginalDensity);
+-
+-        dest.restoreAllowSquashing(prevSquashingAllowed);
+     }
+ 
+     private void writeActionsToParcel(Parcel parcel, int flags) {
+@@ -10644,12 +10670,6 @@ public class RemoteViews implements Parcelable, Filter {
+         return viewId;
+     }
+ 
+-    @Nullable
+-    private static Pair<String, Integer> getPackageUserKey(@Nullable ApplicationInfo info) {
+-        if (info == null || info.packageName ==  null) return null;
+-        return Pair.create(info.packageName, info.uid);
+-    }
+-
+     private HierarchyRootData getHierarchyRootData() {
+         return new HierarchyRootData(mBitmapCache, mCollectionCache,
+                 mApplicationInfoCache, mClassCookies);
+@@ -10900,6 +10920,7 @@ public class RemoteViews implements Parcelable, Filter {
+                 checkProtoResultNotNull(ref.mUid, "No uid");
+                 rv.mApplication = context.getPackageManager().getApplicationInfoAsUser(
+                         ref.mPackageName, /* flags= */ 0, UserHandle.getUserId(ref.mUid));
++                rv.mApplicationId = rv.mApplicationInfoCache.updateAndGetId(rv.mApplication);
+                 appContext = rv.getContextForResourcesEnsuringCorrectCachedApkPaths(context);
+                 appResources = appContext.getResources();
+ 
+diff --git a/frameworks/base/core/java/com/android/internal/app/IntentForwarderActivity.java b/frameworks/base/core/java/com/android/internal/app/IntentForwarderActivity.java
+index eb2c9469c..c05381afc 100644
+--- a/frameworks/base/core/java/com/android/internal/app/IntentForwarderActivity.java
++++ b/frameworks/base/core/java/com/android/internal/app/IntentForwarderActivity.java
+@@ -129,7 +129,7 @@ public class IntentForwarderActivity extends Activity  {
+     protected void onCreate(Bundle savedInstanceState) {
+         super.onCreate(savedInstanceState);
+         mInjector = createInjector();
+-        mExecutorService = Executors.newSingleThreadExecutor();
++        mExecutorService = mInjector.getExecutorService();
+ 
+         Intent intentReceived = getIntent();
+         String className = intentReceived.getComponent().getClassName();
+@@ -563,8 +563,7 @@ public class IntentForwarderActivity extends Activity  {
+     }
+ 
+     private boolean isDeviceProvisioned() {
+-        return Settings.Global.getInt(getContentResolver(),
+-                Settings.Global.DEVICE_PROVISIONED, /* def= */ 0) != 0;
++        return mInjector.isDeviceProvisioned();
+     }
+ 
+     private boolean isTextMessageIntent(Intent intent) {
+@@ -757,6 +756,17 @@ public class IntentForwarderActivity extends Activity  {
+         public void showToast(String message, int duration) {
+             Toast.makeText(IntentForwarderActivity.this, message, duration).show();
+         }
++
++        @Override
++        public ExecutorService getExecutorService() {
++            return Executors.newSingleThreadExecutor();
++        }
++
++        @Override
++        public boolean isDeviceProvisioned() {
++            return Settings.Global.getInt(IntentForwarderActivity.this.getContentResolver(),
++                    Settings.Global.DEVICE_PROVISIONED, 0) != 0;
++        }
+     }
+ 
+     public interface Injector {
+@@ -772,5 +782,9 @@ public class IntentForwarderActivity extends Activity  {
+         CompletableFuture<ResolveInfo> resolveActivityAsUser(Intent intent, int flags, int userId);
+ 
+         void showToast(String message, int duration);
++
++        ExecutorService getExecutorService();
++
++        boolean isDeviceProvisioned();
+     }
+ }
+diff --git a/frameworks/base/core/java/com/android/internal/pm/pkg/parsing/ParsingUtils.java b/frameworks/base/core/java/com/android/internal/pm/pkg/parsing/ParsingUtils.java
+index 26822c649..4d7d10dfb 100644
+--- a/frameworks/base/core/java/com/android/internal/pm/pkg/parsing/ParsingUtils.java
++++ b/frameworks/base/core/java/com/android/internal/pm/pkg/parsing/ParsingUtils.java
+@@ -39,6 +39,7 @@ import org.xmlpull.v1.XmlPullParserException;
+ 
+ import java.io.IOException;
+ import java.util.ArrayList;
++import java.util.Arrays;
+ import java.util.List;
+ import java.util.Set;
+ 
+@@ -52,9 +53,12 @@ public class ParsingUtils {
+     public static final int DEFAULT_MIN_SDK_VERSION = 1;
+     public static final int DEFAULT_MAX_SDK_VERSION = Integer.MAX_VALUE;
+     public static final int DEFAULT_TARGET_SDK_VERSION = 0;
+-
+     public static final int NOT_SET = -1;
+ 
++    private static final int CERT_DIGEST_SHA256_LENGTH = 64;
++
++    private static final int MAX_KNOWN_ACTIVITY_EMBEDDING_CERTS = 50;
++
+     @Nullable
+     public static String buildClassName(String pkg, CharSequence clsSeq) {
+         if (clsSeq == null || clsSeq.length() <= 0) {
+@@ -183,30 +187,25 @@ public class ParsingUtils {
+             return input.success(null);
+         }
+ 
++        final List<String> knownEmbeddingCertificates = new ArrayList<>();
+         final int knownActivityEmbeddingCertsResource = sa.getResourceId(resourceId, 0);
+         if (knownActivityEmbeddingCertsResource != 0) {
+             // The knownCerts attribute supports both a string array resource as well as a
+             // string resource for the case where the permission should only be granted to a
+             // single known signer.
+-            Set<String> knownEmbeddingCertificates = null;
+             final String resourceType = res.getResourceTypeName(
+                     knownActivityEmbeddingCertsResource);
+             if (resourceType.equals("array")) {
+                 final String[] knownCerts = res.getStringArray(knownActivityEmbeddingCertsResource);
+-                if (knownCerts != null) {
+-                    knownEmbeddingCertificates = Set.of(knownCerts);
+-                }
++                knownEmbeddingCertificates.addAll(Arrays.asList(knownCerts));
+             } else {
+-                final String knownCert = res.getString(knownActivityEmbeddingCertsResource);
+-                if (knownCert != null) {
+-                    knownEmbeddingCertificates = Set.of(knownCert);
+-                }
++                knownEmbeddingCertificates.add(res.getString(knownActivityEmbeddingCertsResource));
+             }
+-            if (knownEmbeddingCertificates == null || knownEmbeddingCertificates.isEmpty()) {
++            if (knownEmbeddingCertificates.isEmpty()) {
+                 return input.error("Defined a knownActivityEmbeddingCerts attribute but the "
+                         + "provided resource is null");
+             }
+-            return input.success(knownEmbeddingCertificates);
++            return validateCerts(knownEmbeddingCertificates, input);
+         }
+ 
+         // If the knownCerts resource ID is null - the app specified a string value for the
+@@ -216,6 +215,17 @@ public class ParsingUtils {
+             return input.error("Defined a knownActivityEmbeddingCerts attribute but the provided "
+                     + "string is empty");
+         }
+-        return input.success(Set.of(knownCert));
++        knownEmbeddingCertificates.add(knownCert);
++        return validateCerts(knownEmbeddingCertificates, input);
++    }
++
++    private static ParseResult<Set<String>> validateCerts(List<String> certs,
++            ParseInput input) {
++        certs.removeIf(c -> c.length() != CERT_DIGEST_SHA256_LENGTH);
++        if (certs.size() > MAX_KNOWN_ACTIVITY_EMBEDDING_CERTS) {
++            return input.error("The number of knownActivityEmbeddingCerts exceeds the maximum "
++                    + "allowed limit of " + MAX_KNOWN_ACTIVITY_EMBEDDING_CERTS);
++        }
++        return input.success(Set.copyOf(certs));
+     }
+ }
+diff --git a/frameworks/base/core/java/com/android/internal/widget/LocalImageResolver.java b/frameworks/base/core/java/com/android/internal/widget/LocalImageResolver.java
+index 97e66d9dd..3f9e74ac5 100644
+--- a/frameworks/base/core/java/com/android/internal/widget/LocalImageResolver.java
++++ b/frameworks/base/core/java/com/android/internal/widget/LocalImageResolver.java
+@@ -220,6 +220,7 @@ public class LocalImageResolver {
+     private static Drawable resolveImage(ImageDecoder.Source source, int maxWidth, int maxHeight) {
+         try {
+             return ImageDecoder.decodeDrawable(source, (decoder, info, unused) -> {
++                checkHeader(info);
+                 if (maxWidth <= 0 || maxHeight <= 0) {
+                     return;
+                 }
+@@ -245,7 +246,8 @@ public class LocalImageResolver {
+ 
+         // ImageDecoder documentation is misleading a bit - it'll throw NotFoundException
+         // in some cases despite it not saying so.
+-        } catch (IOException | Resources.NotFoundException e) {
++        // PADDING
++        } catch (IOException | RuntimeException e) {
+             Log.d(TAG, "Couldn't use ImageDecoder for drawable, falling back to non-resized load.");
+             return null;
+         }
+@@ -258,6 +260,18 @@ public class LocalImageResolver {
+ 
+     private static void onHeaderDecoded(ImageDecoder decoder, ImageDecoder.ImageInfo info,
+             int maxWidth, int maxHeight) {
++        checkHeader(info);
++        final Size size = info.getSize();
++
++        final int originalSize = Math.max(size.getHeight(), size.getWidth());
++        final int maxSize = Math.max(maxWidth, maxHeight);
++        final double ratio = (originalSize > maxSize)
++                ? originalSize * 1f / maxSize
++                : 1.0;
++        decoder.setTargetSampleSize(getPowerOfTwoForSampleRatio(ratio));
++    }
++
++    private static void checkHeader(ImageDecoder.ImageInfo info) {
+         final Size size = info.getSize();
+ 
+         final String mimeType = info.getMimeType();
+@@ -290,13 +304,6 @@ public class LocalImageResolver {
+                     "Image dimensions (" + size.getWidth() + "x" + size.getHeight()
+                             + ") exceed the maximum allowed size.");
+         }
+-
+-        final int originalSize = Math.max(size.getHeight(), size.getWidth());
+-        final int maxSize = Math.max(maxWidth, maxHeight);
+-        final double ratio = (originalSize > maxSize)
+-                ? originalSize * 1f / maxSize
+-                : 1.0;
+-        decoder.setTargetSampleSize(getPowerOfTwoForSampleRatio(ratio));
+     }
+ 
+     /**
+diff --git a/frameworks/base/core/jni/android_util_MemoryIntArray.cpp b/frameworks/base/core/jni/android_util_MemoryIntArray.cpp
+index 1b7208789..d59053967 100644
+--- a/frameworks/base/core/jni/android_util_MemoryIntArray.cpp
++++ b/frameworks/base/core/jni/android_util_MemoryIntArray.cpp
+@@ -61,7 +61,7 @@ static jint android_util_MemoryIntArray_create(JNIEnv* env, jobject clazz, jstri
+ }
+ 
+ static jlong android_util_MemoryIntArray_open(JNIEnv* env, jobject clazz, jint fd,
+-    jboolean owner)
++    jboolean owner, jint size)
+ {
+     if (fd < 0) {
+         jniThrowException(env, "java/io/IOException", "bad file descriptor");
+@@ -73,7 +73,7 @@ static jlong android_util_MemoryIntArray_open(JNIEnv* env, jobject clazz, jint f
+         return -1;
+     }
+ 
+-    int ashmemSize = ashmem_get_size_region(fd);
++    int ashmemSize = sizeof(std::atomic_int) * size;
+     if (ashmemSize <= 0) {
+         jniThrowException(env, "java/io/IOException", "bad ashmem size");
+         return -1;
+@@ -103,7 +103,6 @@ static jlong android_util_MemoryIntArray_open(JNIEnv* env, jobject clazz, jint f
+     }
+ 
+     if (owner) {
+-        int size = ashmemSize / sizeof(std::atomic_int);
+         new (ashmemAddr) std::atomic_int[size];
+     }
+ 
+@@ -119,7 +118,7 @@ static jlong android_util_MemoryIntArray_open(JNIEnv* env, jobject clazz, jint f
+ }
+ 
+ static void android_util_MemoryIntArray_close(JNIEnv* env, jobject clazz, jint fd,
+-                                              jlong ashmemAddr) {
++                                              jlong ashmemAddr, jint size) {
+     if (fd < 0) {
+         jniThrowException(env, "java/io/IOException", "bad file descriptor");
+         return;
+@@ -130,7 +129,7 @@ static void android_util_MemoryIntArray_close(JNIEnv* env, jobject clazz, jint f
+         return;
+     }
+ 
+-    int ashmemSize = ashmem_get_size_region(fd);
++    int ashmemSize = sizeof(std::atomic_int) * size;
+     if (ashmemSize <= 0) {
+         jniThrowException(env, "java/io/IOException", "bad ashmem size");
+         return;
+@@ -182,8 +181,8 @@ static jint android_util_MemoryIntArray_size(JNIEnv* env, jobject clazz, jint fd
+ 
+ static const JNINativeMethod methods[] = {
+     {"nativeCreate",  "(Ljava/lang/String;I)I", (void*)android_util_MemoryIntArray_create},
+-    {"nativeOpen",  "(IZ)J", (void*)android_util_MemoryIntArray_open},
+-    {"nativeClose", "(IJ)V", (void*)android_util_MemoryIntArray_close},
++    {"nativeOpen",  "(IZI)J", (void*)android_util_MemoryIntArray_open},
++    {"nativeClose", "(IJI)V", (void*)android_util_MemoryIntArray_close},
+     // @FastNative
+     {"nativeGet",  "(JI)I", (void*)android_util_MemoryIntArray_get},
+     // @FastNative
+diff --git a/frameworks/base/core/res/AndroidManifest.xml b/frameworks/base/core/res/AndroidManifest.xml
+index fa2c3f053..5c9e49008 100644
+--- a/frameworks/base/core/res/AndroidManifest.xml
++++ b/frameworks/base/core/res/AndroidManifest.xml
+@@ -11339,11 +11339,6 @@
+                  android:exported="true">
+             <meta-data android:name="android.telecom.INCLUDE_SELF_MANAGED_CALLS"
+                        android:value="true" />
+-            <!-- Indicates that this service's class may not be present in all builds.
+-                 This directs Telecom to verify class existence before attempting to bind,
+-                 in order to avoid a ClassNotFoundException. -->
+-            <meta-data android:name="android.telecom.CLASS_EXISTENCE_CHECK"
+-                       android:value="true" />
+             <intent-filter>
+                 <action android:name="android.telecom.InCallService"/>
+             </intent-filter>
+diff --git a/frameworks/base/libs/androidfw/ResourceTypes.cpp b/frameworks/base/libs/androidfw/ResourceTypes.cpp
+index 91c863f4e..be6312236 100644
+--- a/frameworks/base/libs/androidfw/ResourceTypes.cpp
++++ b/frameworks/base/libs/androidfw/ResourceTypes.cpp
+@@ -562,7 +562,18 @@ status_t ResStringPool::setTo(incfs::map_ptr<void> data, size_t size, bool copyD
+                 (int)mHeader->header.headerSize, (int)mHeader->header.size, (int)size);
+         return (mError=BAD_TYPE);
+     }
+-    mSize = mHeader->header.size;
++    const uint32_t totalSize = mHeader->header.size;
++    mSize = totalSize;
++    if (totalSize < mHeader->stringsStart) {
++        ALOGW("Bad string block: string pool starts at %u, after total size %u\n",
++                mHeader->stringsStart, totalSize);
++        return (mError=BAD_TYPE);
++    }
++    if (totalSize < mHeader->stylesStart) {
++        ALOGW("Bad string block: style pool starts at %u, after total size %u\n",
++                mHeader->stylesStart, totalSize);
++        return (mError=BAD_TYPE);
++    }
+     mEntries = data.offset(mHeader->header.headerSize).convert<uint32_t>();
+ 
+     if (mHeader->stringCount > 0) {
+@@ -651,18 +662,22 @@ status_t ResStringPool::setTo(incfs::map_ptr<void> data, size_t size, bool copyD
+ 
+     if (mHeader->styleCount > 0) {
+         mEntryStyles = mEntries + mHeader->stringCount;
+-        // invariant: integer overflow in calculating mEntryStyles
+-        if (mEntryStyles < mEntries) {
+-            ALOGW("Bad string block: integer overflow finding styles\n");
++
++        const size_t styleOffsetsStart =
++            mEntryStyles.convert<uint8_t>() - mHeader.convert<uint8_t>();
++        if (mHeader->styleCount * sizeof(uint32_t) > size ||
++            styleOffsetsStart > size - mHeader->styleCount * sizeof(uint32_t)) {
++            ALOGW("Bad string block: entry of %d styles extends past data size %zu\n",
++                    (int)mHeader->styleCount, size);
+             return (mError=BAD_TYPE);
+         }
+ 
+-        if ((mEntryStyles.convert<uint8_t>() - mHeader.convert<uint8_t>()) > (int)size) {
+-            ALOGW("Bad string block: entry of %d styles extends past data size %d\n",
+-                    (int)(mEntryStyles.convert<uint8_t>()-mHeader.convert<uint8_t>()),
+-                    (int)size);
++        if (mHeader->stringsStart < styleOffsetsStart ||
++            mHeader->styleCount * sizeof(uint32_t) > (mHeader->stringsStart - styleOffsetsStart)) {
++            ALOGW("Bad string block: style offsets extend past style data start\n");
+             return (mError=BAD_TYPE);
+         }
++
+         mStyles = data.offset(mHeader->stylesStart).convert<uint32_t>();
+         if (mHeader->stylesStart >= mHeader->header.size) {
+             ALOGW("Bad string block: style pool starts %d, after total size %d\n",
+@@ -670,19 +685,6 @@ status_t ResStringPool::setTo(incfs::map_ptr<void> data, size_t size, bool copyD
+             return (mError=BAD_TYPE);
+         }
+ 
+-        if (mHeader->styleCount >
+-            std::numeric_limits<decltype(mHeader->styleCount)>::max() / sizeof(uint32_t)) {
+-          ALOGW("Bad string block: potential integer overflow when finding style entries\n");
+-          return (mError = BAD_TYPE);
+-        }
+-
+-        const size_t styleOffsetsStart =
+-            mEntryStyles.convert<uint8_t>() - mHeader.convert<uint8_t>();
+-        if (mHeader->styleCount * sizeof(uint32_t) > (mHeader->stringsStart - styleOffsetsStart)) {
+-          ALOGW("Bad string block: style offsets extend past style data start\n");
+-          return (mError = BAD_TYPE);
+-        }
+-
+         mStylePoolSize =
+             (mHeader->header.size-mHeader->stylesStart)/sizeof(uint32_t);
+ 
+diff --git a/frameworks/base/telephony/common/com/google/android/mms/pdu/PduParser.java b/frameworks/base/telephony/common/com/google/android/mms/pdu/PduParser.java
+index ffd2a8b41..c30e1f452 100644
+--- a/frameworks/base/telephony/common/com/google/android/mms/pdu/PduParser.java
++++ b/frameworks/base/telephony/common/com/google/android/mms/pdu/PduParser.java
+@@ -54,6 +54,16 @@ public class PduParser {
+     private static final int THE_FIRST_PART = 0;
+     private static final int THE_LAST_PART = 1;
+ 
++    private static final int MAX_PARSING_DEPTH = 30;
++    // PADDING
++    // PADDING
++    // PADDING
++    // PADDING
++    // PADDING
++    // PADDING
++    // PADDING
++    // PADDING
++
+     /**
+      * The pdu data.
+      */
+@@ -836,9 +846,17 @@ public class PduParser {
+      * @return parts in PduBody structure
+      */
+     protected PduBody parseParts(ByteArrayInputStream pduDataStream) {
++        return parseParts(pduDataStream, 0);
++    }
++
++    private PduBody parseParts(ByteArrayInputStream pduDataStream, int depth) {
+         if (pduDataStream == null) {
+             return null;
+         }
++        if (depth > MAX_PARSING_DEPTH) {
++            Log.e(LOG_TAG, "parseParts: recursion depth limit exceeded (depth: " + depth + ")");
++            return null;
++        }
+ 
+         int count = parseUnsignedInt(pduDataStream); // get the number of parts
+         PduBody body = new PduBody();
+@@ -900,12 +918,24 @@ public class PduParser {
+ 
+             /* get part's data */
+             if (dataLength > 0) {
++
++
++                if (dataLength > pduDataStream.available()) {
++                    Log.e(LOG_TAG, "parseParts: dataLength " + dataLength
++                            + " exceeds available stream bytes: " + pduDataStream.available());
++                    return null;
++                }
+                 byte[] partData = new byte[dataLength];
+                 String partContentType = new String(part.getContentType());
+                 pduDataStream.read(partData, 0, dataLength);
+                 if (partContentType.equalsIgnoreCase(ContentType.MULTIPART_ALTERNATIVE)) {
+                     // parse "multipart/vnd.wap.multipart.alternative".
+-                    PduBody childBody = parseParts(new ByteArrayInputStream(partData));
++                    PduBody childBody = parseParts(new ByteArrayInputStream(partData), depth + 1);
++                    if (childBody == null || childBody.getPartsNum() == 0) {
++                        Log.e(LOG_TAG,
++                                "parseParts: nested multipart alternative parsing failed or empty");
++                        return null;
++                    }
+                     // take the first part of children.
+                     part = childBody.getPart(0);
+                 } else {
+@@ -1401,7 +1431,9 @@ public class PduParser {
+ 
+                         if (index < PduContentTypes.contentTypes.length) {
+                             byte[] type = (PduContentTypes.contentTypes[index]).getBytes();
+-                            map.put(PduPart.P_TYPE, type);
++                            if (map != null) {
++                                map.put(PduPart.P_TYPE, type);
++                            }
+                         } else {
+                             //not support this type, ignore it.
+                         }
+@@ -1464,14 +1496,16 @@ public class PduParser {
+                             (END_STRING_FLAG == firstValue)) {
+                         //Text-String (extension-charset)
+                         byte[] charsetStr = parseWapString(pduDataStream, TYPE_TEXT_STRING);
+-                        try {
+-                            int charsetInt = CharacterSets.getMibEnumValue(
+-                                    new String(charsetStr));
+-                            map.put(PduPart.P_CHARSET, charsetInt);
+-                        } catch (UnsupportedEncodingException e) {
+-                            // Not a well-known charset, use "*".
+-                            Log.e(LOG_TAG, Arrays.toString(charsetStr), e);
+-                            map.put(PduPart.P_CHARSET, CharacterSets.ANY_CHARSET);
++                        if (charsetStr != null && map != null) {
++                            try {
++                                int charsetInt = CharacterSets.getMibEnumValue(
++                                        new String(charsetStr));
++                                map.put(PduPart.P_CHARSET, charsetInt);
++                            } catch (UnsupportedEncodingException e) {
++                                // Not a well-known charset, use "*".
++                                Log.e(LOG_TAG, Arrays.toString(charsetStr), e);
++                                map.put(PduPart.P_CHARSET, CharacterSets.ANY_CHARSET);
++                            }
+                         }
+                     } else {
+                         //Well-known-charset
+@@ -1590,8 +1624,15 @@ public class PduParser {
+         } else if (cur <= TEXT_MAX) {
+             contentType = parseWapString(pduDataStream, TYPE_TEXT_STRING);
+         } else {
+-            contentType =
+-                (PduContentTypes.contentTypes[parseShortInteger(pduDataStream)]).getBytes();
++
++            int index = parseShortInteger(pduDataStream);
++
++            if (index < PduContentTypes.contentTypes.length) {
++                contentType = (PduContentTypes.contentTypes[index]).getBytes();
++
++            } else {
++                contentType = (PduContentTypes.contentTypes[0]).getBytes();
++            }
+         }
+ 
+         return contentType;
+@@ -1696,8 +1737,11 @@ public class PduParser {
+                             } else {
+                                 pduDataStream.reset();
+                                 /* Token-text */
+-                                part.setContentDisposition(parseWapString(pduDataStream
+-                                        , TYPE_TEXT_STRING));
++                                byte[] contentDisposition = parseWapString(pduDataStream,
++                                        TYPE_TEXT_STRING);
++                                if (contentDisposition != null) {
++                                    part.setContentDisposition(contentDisposition);
++                                }
+                             }
+ 
+                             /* get filename parameter and skip other parameters */
+@@ -1705,8 +1749,11 @@ public class PduParser {
+                             if (thisStartPos - thisEndPos < len) {
+                                 value = pduDataStream.read();
+                                 if (value == PduPart.P_FILENAME) { //filename is text-string
+-                                    part.setFilename(parseWapString(pduDataStream
+-                                            , TYPE_TEXT_STRING));
++                                    byte[] filename = parseWapString(pduDataStream,
++                                            TYPE_TEXT_STRING);
++                                    if (filename != null) {
++                                        part.setFilename(filename);
++                                    }
+                                 }
+ 
+                                 /* skip other parameters */
+@@ -1739,8 +1786,8 @@ public class PduParser {
+                 byte[] tempValue = parseWapString(pduDataStream, TYPE_TEXT_STRING);
+ 
+                 // Check the header whether it is "Content-Transfer-Encoding".
+-                if (true ==
+-                    PduPart.CONTENT_TRANSFER_ENCODING.equalsIgnoreCase(new String(tempHeader))) {
++                if (tempHeader != null && tempValue != null &&
++                        PduPart.CONTENT_TRANSFER_ENCODING.equalsIgnoreCase(new String(tempHeader))) {
+                     part.setContentTransferEncoding(tempValue);
+                 }
+ 
+diff --git a/frameworks/base/telephony/java/android/telephony/MessageUpgradeWorker.java b/frameworks/base/telephony/java/android/telephony/MessageUpgradeWorker.java
+index 059ce72b2..11f23fc4a 100644
+--- a/frameworks/base/telephony/java/android/telephony/MessageUpgradeWorker.java
++++ b/frameworks/base/telephony/java/android/telephony/MessageUpgradeWorker.java
+@@ -582,7 +582,7 @@ public class MessageUpgradeWorker {
+             return MessageType.UNKNOWN;
+         }
+ 
+-        return switch (contentUri.getAuthority().toLowerCase()) {
++        return switch (contentUri.getAuthority()) {
+             case AUTHORITY_SMS -> MessageType.SMS;
+             case AUTHORITY_MMS -> MessageType.MMS;
+             default -> MessageType.UNKNOWN;
+diff --git a/frameworks/base/tools/aapt2/java/AnnotationProcessor.cpp b/frameworks/base/tools/aapt2/java/AnnotationProcessor.cpp
+index 35126ff7e..1092cabd2 100644
+--- a/frameworks/base/tools/aapt2/java/AnnotationProcessor.cpp
++++ b/frameworks/base/tools/aapt2/java/AnnotationProcessor.cpp
+@@ -106,6 +106,19 @@ void AnnotationProcessor::AppendCommentLine(std::string comment, bool add_api_an
+     comment = std::string(trimmed);
+   }
+ 
++  // Escape comment text so that a "*/" or "\" in the comment cannot prematurely
++  // close the generated javadoc comment.
++  for (size_t pos = comment.find('*'); pos != std::string::npos;
++       pos = comment.find('*', pos + 1)) {
++    if (pos + 1 < comment.size() && comment[pos + 1] == '/') {
++      comment.replace(pos, 2, "*&#47;");
++    }
++  }
++  for (size_t pos = comment.find('\\'); pos != std::string::npos;
++       pos = comment.find('\\', pos + 5)) {
++    comment.replace(pos, 1, "&#92;");
++  }
++
+   if (!has_comments_) {
+     has_comments_ = true;
+     comment_ << "/**";
+
+project frameworks/opt/telephony/
+diff --git a/frameworks/opt/telephony/src/java/com/android/internal/telephony/GsmCdmaPhone.java b/frameworks/opt/telephony/src/java/com/android/internal/telephony/GsmCdmaPhone.java
+index 9dbce90..18feee1 100644
+--- a/frameworks/opt/telephony/src/java/com/android/internal/telephony/GsmCdmaPhone.java
++++ b/frameworks/opt/telephony/src/java/com/android/internal/telephony/GsmCdmaPhone.java
+@@ -1544,7 +1544,7 @@ public class GsmCdmaPhone extends Phone {
+                 logd("dialInternal: ignore InCall MMI command during emergency call");
+                 return null;
+             }
+-            if (handleInCallMmiCommands(newDialString)) {
++            if (wrappedCallback == null && handleInCallMmiCommands(newDialString)) {
+                 return null;
+             }
+         }
+diff --git a/frameworks/opt/telephony/src/java/com/android/internal/telephony/InboundSmsHandler.java b/frameworks/opt/telephony/src/java/com/android/internal/telephony/InboundSmsHandler.java
+index fd5f599..2e6884a 100644
+--- a/frameworks/opt/telephony/src/java/com/android/internal/telephony/InboundSmsHandler.java
++++ b/frameworks/opt/telephony/src/java/com/android/internal/telephony/InboundSmsHandler.java
+@@ -624,7 +624,19 @@ public abstract class InboundSmsHandler extends StateMachine {
+                 case EVENT_BROADCAST_SMS:
+                     // if any broadcasts were sent, transition to waiting state
+                     InboundSmsTracker inboundSmsTracker = (InboundSmsTracker) msg.obj;
+-                    if (processMessagePart(inboundSmsTracker)) {
++                    boolean processed = false;
++                    if (inboundSmsTracker != null) {
++                        try {
++                            processed = processMessagePart(inboundSmsTracker);
++                        } catch (RuntimeException e) {
++                            loge("Exception delivering message part", e);
++                            deleteFromRawTable(inboundSmsTracker.getDeleteWhere(),
++                                    inboundSmsTracker.getDeleteWhereArgs(), MARK_DELETED);
++                        }
++                    } else {
++                        loge("EVENT_BROADCAST_SMS with null inboundSmsTracker");
++                    }
++                    if (processed) {
+                         sendMessage(obtainMessage(EVENT_UPDATE_TRACKER, msg.obj));
+                         transitionTo(mWaitingState);
+                     } else {
+diff --git a/frameworks/opt/telephony/src/java/com/android/internal/telephony/WapPushOverSms.java b/frameworks/opt/telephony/src/java/com/android/internal/telephony/WapPushOverSms.java
+index e03960a..ef692a9 100644
+--- a/frameworks/opt/telephony/src/java/com/android/internal/telephony/WapPushOverSms.java
++++ b/frameworks/opt/telephony/src/java/com/android/internal/telephony/WapPushOverSms.java
+@@ -314,10 +314,10 @@ public class WapPushOverSms implements ServiceConnection {
+             result.intentData = intentData;
+             result.contentTypeParameters = pduDecoder.getContentParameters();
+             result.statusCode = Activity.RESULT_OK;
+-        } catch (ArrayIndexOutOfBoundsException aie) {
++        } catch (RuntimeException e) {
+             // 0-byte WAP PDU or other unexpected WAP PDU contents can easily throw this;
+             // log exception string without stack trace and return false.
+-            Rlog.e(TAG, "ignoring dispatchWapPdu() array index exception: " + aie);
++            Rlog.e(TAG, "ignoring decodeWapPdu() runtime exception: " + e);
+             result.statusCode = Intents.RESULT_SMS_GENERIC_ERROR;
+         }
+         return result;
+diff --git a/frameworks/opt/telephony/src/java/com/android/internal/telephony/imsphone/ImsPhone.java b/frameworks/opt/telephony/src/java/com/android/internal/telephony/imsphone/ImsPhone.java
+index dcc7177..2eb87cd 100644
+--- a/frameworks/opt/telephony/src/java/com/android/internal/telephony/imsphone/ImsPhone.java
++++ b/frameworks/opt/telephony/src/java/com/android/internal/telephony/imsphone/ImsPhone.java
+@@ -1007,7 +1007,7 @@ public class ImsPhone extends ImsPhoneBase {
+                 logd("dialInternal: ignore InCall MMI command during emergency call");
+                 return null;
+             }
+-            if (handleInCallMmiCommands(newDialString)) {
++            if (wrappedCallback == null && handleInCallMmiCommands(newDialString)) {
+                 return null;
+             }
+         }
+@@ -2766,7 +2766,7 @@ public class ImsPhone extends ImsPhoneBase {
+                         loge("setPhoneNumberForSourceIms: PhoneNumberManager return error "
+                                 + result.getErrorCode());
+                     }
+-                } catch (IllegalArgumentException e) {
++                } catch (RuntimeException e) {
+                     loge("setPhoneNumberForSourceIms: failed to parse phone number, " + e);
+                 }
+             } else {
+diff --git a/frameworks/opt/telephony/src/java/com/android/internal/telephony/uicc/SIMRecords.java b/frameworks/opt/telephony/src/java/com/android/internal/telephony/uicc/SIMRecords.java
+index d4a63c6..c356233 100644
+--- a/frameworks/opt/telephony/src/java/com/android/internal/telephony/uicc/SIMRecords.java
++++ b/frameworks/opt/telephony/src/java/com/android/internal/telephony/uicc/SIMRecords.java
+@@ -179,11 +179,13 @@ public class SIMRecords extends IccRecords {
+     private static final int EVENT_SET_MBDN_DONE = 20 + SIM_RECORD_EVENT_BASE;
+     private static final int EVENT_SMS_ON_SIM = 21 + SIM_RECORD_EVENT_BASE;
+     private static final int EVENT_GET_SMS_DONE = 22 + SIM_RECORD_EVENT_BASE;
+-    private static final int EVENT_GET_CFF_DONE = 24 + SIM_RECORD_EVENT_BASE;
++    @VisibleForTesting
++    static final int EVENT_GET_CFF_DONE = 24 + SIM_RECORD_EVENT_BASE;
+     private static final int EVENT_SET_CPHS_MAILBOX_DONE = 25 + SIM_RECORD_EVENT_BASE;
+     private static final int EVENT_GET_INFO_CPHS_DONE = 26 + SIM_RECORD_EVENT_BASE;
+     private static final int EVENT_SET_MSISDN_DONE = 30 + SIM_RECORD_EVENT_BASE;
+-    private static final int EVENT_GET_CFIS_DONE = 32 + SIM_RECORD_EVENT_BASE;
++    @VisibleForTesting
++    static final int EVENT_GET_CFIS_DONE = 32 + SIM_RECORD_EVENT_BASE;
+     private static final int EVENT_GET_CSP_CPHS_DONE = 33 + SIM_RECORD_EVENT_BASE;
+     private static final int EVENT_GET_GID1_DONE = 34 + SIM_RECORD_EVENT_BASE;
+     private static final int EVENT_GET_GID2_DONE = 36 + SIM_RECORD_EVENT_BASE;
+@@ -496,24 +498,26 @@ public class SIMRecords extends IccRecords {
+         }
+     }
+ 
+-    // Validate data is not null and not empty.
+     private boolean validEfCfis(byte[] data) {
+         if (data != null) {
+-            if (data[0] < 1 || data[0] > 4) {
+-                // The MSP (Multiple Subscriber Profile) byte should be between
+-                // 1 and 4 according to ETSI TS 131 102 v11.3.0 section 4.2.64.
+-                logw("MSP byte: " + data[0] + " is not between 1 and 4", null);
+-            }
+-            // empty EF_CFIS should be considered as call forward disabled
+-            for (byte b : data) {
+-                if (b != (byte) 0xFF) {
+-                    return true;
++            if (data.length >= 16) {
++                // EF_CFIS is a 16-byte record; reject shorter (truncated) records.
++                // Validate the MSP (Multiple Subscriber Profile) byte.
++                if (data[0] < 1 || data[0] > 4) {
++                    // The MSP (Multiple Subscriber Profile) byte should be between
++                    // 1 and 4 according to ETSI TS 131 102 v11.3.0 section 4.2.64.
++                    logw("MSP byte: " + data[0] + " is not between 1 and 4", null);
++                }
++                // empty EF_CFIS should be considered as call forward disabled
++                for (byte b : data) {
++                    if (b != (byte) 0xFF) {
++                        return true;
++                    }
+                 }
+             }
+         }
+         return false;
+     }
+-
+     public int getVoiceMessageCount() {
+         boolean voiceMailWaiting = false;
+         int countVoiceMessages = DEFAULT_VOICE_MESSAGE_COUNT;
+@@ -603,7 +607,7 @@ public class SIMRecords extends IccRecords {
+                         + " invalid mEfCfis=" + IccUtils.bytesToHexString(mEfCfis));
+             }
+ 
+-            if (mEfCff != null) {
++            if (mEfCff != null && mEfCff.length > 0) {
+                 if (enable) {
+                     mEfCff[0] = (byte) ((mEfCff[0] & CFF_LINE1_RESET)
+                             | CFF_UNCONDITIONAL_ACTIVE);
+@@ -1508,10 +1512,10 @@ public class SIMRecords extends IccRecords {
+             // Refer TS 51.011 Section 10.3.46 for the content description
+             mCallForwardingStatus = (mEfCfis[1] & 0x01);
+             log("EF_CFIS: callForwardingEnabled=" + mCallForwardingStatus);
+-        } else if (mEfCff != null) {
+-            mCallForwardingStatus =
+-                    ((mEfCff[0] & CFF_LINE1_MASK) == CFF_UNCONDITIONAL_ACTIVE) ?
+-                            CALL_FORWARDING_STATUS_ENABLED : CALL_FORWARDING_STATUS_DISABLED;
++            } else if (mEfCff != null && mEfCff.length > 0) {
++                mCallForwardingStatus =
++                        ((mEfCff[0] & CFF_LINE1_MASK) == CFF_UNCONDITIONAL_ACTIVE) ?
++                                CALL_FORWARDING_STATUS_ENABLED : CALL_FORWARDING_STATUS_DISABLED;
+             log("EF_CFF: callForwardingEnabled=" + mCallForwardingStatus);
+         } else {
+             mCallForwardingStatus = CALL_FORWARDING_STATUS_UNKNOWN;
+
+project packages/apps/ContactsPicker/
+diff --git a/packages/apps/ContactsPicker/src/com/android/contactspicker/ContactsPickerActivity.kt b/packages/apps/ContactsPicker/src/com/android/contactspicker/ContactsPickerActivity.kt
+index b72467d..74e0b96 100644
+--- a/packages/apps/ContactsPicker/src/com/android/contactspicker/ContactsPickerActivity.kt
++++ b/packages/apps/ContactsPicker/src/com/android/contactspicker/ContactsPickerActivity.kt
+@@ -61,6 +61,7 @@ class ContactsPickerActivity : Hilt_ContactsPickerActivity() {
+     override fun onCreate(savedInstanceState: Bundle?) {
+         Trace.beginSection("$TAG#coldStart")
+         super.onCreate(savedInstanceState)
++        window.setHideOverlayWindows(true)
+ 
+         if (savedInstanceState != null) {
+             setupComposeUi()
+@@ -167,7 +168,19 @@ class ContactsPickerActivity : Hilt_ContactsPickerActivity() {
+                     this.component = component
+                     addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT)
+                 }
+-            startActivity(preferredActivityIntent)
++            try {
++                startActivityAsCaller(preferredActivityIntent, null, false, userId)
++            } catch (e: SecurityException) {
++                Log.e(
++                        TAG,
++                        "SecurityException: Original caller lacks permission to forward intent targets",
++                        e,
++                    )
++                setResult(RESULT_CANCELED)
++            } catch (e: ActivityNotFoundException) {
++                Log.e(TAG, "ActivityNotFoundException: Preferred activity not found", e)
++                return false
++            }
+             finish()
+             return true
+         }
+@@ -249,7 +262,10 @@ class ContactsPickerActivity : Hilt_ContactsPickerActivity() {
+                 }
+ 
+         try {
+-            startActivity(chooserIntent)
++            startActivityAsCaller(chooserIntent, null, false, userId)
++        } catch (e: SecurityException) {
++            Log.e(TAG, "SecurityException: Original caller lacks permission to forward intent targets", e)
++            setResult(RESULT_CANCELED)
+         } catch (e: ActivityNotFoundException) {
+             Log.e(TAG, "No Activity found to handle the intent: $targetIntent", e)
+             Toast.makeText(
+
+project packages/modules/Bluetooth/
+diff --git a/packages/modules/Bluetooth/android/app/src/com/android/bluetooth/btservice/AdapterService.java b/packages/modules/Bluetooth/android/app/src/com/android/bluetooth/btservice/AdapterService.java
+index 3e51fd4..242cd8f 100644
+--- a/packages/modules/Bluetooth/android/app/src/com/android/bluetooth/btservice/AdapterService.java
++++ b/packages/modules/Bluetooth/android/app/src/com/android/bluetooth/btservice/AdapterService.java
+@@ -4515,7 +4515,7 @@ public class AdapterService extends Service {
+         mStorage.onBondStateChanged(device, fromState, toState);
+ 
+         // Remove the bond caller info when bonding is concluded
+-        if (Flags.removeBondCallerInfo() && toState != BOND_BONDING) {
++        if (toState != BOND_BONDING) {
+             CallerInfo callerInfo = mBondAttemptCallerInfo.remove(device.getAddress());
+             if (callerInfo != null) {
+                 Log.d(TAG, "Removed bond caller info for device: " + device);
+diff --git a/packages/modules/Bluetooth/flags/pairing.aconfig b/packages/modules/Bluetooth/flags/pairing.aconfig
+index bbcf9af..cff3826 100644
+--- a/packages/modules/Bluetooth/flags/pairing.aconfig
++++ b/packages/modules/Bluetooth/flags/pairing.aconfig
+@@ -231,14 +231,3 @@ flag {
+         purpose: PURPOSE_BUGFIX
+     }
+ }
+-
+-
+-flag {
+-    name: "remove_bond_caller_info"
+-    namespace: "bluetooth"
+-    description: "Remove bond caller information when bonding is concluded"
+-    bug: "492665910"
+-    metadata {
+-        purpose: PURPOSE_BUGFIX
+-    }
+-}
+diff --git a/packages/modules/Bluetooth/flags/security.aconfig b/packages/modules/Bluetooth/flags/security.aconfig
+index 07a8909..3699f5a 100644
+--- a/packages/modules/Bluetooth/flags/security.aconfig
++++ b/packages/modules/Bluetooth/flags/security.aconfig
+@@ -51,16 +51,6 @@ flag {
+     }
+ }
+ 
+-flag {
+-    name: "btsec_sdp_database_thread_sync"
+-    namespace: "bluetooth"
+-    description: "Use new thread synchronization for SDP database access"
+-    bug: "458487080"
+-    metadata {
+-        purpose: PURPOSE_BUGFIX
+-    }
+-}
+-
+ flag {
+     name: "prevent_jw_auto_accept"
+     namespace: "bluetooth"
+diff --git a/packages/modules/Bluetooth/system/btif/src/btif_sdp_server.cc b/packages/modules/Bluetooth/system/btif/src/btif_sdp_server.cc
+index e0f5d13..3ae3342 100644
+--- a/packages/modules/Bluetooth/system/btif/src/btif_sdp_server.cc
++++ b/packages/modules/Bluetooth/system/btif/src/btif_sdp_server.cc
+@@ -37,8 +37,6 @@
+ #include <stdlib.h>
+ #include <string.h>
+ 
+-#include <mutex>
+-
+ #include "bta/include/bta_sdp_api.h"
+ #include "bta/sys/bta_sys.h"
+ #include "btif_common.h"
+@@ -55,10 +53,6 @@
+ using namespace bluetooth::legacy::stack::sdp;
+ using namespace bluetooth;
+ 
+-// Protects the sdp_slots array from concurrent access.
+-// TODO(b/415689442): Remove when btsec_sdp_database_thread_sync is shipped
+-static std::recursive_mutex sdp_lock;
+-
+ /**
+  * The need for a state variable have been reduced to two states.
+  * The remaining state control is handled by program flow
+@@ -118,17 +112,13 @@ static void init_sdp_slots_in_main_thread() {
+ }
+ 
+ static void init_sdp_slots() {
+-  if (com_android_bluetooth_flags_btsec_sdp_database_thread_sync()) {
+-    // We should not block this thread on main_thread to post this synchronously.
+-    // As Init sequence is long and some other enable/init sequence may block the main thread for
+-    // too long leading to timeout during synchronous execution. Doing this init asynchronously
+-    // will be safe as SDP will be required post complete init anyway. Also, doing this
+-    // synchronously on the same thread is also fine, but keeping the sdp access on main_thread to
+-    // avoid any race whatsoever.
+-    do_in_main_thread(common::BindOnce(&init_sdp_slots_in_main_thread));
+-  } else {
+-    init_sdp_slots_in_main_thread();
+-  }
++  // We should not block this thread on main_thread to post this synchronously.
++  // As Init sequence is long and some other enable/init sequence may block the main thread for
++  // too long leading to timeout during synchronous execution. Doing this init asynchronously
++  // will be safe as SDP will be required post complete init anyway. Also, doing this
++  // synchronously on the same thread is also fine, but keeping the sdp access on main_thread to
++  // avoid any race whatsoever.
++  do_in_main_thread(common::BindOnce(&init_sdp_slots_in_main_thread));
+ }
+ 
+ BtStatus sdp_server_init() {
+@@ -139,9 +129,6 @@ BtStatus sdp_server_init() {
+ 
+ static void cleanup_in_main_thread() {
+   log::verbose("Sdp Server Cleanup");
+-  if (!com_android_bluetooth_flags_btsec_sdp_database_thread_sync()) {
+-    std::unique_lock<std::recursive_mutex> lock(sdp_lock);
+-  }
+   int i;
+   for (i = 0; i < MAX_SDP_SLOTS; i++) {
+     /*remove_sdp_record(i); we cannot send messages to the other threads, since
+@@ -153,11 +140,7 @@ static void cleanup_in_main_thread() {
+ }
+ 
+ void sdp_server_cleanup() {
+-  if (com_android_bluetooth_flags_btsec_sdp_database_thread_sync()) {
+-    get_main_thread()->DoInThreadSynchronously(&cleanup_in_main_thread);
+-  } else {
+-    cleanup_in_main_thread();
+-  }
++  get_main_thread()->DoInThreadSynchronously(&cleanup_in_main_thread);
+ }
+ 
+ int get_sdp_records_size(bluetooth_sdp_record* in_record, int count) {
+@@ -239,10 +222,6 @@ static int alloc_sdp_slot_in_main_thread(bluetooth_sdp_record* in_record) {
+   }
+ 
+   {
+-    if (!com_android_bluetooth_flags_btsec_sdp_database_thread_sync()) {
+-      std::unique_lock<std::recursive_mutex> lock(sdp_lock);
+-    }
+-
+     for (int i = 0; i < MAX_SDP_SLOTS; i++) {
+       if (sdp_slots[i].state == SDP_RECORD_FREE) {
+         sdp_slots[i].state = SDP_RECORD_ALLOCED;
+@@ -258,11 +237,7 @@ static int alloc_sdp_slot_in_main_thread(bluetooth_sdp_record* in_record) {
+ }
+ 
+ static int alloc_sdp_slot(bluetooth_sdp_record* in_record) {
+-  if (com_android_bluetooth_flags_btsec_sdp_database_thread_sync()) {
+-      return get_main_thread()->DoInThreadSynchronously(&alloc_sdp_slot_in_main_thread, in_record);
+-  }
+-
+-  return alloc_sdp_slot_in_main_thread(in_record);
++  return get_main_thread()->DoInThreadSynchronously(&alloc_sdp_slot_in_main_thread, in_record);
+ }
+ 
+ static int free_sdp_slot(int id) {
+@@ -274,10 +249,6 @@ static int free_sdp_slot(int id) {
+   }
+ 
+   {
+-    if (!com_android_bluetooth_flags_btsec_sdp_database_thread_sync()) {
+-      std::unique_lock<std::recursive_mutex> lock(sdp_lock);
+-    }
+-
+     handle = sdp_slots[id].sdp_handle;
+     sdp_slots[id].sdp_handle = 0;
+     if (sdp_slots[id].state != SDP_RECORD_FREE) {
+@@ -302,10 +273,6 @@ static const sdp_slot_t* start_create_sdp_in_main_thread(int id) {
+     return NULL;
+   }
+ 
+-  if (!com_android_bluetooth_flags_btsec_sdp_database_thread_sync()) {
+-    std::unique_lock<std::recursive_mutex> lock(sdp_lock);
+-  }
+-
+   if (sdp_slots[id].state != SDP_RECORD_ALLOCED) {
+     /* The record have been removed before this event occurred - e.g. deinit */
+     log::error("failed - state for id {} is sdp_slots[id].state = {} expected {}", id,
+@@ -321,27 +288,15 @@ static const sdp_slot_t* start_create_sdp_in_main_thread(int id) {
+  * SDP_RECORD_CREATE_INITIATED.
+  */
+ static const sdp_slot_t* start_create_sdp(int id) {
+-  if (com_android_bluetooth_flags_btsec_sdp_database_thread_sync()) {
+-      return get_main_thread()->DoInThreadSynchronously(&start_create_sdp_in_main_thread, id);
+-  }
+-
+-  return start_create_sdp_in_main_thread(id);
++  return get_main_thread()->DoInThreadSynchronously(&start_create_sdp_in_main_thread, id);
+ }
+ 
+ static void set_sdp_handle_in_main_thread(int id, int handle) {
+-  if (!com_android_bluetooth_flags_btsec_sdp_database_thread_sync()) {
+-    std::unique_lock<std::recursive_mutex> lock(sdp_lock);
+-  }
+   sdp_slots[id].sdp_handle = handle;
+ }
+ 
+ static void set_sdp_handle(int id, int handle) {
+-  if (com_android_bluetooth_flags_btsec_sdp_database_thread_sync()) {
+-      get_main_thread()->DoInThreadSynchronously(&set_sdp_handle_in_main_thread, id, handle);
+-  }
+-  else {
+-    set_sdp_handle_in_main_thread(id, handle);
+-  }
++  get_main_thread()->DoInThreadSynchronously(&set_sdp_handle_in_main_thread, id, handle);
+ }
+ 
+ static BtStatus create_sdp_record_in_main_thread(bluetooth_sdp_record* record, int* record_handle) {
+@@ -362,12 +317,8 @@ static BtStatus create_sdp_record_in_main_thread(bluetooth_sdp_record* record, i
+ }
+ 
+ BtStatus create_sdp_record(bluetooth_sdp_record* record, int* record_handle) {
+-  if (com_android_bluetooth_flags_btsec_sdp_database_thread_sync()) {
+-      return get_main_thread()->DoInThreadSynchronously(&create_sdp_record_in_main_thread,
+-                                                      record, record_handle);
+-  }
+-
+-  return create_sdp_record_in_main_thread(record, record_handle);
++  return get_main_thread()->DoInThreadSynchronously(&create_sdp_record_in_main_thread,
++                                                    record, record_handle);
+ }
+ 
+ static BtStatus remove_sdp_record_in_main_thread(int record_id) {
+@@ -380,10 +331,6 @@ static BtStatus remove_sdp_record_in_main_thread(int record_id) {
+   bluetooth_sdp_record* record;
+   bluetooth_sdp_types sdp_type = SDP_TYPE_RAW;
+   {
+-    if (!com_android_bluetooth_flags_btsec_sdp_database_thread_sync()) {
+-      std::unique_lock<std::recursive_mutex> lock(sdp_lock);
+-    }
+-
+     record = sdp_slots[record_id].record_data;
+     if (record != NULL) {
+       sdp_type = record->hdr.type;
+@@ -427,12 +374,8 @@ static BtStatus remove_sdp_record_in_main_thread(int record_id) {
+ }
+ 
+ BtStatus remove_sdp_record(int record_id) {
+-  if (com_android_bluetooth_flags_btsec_sdp_database_thread_sync()) {
+-      return get_main_thread()->DoInThreadSynchronously(&remove_sdp_record_in_main_thread,
+-                                                      record_id);
+-  }
+-
+-  return remove_sdp_record_in_main_thread(record_id);
++  return get_main_thread()->DoInThreadSynchronously(&remove_sdp_record_in_main_thread,
++                                                    record_id);
+ }
+ 
+ /******************************************************************************
+@@ -512,13 +455,7 @@ static void handle_create_record_event_in_main_thread(int id) {
+ }
+ 
+ void on_create_record_event(int id) {
+-  if (com_android_bluetooth_flags_btsec_sdp_database_thread_sync()) {
+-      get_main_thread()->DoInThreadSynchronously(&handle_create_record_event_in_main_thread,
+-                                                      id);
+-  }
+-  else {
+-    handle_create_record_event_in_main_thread(id);
+-  }
++  get_main_thread()->DoInThreadSynchronously(&handle_create_record_event_in_main_thread, id);
+ }
+ 
+ static void handle_remove_record_event_in_main_thread(int handle) {
+@@ -535,13 +472,7 @@ static void handle_remove_record_event_in_main_thread(int handle) {
+ }
+ 
+ void on_remove_record_event(int id) {
+-  if (com_android_bluetooth_flags_btsec_sdp_database_thread_sync()) {
+-      get_main_thread()->DoInThreadSynchronously(&handle_remove_record_event_in_main_thread,
+-                                                      id);
+-  }
+-  else {
+-    handle_remove_record_event_in_main_thread(id);
+-  }
++  get_main_thread()->DoInThreadSynchronously(&handle_remove_record_event_in_main_thread, id);
+ }
+ 
+ /****
+diff --git a/packages/modules/Bluetooth/system/gd/hci/msft.cc b/packages/modules/Bluetooth/system/gd/hci/msft.cc
+index 4c48924..2d699a5 100644
+--- a/packages/modules/Bluetooth/system/gd/hci/msft.cc
++++ b/packages/modules/Bluetooth/system/gd/hci/msft.cc
+@@ -74,18 +74,25 @@ struct MsftExtensionManager::impl {
+   void handle_le_monitor_device_event(MsftLeMonitorDeviceEventPayloadView view) {
+     log::assert_that(view.IsValid(), "assert failed: view.IsValid()");
+ 
++    if (scanning_callbacks_ == nullptr) {
++      log::warn("scanning_callbacks_ is null, dropping Microsoft vendor event.");
++      return;
++    }
++
+     // The monitor state is 0x00 when the controller stops monitoring the device.
+-    if (view.GetMonitorState() == 0x00 || view.GetMonitorState() == 0x01) {
+-      AdvertisingFilterOnFoundOnLostInfo on_found_on_lost_info;
+-      on_found_on_lost_info.advertiser_address_type = view.GetAddressType();
+-      on_found_on_lost_info.advertiser_address = view.GetBdAddr();
+-      on_found_on_lost_info.advertiser_state = view.GetMonitorState();
+-      on_found_on_lost_info.monitor_handle = view.GetMonitorHandle();
+-      scanning_callbacks_->OnTrackAdvFoundLost(on_found_on_lost_info);
+-    } else {
++    if (view.GetMonitorState() != 0x00 &&
++        view.GetMonitorState() != 0x01) {
+       log::warn("The Microsoft vendor event monitor state is invalid.");
+       return;
+     }
++
++    AdvertisingFilterOnFoundOnLostInfo on_found_on_lost_info;
++    on_found_on_lost_info.advertiser_address_type = view.GetAddressType();
++    on_found_on_lost_info.advertiser_address = view.GetBdAddr();
++    on_found_on_lost_info.advertiser_state = view.GetMonitorState();
++    on_found_on_lost_info.monitor_handle = view.GetMonitorHandle();
++
++    scanning_callbacks_->OnTrackAdvFoundLost(on_found_on_lost_info);
+   }
+ 
+   void handle_msft_events(VendorSpecificEventView view) {
+diff --git a/packages/modules/Bluetooth/system/stack/a2dp/a2dp_vendor_opus_decoder.cc b/packages/modules/Bluetooth/system/stack/a2dp/a2dp_vendor_opus_decoder.cc
+index 4d2967c..07ed70b 100644
+--- a/packages/modules/Bluetooth/system/stack/a2dp/a2dp_vendor_opus_decoder.cc
++++ b/packages/modules/Bluetooth/system/stack/a2dp/a2dp_vendor_opus_decoder.cc
+@@ -110,45 +110,45 @@ bool a2dp_vendor_opus_decoder_decode_packet(BT_HDR* p_buf) {
+     return false;
+   }
+ 
++
++
++
++
++
+   auto* pBuffer = reinterpret_cast<unsigned char*>(p_buf->data + p_buf->offset + 1);
+   int32_t bufferSize = p_buf->len - 1;
+ 
+-  numChannels = opus_packet_get_nb_channels(pBuffer);
++  numChannels = (pBuffer[0] & 0x4) ? 2 : 1;
+   numFrames = opus_packet_get_nb_frames(pBuffer, bufferSize);
+   frameSize = opus_packet_get_samples_per_frame(pBuffer, A2DP_OPUS_CODEC_DEFAULT_SAMPLERATE);
+   frameLen = opus_packet_get_nb_samples(pBuffer, bufferSize, A2DP_OPUS_CODEC_DEFAULT_SAMPLERATE);
+-  uint32_t num_frames = pBuffer[0] & 0xf;
+-
+-  log::error("numframes {} framesize {} framelen {} bufferSize {}", num_frames, frameSize, frameLen,
+-             bufferSize);
+-  log::error("numChannels {} numFrames {} offset {}", numChannels, numFrames, p_buf->offset);
+-
+-  for (uint32_t frame = 0; frame < numFrames; ++frame) {
+-    {
+-      numChannels = opus_packet_get_nb_channels(pBuffer);
+-
+-      ret_val = opus_decode(a2dp_opus_decoder_cb.opus_handle,
+-                            reinterpret_cast<unsigned char*>(pBuffer), bufferSize,
+-                            a2dp_opus_decoder_cb.decode_buf, A2DP_OPUS_DECODE_BUFFER_LENGTH,
+-                            0 /* flags */);
+-
+-      if (ret_val < OPUS_OK) {
+-        log::error("Opus DecodeFrame failed {}, applying concealment", ret_val);
+-        ret_val = opus_decode(a2dp_opus_decoder_cb.opus_handle, NULL, 0,
+-                              a2dp_opus_decoder_cb.decode_buf, A2DP_OPUS_DECODE_BUFFER_LENGTH,
+-                              0 /* flags */);
+-      }
+-
+-      if (ret_val < OPUS_OK) {
+-        log::error("Opus DecodeFrame retry failed with {}, dropping packet", ret_val);
+-        return false;
+-      }
+-
+-      size_t frame_len = ret_val * numChannels * sizeof(a2dp_opus_decoder_cb.decode_buf[0]);
+-      a2dp_opus_decoder_cb.decode_callback(
+-              reinterpret_cast<uint8_t*>(a2dp_opus_decoder_cb.decode_buf), frame_len);
+-    }
++
++  log::info("numChannels={} numFrames={} frameSize={} frameLen={} bufferSize={} offset={}",
++            numChannels, numFrames, frameSize, frameLen, bufferSize, p_buf->offset);
++
++  ret_val = opus_decode(a2dp_opus_decoder_cb.opus_handle,
++                        reinterpret_cast<unsigned char*>(pBuffer), bufferSize,
++                        a2dp_opus_decoder_cb.decode_buf,
++                        A2DP_OPUS_CODEC_OUTPUT_CHS * A2DP_OPUS_CODEC_DEFAULT_FRAMESIZE,
++                        0 /* flags */);
++
++  if (ret_val < OPUS_OK) {
++    log::error("Opus DecodeFrame failed {}, applying concealment", ret_val);
++    ret_val = opus_decode(a2dp_opus_decoder_cb.opus_handle, NULL, 0,
++                          a2dp_opus_decoder_cb.decode_buf,
++                          A2DP_OPUS_CODEC_OUTPUT_CHS * A2DP_OPUS_CODEC_DEFAULT_FRAMESIZE,
++                          0 /* flags */);
+   }
++
++  if (ret_val < OPUS_OK) {
++    log::error("Opus DecodeFrame retry failed with {}, dropping packet", ret_val);
++    return false;
++  }
++
++  size_t frame_len = ret_val * A2DP_OPUS_CODEC_OUTPUT_CHS *
++                     sizeof(a2dp_opus_decoder_cb.decode_buf[0]);
++  a2dp_opus_decoder_cb.decode_callback(
++          reinterpret_cast<uint8_t*>(a2dp_opus_decoder_cb.decode_buf), frame_len);
+   return true;
+ }
+ 
+diff --git a/packages/modules/Bluetooth/system/stack/sdp/sdp_server.cc b/packages/modules/Bluetooth/system/stack/sdp/sdp_server.cc
+index 64374b1..ff61fab 100644
+--- a/packages/modules/Bluetooth/system/stack/sdp/sdp_server.cc
++++ b/packages/modules/Bluetooth/system/stack/sdp/sdp_server.cc
+@@ -452,7 +452,7 @@ static void process_service_attr_req(tCONN_CB* p_ccb, uint16_t trans_num, uint16
+       } else if (rem_len < attr_len) /* Not enough space for attr... so add partially */
+       {
+         if (attr_len >= SDP_MAX_ATTR_LEN) {
+-          log::error("SDP attr too big: max_list_len={},attr_len={}", max_list_len, attr_len);
++          log::error("SDP attr too big: SDP_MAX_ATTR_LEN={}, val_len={}", SDP_MAX_ATTR_LEN, attr_len);
+           sdpu_build_n_send_error(p_ccb, trans_num, tSDP_STATUS::SDP_NO_RESOURCES, NULL);
+           return;
+         }
+@@ -735,7 +735,7 @@ static void process_service_search_attr_req(tCONN_CB* p_ccb, uint16_t trans_num,
+         } else if (rem_len < attr_len) /* Not enough space for attr... so add partially */
+         {
+           if (attr_len >= SDP_MAX_ATTR_LEN) {
+-            log::error("SDP attr too big: max_list_len={},attr_len={}", max_list_len, attr_len);
++            log::error("SDP attr too big: SDP_MAX_ATTR_LEN={}, val_len={}", SDP_MAX_ATTR_LEN, attr_len);
+             sdpu_build_n_send_error(p_ccb, trans_num, tSDP_STATUS::SDP_NO_RESOURCES, NULL);
+             return;
+           }
+diff --git a/packages/modules/Bluetooth/system/stack/sdp/sdp_utils.cc b/packages/modules/Bluetooth/system/stack/sdp/sdp_utils.cc
+index d12ee44..d689373 100644
+--- a/packages/modules/Bluetooth/system/stack/sdp/sdp_utils.cc
++++ b/packages/modules/Bluetooth/system/stack/sdp/sdp_utils.cc
+@@ -1434,10 +1434,26 @@ uint16_t sdpu_get_attrib_entry_len(const tSDP_ATTRIBUTE* p_attr) {
+  ******************************************************************************/
+ uint8_t* sdpu_build_partial_attrib_entry(uint8_t* p_out, const tSDP_ATTRIBUTE* p_attr, uint16_t len,
+                                          uint16_t* offset) {
+-  uint8_t* p_attr_buff = reinterpret_cast<uint8_t*>(osi_malloc(sizeof(uint8_t) * SDP_MAX_ATTR_LEN));
++  uint16_t attr_len = sdpu_get_attrib_entry_len(p_attr);
++
++  if (p_attr->len > SDP_MAX_ATTR_LEN) {
++    log::error("attr payload len {} exceeds SDP_MAX_ATTR_LEN", p_attr->len);
++    return p_out;
++  }
++
++  uint8_t* p_attr_buff = reinterpret_cast<uint8_t*>(osi_malloc(attr_len));
++  if (p_attr_buff == nullptr) {
++    log::error("Failed to allocate buffer for attribute entry");
++    return p_out;
++  }
++
+   sdpu_build_attrib_entry(p_attr_buff, p_attr);
+ 
+-  uint16_t attr_len = sdpu_get_attrib_entry_len(p_attr);
++  if (*offset >= attr_len) {
++    log::error("offset({}) >= len({})", *offset, attr_len);
++    osi_free(p_attr_buff);
++    return p_out;
++  }
+ 
+   if (len > SDP_MAX_ATTR_LEN) {
+     log::error("len {} exceeds SDP_MAX_ATTR_LEN", len);
+
+project packages/modules/Nfc/
+diff --git a/packages/modules/Nfc/NfcNci/nci/jni/RoutingManager.cpp b/packages/modules/Nfc/NfcNci/nci/jni/RoutingManager.cpp
+index b31aba07b..2c7981045 100755
+--- a/packages/modules/Nfc/NfcNci/nci/jni/RoutingManager.cpp
++++ b/packages/modules/Nfc/NfcNci/nci/jni/RoutingManager.cpp
+@@ -1106,6 +1106,11 @@ bool RoutingManager::checkUiccListenConfigNeeded(
+     }
+   }
+   if (!found) {
++    if (mNfceeListenConfig.nb_config >= NFA_EE_MAX_EE_SUPPORTED) {
++      LOG(ERROR) << StringPrintf("%s: Exceeded max EE supported count (%d)", fn,
++                                 NFA_EE_MAX_EE_SUPPORTED);
++      return false;
++    }
+     mNfceeListenConfig.config[mNfceeListenConfig.nb_config].nfcee_id = eeHandle;
+     mNfceeListenConfig.config[mNfceeListenConfig.nb_config].tech_mask =
+         seTechMask;
+diff --git a/packages/modules/Nfc/libnfc-nci/src/nfa/dm/nfa_dm_act.cc b/packages/modules/Nfc/libnfc-nci/src/nfa/dm/nfa_dm_act.cc
+index 0b0f8d107..eac4afdf7 100644
+--- a/packages/modules/Nfc/libnfc-nci/src/nfa/dm/nfa_dm_act.cc
++++ b/packages/modules/Nfc/libnfc-nci/src/nfa/dm/nfa_dm_act.cc
+@@ -24,6 +24,7 @@
+  ******************************************************************************/
+ #include <android-base/logging.h>
+ #include <android-base/stringprintf.h>
++#include <log/log.h>
+ #include <string.h>
+ 
+ #include "nci_hmsgs.h"
+@@ -1712,6 +1713,12 @@ void nfa_dm_notify_activation_status(tNFA_STATUS status,
+                p_nfcid, nfcid_len);
+       } else {
+         nfcid_len = p_tech_params->param.pa.nfcid1_len;
++        if (nfcid_len > NCI_NFCID1_MAX_LEN) {
++          android_errorWriteLog(0x534e4554, "522373576");
++          nfcid_len = NCI_NFCID1_MAX_LEN;
++          evt_data.activated.activate_ntf.rf_tech_param.param.pa.nfcid1_len =
++              nfcid_len;
++        }
+         p_nfcid = p_tech_params->param.pa.nfcid1;
+       }
+     } else if (p_tech_params->mode == NFC_DISCOVERY_TYPE_POLL_B) {
+@@ -1725,6 +1732,12 @@ void nfa_dm_notify_activation_status(tNFA_STATUS status,
+       p_nfcid = p_tech_params->param.pi93.uid;
+     } else if (p_tech_params->mode == NFC_DISCOVERY_TYPE_POLL_KOVIO) {
+       nfcid_len = p_tech_params->param.pk.uid_len;
++      if (nfcid_len > NFC_KOVIO_MAX_LEN) {
++        android_errorWriteLog(0x534e4554, "522373576");
++        nfcid_len = NFC_KOVIO_MAX_LEN;
++        evt_data.activated.activate_ntf.rf_tech_param.param.pk.uid_len =
++            nfcid_len;
++      }
+       p_nfcid = p_tech_params->param.pk.uid;
+     } else {
+       nfcid_len = 0;
+diff --git a/packages/modules/Nfc/libnfc-nci/src/nfa/ee/nfa_ee_act.cc b/packages/modules/Nfc/libnfc-nci/src/nfa/ee/nfa_ee_act.cc
+index 27b7947ef..2520abb43 100644
+--- a/packages/modules/Nfc/libnfc-nci/src/nfa/ee/nfa_ee_act.cc
++++ b/packages/modules/Nfc/libnfc-nci/src/nfa/ee/nfa_ee_act.cc
+@@ -1922,7 +1922,7 @@ bool nfa_ee_restore_ntf_done(void) {
+   int xx;
+ 
+   p_cb = nfa_ee_cb.ecb;
+-  for (xx = 0; xx < nfa_ee_cb.cur_ee; xx++, p_cb++) {
++  for (xx = 0; xx < nfa_ee_cb.cur_ee && xx < NFA_EE_NUM_ECBS; xx++, p_cb++) {
+     if ((p_cb->nfcee_id != NFA_EE_INVALID) &&
+         (p_cb->ee_old_status & NFA_EE_STATUS_RESTORING)) {
+       is_done = false;
+@@ -1948,7 +1948,7 @@ static void nfa_ee_remove_pending(void) {
+   int first_removed = NFA_EE_MAX_EE_SUPPORTED;
+ 
+   p_cb = nfa_ee_cb.ecb;
+-  for (xx = 0; xx < nfa_ee_cb.cur_ee; xx++, p_cb++) {
++  for (xx = 0; xx < nfa_ee_cb.cur_ee && xx < NFA_EE_NUM_ECBS; xx++, p_cb++) {
+     if ((p_cb->nfcee_id != NFA_EE_INVALID) &&
+         (p_cb->ee_status & NFA_EE_STATUS_RESTORING)) {
+       p_cb->nfcee_id = NFA_EE_INVALID;
+@@ -2022,7 +2022,7 @@ void nfa_ee_nci_disc_rsp(tNFA_EE_MSG* p_data) {
+           num_nfcee = NFA_EE_MAX_EE_SUPPORTED;
+         if (nfa_ee_cb.cur_ee < num_nfcee) {
+           p_cb = &nfa_ee_cb.ecb[nfa_ee_cb.cur_ee];
+-          for (xx = nfa_ee_cb.cur_ee; xx < num_nfcee; xx++, p_cb++) {
++          for (xx = nfa_ee_cb.cur_ee; xx < num_nfcee && xx < NFA_EE_NUM_ECBS; xx++, p_cb++) {
+             /* mark the new entries as a new one */
+             p_cb->nfcee_id = NFA_EE_INVALID;
+           }
+@@ -2316,7 +2316,7 @@ void nfa_ee_check_restore_complete(void) {
+   bool proc_complete = true;
+ 
+   p_cb = nfa_ee_cb.ecb;
+-  for (xx = 0; xx < nfa_ee_cb.cur_ee; xx++, p_cb++) {
++  for (xx = 0; xx < nfa_ee_cb.cur_ee && xx < NFA_EE_NUM_ECBS; xx++, p_cb++) {
+     if (p_cb->ecb_flags & NFA_EE_ECB_FLAGS_RESTORE) {
+       /* NFA_HCI module handles restoring configurations for HCI access.
+        * ignore the restoring status for HCI Access */
+@@ -2361,7 +2361,7 @@ static void nfa_ee_build_discover_req_evt(tNFA_EE_DISCOVER_REQ* p_evt_data) {
+   p_cb = nfa_ee_cb.ecb;
+   p_info = p_evt_data->ee_disc_info;
+ 
+-  for (xx = 0; xx < nfa_ee_cb.cur_ee; xx++, p_cb++) {
++  for (xx = 0; xx < nfa_ee_cb.cur_ee && xx < NFA_EE_NUM_ECBS; xx++, p_cb++) {
+     if ((p_cb->ee_status & NFA_EE_STATUS_INT_MASK) ||
+         ((p_cb->ee_status != NFA_EE_STATUS_ACTIVE) &&
+          (p_cb->ee_status !=
+@@ -2807,7 +2807,7 @@ bool nfa_ee_is_active(tNFA_HANDLE nfcee_id) {
+   if (nfcee_id == NFC_DH_ID) return true;
+ 
+   /* compose output */
+-  for (xx = 0; xx < nfa_ee_cb.cur_ee; xx++, p_cb++) {
++  for (xx = 0; xx < nfa_ee_cb.cur_ee && xx < NFA_EE_NUM_ECBS; xx++, p_cb++) {
+     if ((tNFA_HANDLE)p_cb->nfcee_id == nfcee_id) {
+       if ((p_cb->ee_status & ~NFA_EE_STATUS_MEP_MASK) ==
+           NFC_NFCEE_STATUS_ACTIVE) {
+@@ -3161,7 +3161,7 @@ void nfa_ee_lmrt_to_nfcc(__attribute__((unused)) tNFA_EE_MSG* p_data) {
+     /* add the routing entries for NFCEEs */
+     p_cb = &nfa_ee_cb.ecb[0];
+ 
+-    for (xx = 0; (xx < nfa_ee_cb.cur_ee) && check; xx++, p_cb++) {
++    for (xx = 0; (xx < nfa_ee_cb.cur_ee) && (xx < NFA_EE_NUM_ECBS) && check; xx++, p_cb++) {
+       if ((p_cb->ee_status & ~NFA_EE_STATUS_MEP_MASK) ==
+           NFC_NFCEE_STATUS_ACTIVE) {
+         nfa_ee_route_add_one_ecb_by_route_order(p_cb, rt, &max_len, more, p,
+diff --git a/packages/modules/Nfc/libnfc-nci/src/nfa/ee/nfa_ee_main.cc b/packages/modules/Nfc/libnfc-nci/src/nfa/ee/nfa_ee_main.cc
+index 256329b53..c392efc93 100644
+--- a/packages/modules/Nfc/libnfc-nci/src/nfa/ee/nfa_ee_main.cc
++++ b/packages/modules/Nfc/libnfc-nci/src/nfa/ee/nfa_ee_main.cc
+@@ -517,7 +517,7 @@ tNFA_EE_ECB* nfa_ee_find_ecb_by_conn_id(uint8_t conn_id) {
+   LOG(VERBOSE) << __func__;
+ 
+   p_cb = nfa_ee_cb.ecb;
+-  for (xx = 0; xx < nfa_ee_cb.cur_ee; xx++, p_cb++) {
++  for (xx = 0; xx < nfa_ee_cb.cur_ee && xx < NFA_EE_NUM_ECBS; xx++, p_cb++) {
+     if (conn_id == p_cb->conn_id) {
+       p_ret = p_cb;
+       break;
+diff --git a/packages/modules/Nfc/libnfc-nci/src/nfa/include/nfa_nfcee_int.h b/packages/modules/Nfc/libnfc-nci/src/nfa/include/nfa_nfcee_int.h
+index af978aaba..827b9a286 100644
+--- a/packages/modules/Nfc/libnfc-nci/src/nfa/include/nfa_nfcee_int.h
++++ b/packages/modules/Nfc/libnfc-nci/src/nfa/include/nfa_nfcee_int.h
+@@ -136,9 +136,9 @@ typedef struct {
+   tNFA_T4TNFCEE_RW_STATE rw_state;    /* Read Write state */
+   tNFA_T4TNFCEE_MSG* p_pending_msg;   /* Pending command */
+   uint8_t* p_dataBuf;                 /* Data buffer */
++  uint32_t dataLen;          /*length of the data*/
+   uint16_t cur_fileId;                /* Current FileId */
+   uint16_t rd_offset;        /* current read-offset of incoming NDEF data  */
+-  uint32_t dataLen;          /*length of the data*/
+   bool ndefEmulationSupport; /* NDEF emulation support */
+   bool ndefEmulationConfig;  /* NDEF emulation configuration */
+   uint8_t connId;            /* NDEF NFCEE CONN ID */
+diff --git a/packages/modules/Nfc/libnfc-nci/src/nfa/ndefnfcee/t4t/nfa_nfcee_act.cc b/packages/modules/Nfc/libnfc-nci/src/nfa/ndefnfcee/t4t/nfa_nfcee_act.cc
+index e32d0e1be..23a9485f3 100644
+--- a/packages/modules/Nfc/libnfc-nci/src/nfa/ndefnfcee/t4t/nfa_nfcee_act.cc
++++ b/packages/modules/Nfc/libnfc-nci/src/nfa/ndefnfcee/t4t/nfa_nfcee_act.cc
+@@ -18,6 +18,7 @@
+ 
+ #include <android-base/logging.h>
+ #include <android-base/stringprintf.h>
++#include <log/log.h>
+ #include <string.h>
+ 
+ #include <iomanip>
+@@ -189,6 +190,11 @@ static void nfa_t4tnfcee_check_sw(tRW_DATA* p_rwData) {
+   uint8_t* p;
+   uint16_t status_words;
+   NFC_HDR* p_r_apdu = p_rwData->raw_frame.p_data;
++  if (p_r_apdu->len <= 1) {
++    LOG(ERROR) << StringPrintf("%s: Invalid p_r_apdu->len %d", __func__, p_r_apdu->len);
++    p_rwData->status = NFC_STATUS_FAILED;
++    return;
++  }
+   p = (uint8_t*)(p_r_apdu + 1) + p_r_apdu->offset;
+   p += (p_r_apdu->len - T4T_RSP_STATUS_WORDS_SIZE);
+   BE_STREAM_TO_UINT16(status_words, p);
+@@ -255,6 +261,10 @@ void nfa_t4tnfcee_store_cc_info(NFC_HDR* p_data) {
+       return;
+     } else {
+       ccInfo = (uint8_t*)(p_data + 1) + p_data->offset + jumpToFirstTLV;
++      if (p_data->len <= 0x08) {
++        LOG(ERROR) << StringPrintf("%s: Invalid CC len %d", __func__, p_data->len);
++        return;
++      }
+     }
+   } else {
+     LOG(DEBUG) << StringPrintf("%s: empty cc info", __func__);
+@@ -297,6 +307,13 @@ void nfa_t4tnfcee_store_rx_buf(NFC_HDR* p_data) {
+                                __func__, p_data->len,
+                                nfa_t4tnfcee_cb.rd_offset);
+     p = (uint8_t*)(p_data + 1) + p_data->offset;
++    if (nfa_t4tnfcee_cb.rd_offset + p_data->len > nfa_t4tnfcee_cb.dataLen) {
++      LOG(ERROR) << StringPrintf("%s: Exceed p_dataBuf_len error", __func__);
++      android_errorWriteLog(0x534e4554, "503545851");
++      nfa_t4tnfcee_cb.status = NFC_STATUS_FAILED;
++      android_errorWriteLog(0x534e4554, "508390497");
++      return;
++    }
+     memcpy(&nfa_t4tnfcee_cb.p_dataBuf[nfa_t4tnfcee_cb.rd_offset], p,
+            p_data->len);
+     nfa_t4tnfcee_cb.rd_offset += p_data->len;
+diff --git a/packages/modules/Nfc/libnfc-nci/src/nfc/nfc/nfc_main.cc b/packages/modules/Nfc/libnfc-nci/src/nfc/nfc/nfc_main.cc
+index dfd00b746..6a507276b 100644
+--- a/packages/modules/Nfc/libnfc-nci/src/nfc/nfc/nfc_main.cc
++++ b/packages/modules/Nfc/libnfc-nci/src/nfc/nfc/nfc_main.cc
+@@ -26,6 +26,7 @@
+ #include <android-base/logging.h>
+ #include <android-base/stringprintf.h>
+ #include <android/hardware/nfc/1.1/types.h>
++#include <log/log.h>
+ #include <string.h>
+ 
+ #include "bt_types.h"
+@@ -663,6 +664,14 @@ static void nfc_main_hal_data_cback(uint16_t data_len, uint8_t* p_data) {
+   }
+ 
+   if (p_data) {
++    uint16_t capacity =
++            GKI_get_pool_bufsize(NFC_NCI_POOL_ID) - sizeof(NFC_HDR) - NFC_RECEIVE_MSGS_OFFSET;
++    if (data_len > capacity) {
++      LOG(ERROR) << StringPrintf("%s: dropping oversized HAL packet (%u bytes > %u capacity)",
++                                 __func__, data_len, capacity);
++      android_errorWriteLog(0x534e4554, "508389591");
++      return;
++    }
+ #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+     // GKI_getpoolbuf returns a fixed size of memory buffer, which is usually
+     // bigger than NFC packets. This may hide OOB issues.
+diff --git a/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_ci.cc b/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_ci.cc
+index ab3a7ddbe..a16a6531d 100644
+--- a/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_ci.cc
++++ b/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_ci.cc
+@@ -254,6 +254,14 @@ static void rw_ci_data_cback(__attribute__((unused)) uint8_t conn_id,
+       break;
+ 
+     case RW_CI_STATE_ATTRIB:
++      if (p_r_apdu->len <= 1) {
++        LOG(ERROR) << StringPrintf("%s: Invalid attrib response length", __func__);
++        GKI_freebuf(p_r_apdu);
++        p_ci->state = RW_CI_STATE_IDLE;
++        rw_data.status = NFC_STATUS_FAILED;
++        (*(rw_cb.p_cback))(RW_CI_CPLT_EVT, &rw_data);
++        return;
++      }
+       memcpy(p_ci->attrib_res, p, sizeof(p_ci->attrib_res));
+       GKI_freebuf(p_r_apdu);
+       rw_ci_send_uid();
+@@ -262,6 +270,14 @@ static void rw_ci_data_cback(__attribute__((unused)) uint8_t conn_id,
+     case RW_CI_STATE_UID: {
+       uint16_t status_words;
+ 
++      if (p_r_apdu->len <= 2) {
++        LOG(ERROR) << StringPrintf("%s: Invalid uid response length", __func__);
++        GKI_freebuf(p_r_apdu);
++        p_ci->state = RW_CI_STATE_IDLE;
++        rw_data.status = NFC_STATUS_FAILED;
++        (*(rw_cb.p_cback))(RW_CI_CPLT_EVT, &rw_data);
++        return;
++      }
+       p_r_apdu->len -= 1;  // Last byte is status
+       p_sw = (uint8_t*)(p_r_apdu + 1) + p_r_apdu->offset;
+       p_sw += (p_r_apdu->len - T4T_RSP_STATUS_WORDS_SIZE);
+diff --git a/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_mfc.cc b/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_mfc.cc
+index 21c904cf2..d7d06881e 100644
+--- a/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_mfc.cc
++++ b/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_mfc.cc
+@@ -1567,6 +1567,7 @@ tNFC_STATUS RW_MfcReadNDef(uint8_t* p_buffer, uint16_t buf_len) {
+   tRW_MFC_CB* p_mfc = &rw_cb.tcb.mfc;
+   tNFC_STATUS status = NFC_STATUS_OK;
+ 
++
+   if (p_mfc->state != RW_MFC_STATE_IDLE) {
+     LOG(ERROR) << StringPrintf(
+         "%s: Mifare Classic tag not activated or Busy - State=%d", __func__,
+diff --git a/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_t3t.cc b/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_t3t.cc
+index 2f55465d9..94f968e29 100644
+--- a/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_t3t.cc
++++ b/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_t3t.cc
+@@ -846,6 +846,12 @@ tNFC_STATUS rw_t3t_send_next_ndef_update_cmd(tRW_T3T_CB* p_cb) {
+         p,
+         ndef_blocks_to_write); /* Number of blocks to write in this command */
+     timeout = rw_t3t_update_timeout(ndef_blocks_to_write);
++    if ((first_block_to_write + ndef_blocks_to_write) > 0x10000) {
++      GKI_freebuf(p_cmd_buf);
++      LOG(ERROR) << StringPrintf("%s: Heap out-of-bounds", __func__);
++      android_errorWriteLog(0x534e4554, "508389055");
++      return NFC_STATUS_FAILED;
++    }
+ 
+     for (block_id = first_block_to_write;
+          block_id < (first_block_to_write + ndef_blocks_to_write); block_id++) {
+@@ -989,6 +995,13 @@ tNFC_STATUS rw_t3t_send_next_ndef_check_cmd(tRW_T3T_CB* p_cb) {
+     UINT8_TO_STREAM(
+         p, cur_blocks_to_read); /* Number of blocks to check in this command */
+ 
++    if ((first_block_to_read + cur_blocks_to_read) > 0x10000) {
++      GKI_freebuf(p_cmd_buf);
++      LOG(ERROR) << StringPrintf("%s: Heap out-of-bounds", __func__);
++      android_errorWriteLog(0x534e4554, "508389055");
++      return NFC_STATUS_FAILED;
++    }
++
+     for (block_id = first_block_to_read;
+          block_id < (first_block_to_read + cur_blocks_to_read); block_id++) {
+       if (block_id < 256) {
+diff --git a/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_t4t.cc b/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_t4t.cc
+index 246415271..5b518e8ad 100644
+--- a/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_t4t.cc
++++ b/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_t4t.cc
+@@ -296,7 +296,7 @@ static bool rw_t4t_set_ber_tlv(NFC_HDR* p_c_apdu, uint8_t* p, uint32_t length) {
+     p_c_apdu->len += 3;
+   } else {
+     LOG(ERROR) << StringPrintf(
+-        "%s: Data to be written to MV3.0 tag exceeds 0xFFFF", __func__);
++        "%s: max_update_size too small for ODO/DDO header", __func__);
+     return false;
+   }
+ 
+diff --git a/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_t5t.cc b/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_t5t.cc
+index 1ea262b5d..8f068b6bc 100644
+--- a/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_t5t.cc
++++ b/packages/modules/Nfc/libnfc-nci/src/nfc/tags/rw_t5t.cc
+@@ -569,6 +569,12 @@ void rw_t5t_sm_update_ndef(NFC_HDR* p_resp) {
+         }
+       }
+ 
++      if (length < p_i93->block_size) {
++        android_errorWriteLog(0x534e4554, "508389908");
++        rw_i93_handle_error(NFC_STATUS_FAILED);
++        return;
++      }
++
+       block_number = (p_i93->ndef_tlv_start_offset + 1) / p_i93->block_size;
+ 
+       if (rw_i93_send_cmd_write_single_block(block_number, p) ==
+
+project packages/modules/Telephony/
+diff --git a/packages/modules/Telephony/framework/java/com/android/internal/telephony/PhoneNumberManagerService.java b/packages/modules/Telephony/framework/java/com/android/internal/telephony/PhoneNumberManagerService.java
+index e9fb866..29f91b7 100644
+--- a/packages/modules/Telephony/framework/java/com/android/internal/telephony/PhoneNumberManagerService.java
++++ b/packages/modules/Telephony/framework/java/com/android/internal/telephony/PhoneNumberManagerService.java
+@@ -125,7 +125,7 @@ public final class PhoneNumberManagerService extends IPhoneNumber.Stub {
+ 
+         for (Uri uri : associatedUris) {
+             if (uri != null && uri.isOpaque()) {
+-                String phoneNumberCandidate = uri.getSchemeSpecificPart().split("@")[0];
++                String phoneNumberCandidate = uri.getSchemeSpecificPart().split("@", 2)[0];
+                 try {
+                     // Converts countryIso to uppercase as required by libphonenumber.
+                     PhoneNumber phoneNumber = util.parse(phoneNumberCandidate,
+diff --git a/packages/modules/Telephony/framework/java/com/android/internal/telephony/Ts43PhoneNumberController.java b/packages/modules/Telephony/framework/java/com/android/internal/telephony/Ts43PhoneNumberController.java
+index a2bdb24..26d9aab 100644
+--- a/packages/modules/Telephony/framework/java/com/android/internal/telephony/Ts43PhoneNumberController.java
++++ b/packages/modules/Telephony/framework/java/com/android/internal/telephony/Ts43PhoneNumberController.java
+@@ -233,6 +233,10 @@ public class Ts43PhoneNumberController extends Handler {
+         } catch (ServiceEntitlementException e) {
+             Rlogger.e(TAG, "TS.43 fetch failed for subId " + subId + ": " + e);
+             handleFetchFailure(subId, e);
++        } catch (Throwable t) {
++            Rlogger.e(TAG, "TS.43 fetch failed with unexpected error for subId " + subId + ": " + t);
++
++            queryCompleted(subId);
+         }
+     }
+ 
+diff --git a/packages/modules/Telephony/framework/java/com/android/internal/telephony/Ts43PhoneNumberRetriever.java b/packages/modules/Telephony/framework/java/com/android/internal/telephony/Ts43PhoneNumberRetriever.java
+index e7ab87e..b0dbea8 100644
+--- a/packages/modules/Telephony/framework/java/com/android/internal/telephony/Ts43PhoneNumberRetriever.java
++++ b/packages/modules/Telephony/framework/java/com/android/internal/telephony/Ts43PhoneNumberRetriever.java
+@@ -167,7 +167,7 @@ public class Ts43PhoneNumberRetriever {
+         } catch (ServiceEntitlementException e) {
+             Rlogger.w(TAG, "Propagating ServiceEntitlementException." + e.getErrorCode());
+             throw e;
+-        } catch (Exception e) {
++        } catch (Throwable e) {
+             Rlogger.e(TAG, "An unexpected exception occurred during phone number retrieval." + e);
+             return null;
+         }
+
+project packages/modules/Uwb/
+diff --git a/packages/modules/Uwb/ranging/framework/java/android/ranging/ble/cs/BleCsRangingCapabilities.java b/packages/modules/Uwb/ranging/framework/java/android/ranging/ble/cs/BleCsRangingCapabilities.java
+index 63209b9..4491c6e 100644
+--- a/packages/modules/Uwb/ranging/framework/java/android/ranging/ble/cs/BleCsRangingCapabilities.java
++++ b/packages/modules/Uwb/ranging/framework/java/android/ranging/ble/cs/BleCsRangingCapabilities.java
+@@ -66,6 +66,8 @@ public final class BleCsRangingCapabilities implements Parcelable, TechnologyCap
+      */
+     public static final int CS_SECURITY_LEVEL_FOUR = 4;
+ 
++    private static final String DEFAULT_MAC_ADDRESS = "00:00:00:00:00:00";
++
+     private final List<Integer> mSupportedSecurityLevels;
+     private final String mBluetoothAddress;
+ 
+@@ -86,10 +88,14 @@ public final class BleCsRangingCapabilities implements Parcelable, TechnologyCap
+         mBluetoothAddress = builder.mBluetoothAddress;
+     }
+ 
++    // PADDING
++    // PADDING
++    // PADDING
++
+     private BleCsRangingCapabilities(Parcel in) {
+         mSupportedSecurityLevels = new ArrayList<>();
+         in.readList(mSupportedSecurityLevels, Integer.class.getClassLoader(), Integer.class);
+-        mBluetoothAddress = in.readString();
++        mBluetoothAddress = DEFAULT_MAC_ADDRESS;
+     }
+ 
+     @NonNull
+@@ -134,10 +140,10 @@ public final class BleCsRangingCapabilities implements Parcelable, TechnologyCap
+         return 0;
+     }
+ 
++    // PADDING
+     @Override
+     public void writeToParcel(@NonNull Parcel dest, int flags) {
+         dest.writeList(mSupportedSecurityLevels);
+-        dest.writeString(mBluetoothAddress);
+     }
+ 
+     /**
+diff --git a/packages/modules/Uwb/ranging/framework/java/android/ranging/ble/rssi/BleRssiRangingCapabilities.java b/packages/modules/Uwb/ranging/framework/java/android/ranging/ble/rssi/BleRssiRangingCapabilities.java
+index 1306980..8fa1999 100644
+--- a/packages/modules/Uwb/ranging/framework/java/android/ranging/ble/rssi/BleRssiRangingCapabilities.java
++++ b/packages/modules/Uwb/ranging/framework/java/android/ranging/ble/rssi/BleRssiRangingCapabilities.java
+@@ -31,14 +31,20 @@ import androidx.annotation.NonNull;
+  * @hide
+  */
+ public class BleRssiRangingCapabilities implements Parcelable, TechnologyCapabilities {
++    private static final String DEFAULT_MAC_ADDRESS = "00:00:00:00:00:00";
++
+     private final String mBluetoothAddress;
+ 
+     public BleRssiRangingCapabilities(String address) {
+         mBluetoothAddress = address;
+     }
+ 
++    // PADDING
++    // PADDING
++    // PADDING
++
+     protected BleRssiRangingCapabilities(Parcel in) {
+-        mBluetoothAddress = in.readString();
++        mBluetoothAddress = DEFAULT_MAC_ADDRESS;
+     }
+ 
+     public static final Creator<BleRssiRangingCapabilities> CREATOR = new Creator<>() {
+@@ -53,6 +59,11 @@ public class BleRssiRangingCapabilities implements Parcelable, TechnologyCapabil
+         }
+     };
+ 
++    // PADDING
++    // PADDING
++    // PADDING
++    // PADDING
++
+     public String getBluetoothAddress() {
+         return mBluetoothAddress;
+     }
+@@ -69,7 +80,6 @@ public class BleRssiRangingCapabilities implements Parcelable, TechnologyCapabil
+ 
+     @Override
+     public void writeToParcel(@NonNull Parcel dest, int flags) {
+-        dest.writeString(mBluetoothAddress);
+     }
+ 
+     @Override public String toString() {
+diff --git a/packages/modules/Uwb/ranging/service/java/com/android/server/ranging/RangingServiceImpl.java b/packages/modules/Uwb/ranging/service/java/com/android/server/ranging/RangingServiceImpl.java
+index dcae54b..35e9460 100644
+--- a/packages/modules/Uwb/ranging/service/java/com/android/server/ranging/RangingServiceImpl.java
++++ b/packages/modules/Uwb/ranging/service/java/com/android/server/ranging/RangingServiceImpl.java
+@@ -113,26 +113,31 @@ public class RangingServiceImpl extends IRangingAdapter.Stub {
+ 
+     @Override
+     public void oobDataReceived(OobHandle oobHandle, byte[] data) {
++        enforceRangingPermission();
+         mRangingInjector.getRangingServiceManager().oobDataReceived(oobHandle, data);
+     }
+ 
+     @Override
+     public void deviceOobDisconnected(OobHandle oobHandle) {
++        enforceRangingPermission();
+         mRangingInjector.getRangingServiceManager().deviceOobDisconnected(oobHandle);
+     }
+ 
+     @Override
+     public void deviceOobReconnected(OobHandle oobHandle) {
++        enforceRangingPermission();
+         mRangingInjector.getRangingServiceManager().deviceOobReconnected(oobHandle);
+     }
+ 
+     @Override
+     public void deviceOobClosed(OobHandle oobHandle) {
++        enforceRangingPermission();
+         mRangingInjector.getRangingServiceManager().deviceOobClosed(oobHandle);
+     }
+ 
+     @Override
+     public void registerOobSendDataListener(IOobSendDataListener oobSendDataListener) {
++        enforceRangingPermission();
+         mRangingInjector.getRangingServiceManager().registerOobSendDataListener(
+                 oobSendDataListener);
+     }
+
+project packages/modules/adb/
+diff --git a/packages/modules/adb/daemon/auth.cpp b/packages/modules/adb/daemon/auth.cpp
+index a80438e..47a06cf 100644
+--- a/packages/modules/adb/daemon/auth.cpp
++++ b/packages/modules/adb/daemon/auth.cpp
+@@ -67,13 +67,40 @@ static uint32_t transport_auth_id = 0;
+ bool auth_required = true;
+ bool socket_access_allowed = true;
+ 
++// Transport authorization callbacks run on the looper thread. To safely hand an
++// atransport reference to a callback that may outlive the transport, we maintain
++// a map from a per-transport auth id to a weak_ptr of the transport. The id is
++// created on the looper thread (transport_to_callback_arg) and resolved back on
++// the looper thread (transport_from_callback_arg), so both helpers assert that
++// they are running on the looper thread before touching the map. This is required
++// because the framework may authorize a key from a different thread, and the
++// transport may be destroyed concurrently while that authorization is in flight.
++// The weak_ptr lets the resolver detect that the transport has already been
++// destroyed and treat the callback as a no-op instead of dereferencing freed
++// memory. Without this check an unplugged device could cause a use-after-free
++// when the authorization callback eventually runs on the looper.
++// The map itself never grows unbounded: transport_from_callback_arg erases the
++// entry after resolving it, so each authorized transport leaves at most one
++// entry in the map for the duration of the authorization round-trip.
++// The auth id is a simple monotonically increasing counter; each id is only ever
++// used once and is removed from the map as soon as it is consumed. Wrapping is
++// not a practical concern.
++//
++// These helpers must remain on the looper thread; see fdevent.h for the
++// CHECK_LOOPER_THREAD / CHECK_NOT_LOOPER_THREAD macros.
+ static void* transport_to_callback_arg(atransport* transport) {
++    CHECK_LOOPER_THREAD();
+     uint32_t id = transport_auth_id++;
+     (*transports)[id] = transport->weak();
+     return reinterpret_cast<void*>(id);
+ }
+ 
++// Resolve the auth id back to a live atransport; the entry is erased once the
++// transport is found so the map does not grow. The id is validated against the
++// uint32_t range because it round-trips as a pointer-sized value.
++// This function must run on the looper thread.
+ static atransport* transport_from_callback_arg(void* id) {
++    CHECK_LOOPER_THREAD();
+     uint64_t id_u64 = reinterpret_cast<uint64_t>(id);
+     if (id_u64 > std::numeric_limits<uint32_t>::max()) {
+         LOG(FATAL) << "transport_from_callback_arg called on out of range value: " << id_u64;
+@@ -87,9 +114,8 @@ static atransport* transport_from_callback_arg(void* id) {
+     }
+ 
+     atransport* t = it->second.get();
+-    if (!t) {
++    if (t == nullptr) [[unlikely]] {
+         LOG(WARNING) << "transport_from_callback_arg found already destructed transport";
+-        return nullptr;
+     }
+ 
+     transports->erase(it);
+@@ -393,9 +419,33 @@ void adbd_auth_tls_handshake(atransport* t) {
+         CHECK(rsa_pkey);
+     }
+ 
+-    std::thread([t]() {
++    void* callback_arg = transport_to_callback_arg(t);
++    std::shared_ptr<Connection> connection = t->connection();
++
++    std::thread([callback_arg, connection]() {
+         std::string auth_key;
+-        if (t->connection()->DoTlsHandshake(rsa_pkey, &auth_key)) {
++        bool result = connection->DoTlsHandshake(rsa_pkey, &auth_key);
++
++        fdevent_run_on_looper([callback_arg, auth_key = std::move(auth_key), result]() {
++            atransport* t = transport_from_callback_arg(callback_arg);
++            if (t == nullptr) {
++                if (result) {
++                    // The handshake completed but the transport was deleted while it was
++                    // running on the background thread. There is nothing left to do; the
++                    // connection is already gone, so the result of the handshake is no
++                    // longer relevant to any live transport.
++                    // Nothing else can be done with the result here, so just log it.
++                    LOG(ERROR) << "TLS handshake succeeded for deleted transport, ignoring";
++                }
++                return;
++            }
++            if (!result) {
++                // Only allow one attempt at the handshake.
++                t->Kick();
++                return;
++            }
++            // The handshake succeeded on a live transport; install the resulting key and
++            // proceed as if a normal ADB handshake had completed.
+             VLOG(AUTH) << "auth_key=" << auth_key;
+             if (t->IsTcpDevice()) {
+                 t->auth_key = auth_key;
+@@ -404,9 +454,6 @@ void adbd_auth_tls_handshake(atransport* t) {
+                 adbd_auth_verified(t);
+                 adbd_notify_framework_connected_key(t);
+             }
+-        } else {
+-            // Only allow one attempt at the handshake.
+-            t->Kick();
+-        }
++        });
+     }).detach();
+ }
+diff --git a/packages/modules/adb/transport.cpp b/packages/modules/adb/transport.cpp
+index 09d7d20..6586796 100644
+--- a/packages/modules/adb/transport.cpp
++++ b/packages/modules/adb/transport.cpp
+@@ -511,7 +511,48 @@ bool FdConnection::Write(apacket* packet) {
+     return true;
+ }
+ 
++// The TLS handshake on the device side runs on a background thread (see
++// adbd_auth_tls_handshake in daemon/auth.cpp). Once the handshake completes the
++// resulting auth key is handed back to the looper via fdevent_run_on_looper so
++// that the transport state is only ever touched from the looper thread. This is
++// important because the transport itself is owned by the looper and may be
++// destroyed at any moment; doing the handshake on a non-looper thread and then
++// calling back onto the looper guarantees that no use-after-free can happen if
++// the transport is unplugged mid-handshake.
++//
++// This function performs the actual TLS setup on the background thread. It must
++// therefore NOT run on the looper thread; the CHECK_NOT_LOOPER_THREAD guard
++// below asserts exactly that. Running the handshake on the looper thread would
++// stall the entire adbd event loop for the duration of the handshake, which is
++// exactly what the 3 second socket timeouts below are trying to prevent.
++//
++// A few notes on the certificate setup:
++//
++//  - The EVP_PKEY wraps the RSA key that was generated lazily in
++//    adbd_auth_tls_handshake (see CreateRSA2048Key there). The key is shared
++//    between all transports, which is fine because the TLS certificate is
++//    regenerated per-connection.
++//
++//  - GenerateX509Certificate produces a self-signed certificate embedding the
++//    SHA-256 of the public key in its subject CN (see adbd_tls_client_ca_list
++//    and the adbd_tls_verify_cert callback for how the peer checks it).
++//
++//  - TlsConnection::Create wires up the OpenSSL SSL_CTX for the device (server)
++//    role and returns a TlsConnection object that owns the socket fd.
++//
++//  - On the device the client CA list is derived from the authorized adb keys,
++//    and the certificate verification callback rejects any certificate whose
++//    key is not in that list. See adbd_tls_verify_cert in daemon/auth.cpp.
++//
++// The timeout handling below is the security-relevant part: a peer that starts
++// a TLS handshake and then stalls would otherwise block the background thread
++// indefinitely and leak a transport. Setting 3 second RCVTIMEO/SNDTIMEO bounds
++// the handshake to 3 seconds. This function runs on the TLS handshake
++// background thread, not on the looper thread.
++//
+ bool FdConnection::DoTlsHandshake(RSA* key, std::string* auth_key) {
++    CHECK_NOT_LOOPER_THREAD();
++
+     bssl::UniquePtr<EVP_PKEY> evp_pkey(EVP_PKEY_new());
+     if (!EVP_PKEY_set1_RSA(evp_pkey.get(), key)) {
+         LOG(ERROR) << "EVP_PKEY_set1_RSA failed";
+@@ -548,7 +589,22 @@ bool FdConnection::DoTlsHandshake(RSA* key, std::string* auth_key) {
+     tls_->SetClientCAList(ca_list.get());
+ #endif
+ 
++    // Cap the TLS handshake at 3 seconds so a malicious or broken peer cannot
++    // stall the handshake thread indefinitely. The timeouts are cleared after
++    // the handshake so the steady-state connection is not affected.
++    timeval timeout{};
++    timeout.tv_sec = 3;
++    timeout.tv_usec = 0;
++    if (adb_setsockopt(fd_, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) != 0) {
++        PLOG(ERROR) << "failed to set TLS handshake read timeout";
++    }
++    if (adb_setsockopt(fd_, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) != 0) {
++        PLOG(ERROR) << "failed to set TLS handshake write timeout";
++    }
+     auto err = tls_->DoHandshake();
++    timeout = {0, 0};
++    adb_setsockopt(fd_, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
++    adb_setsockopt(fd_, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+     if (err == TlsError::Success) {
+         return true;
+     }
+@@ -562,6 +618,12 @@ void FdConnection::Close() {
+     fd_.reset();
+ }
+ 
++// Sends a single APacket to the given transport. The packet header is finalized
++// here (magic and checksum) and the packet is handed to the connection for
++// transmission. This is used for all outbound traffic: connect messages, auth
++// responses and regular payloads.
++//
++// On failure the connection is considered broken.
+ void send_packet(apacket* p, atransport* t) {
+     VLOG(PACKETS) << std::format("packet --> {}{}{}{}", ((char*)(&(p->msg.command)))[0],
+                                  ((char*)(&(p->msg.command)))[1], ((char*)(&(p->msg.command)))[2],
+
+project packages/providers/ContactsProvider/
+diff --git a/packages/providers/ContactsProvider/src/com/android/providers/contacts/DataRowHandlerForNote.java b/packages/providers/ContactsProvider/src/com/android/providers/contacts/DataRowHandlerForNote.java
+index fc602f1..c0a5222 100644
+--- a/packages/providers/ContactsProvider/src/com/android/providers/contacts/DataRowHandlerForNote.java
++++ b/packages/providers/ContactsProvider/src/com/android/providers/contacts/DataRowHandlerForNote.java
+@@ -17,6 +17,8 @@ package com.android.providers.contacts;
+ 
+ import android.content.ContentValues;
+ import android.content.Context;
++import android.database.Cursor;
++import android.database.sqlite.SQLiteDatabase;
+ import android.provider.ContactsContract.CommonDataKinds.Note;
+ import com.android.providers.contacts.SearchIndexManager.IndexBuilder;
+ import com.android.providers.contacts.aggregation.AbstractContactAggregator;
+@@ -31,6 +33,20 @@ public class DataRowHandlerForNote extends DataRowHandler {
+         super(context, dbHelper, aggregator, Note.CONTENT_ITEM_TYPE);
+     }
+ 
++    @Override
++    public long insert(SQLiteDatabase db, TransactionContext txContext, long rawContactId,
++            ContentValues values) {
++        applySimpleFieldMaxSize(values, Note.NOTE);
++        return super.insert(db, txContext, rawContactId, values);
++    }
++
++    @Override
++    public boolean update(SQLiteDatabase db, TransactionContext txContext,
++            ContentValues values, Cursor c, boolean callerIsSyncAdapter) {
++        applySimpleFieldMaxSize(values, Note.NOTE);
++        return super.update(db, txContext, values, c, callerIsSyncAdapter);
++    }
++
+     @Override
+     public boolean hasSearchableData() {
+         return true;
+diff --git a/packages/providers/ContactsProvider/src/com/android/providers/contacts/util/SelectionBuilder.java b/packages/providers/ContactsProvider/src/com/android/providers/contacts/util/SelectionBuilder.java
+index 14499e8..e21e2e2 100644
+--- a/packages/providers/ContactsProvider/src/com/android/providers/contacts/util/SelectionBuilder.java
++++ b/packages/providers/ContactsProvider/src/com/android/providers/contacts/util/SelectionBuilder.java
+@@ -16,6 +16,7 @@
+ 
+ package com.android.providers.contacts.util;
+ 
++import android.database.sqlite.SQLiteTokenizer;
+ import android.text.TextUtils;
+ 
+ import java.util.ArrayList;
+@@ -44,6 +45,7 @@ public class SelectionBuilder {
+      */
+     public SelectionBuilder addClause(String clause) {
+         if (!TextUtils.isEmpty(clause)) {
++            SQLiteTokenizer.tokenize(clause, SQLiteTokenizer.OPTION_CHECK_BRACKETS, null);
+             mWhereClauses.add(clause);
+         }
+         return this;
+
+project packages/providers/MediaProvider/
+diff --git a/packages/providers/MediaProvider/apex/framework/java/android/provider/MediaStore.java b/packages/providers/MediaProvider/apex/framework/java/android/provider/MediaStore.java
+index a3f778c..f612817 100644
+--- a/packages/providers/MediaProvider/apex/framework/java/android/provider/MediaStore.java
++++ b/packages/providers/MediaProvider/apex/framework/java/android/provider/MediaStore.java
+@@ -310,6 +310,8 @@ public final class MediaStore {
+     public static final String REVOKE_READ_GRANT_FOR_PACKAGE_CALL =
+             "revoke_media_read_for_package";
+ 
++    /** @hide */ public static final String REVOKE_URI_PERMISSION_CALL = "revoke_uri_permission";
++
+     /** @hide */
+     public static final String REVOKED_ALL_READ_GRANTS_FOR_PACKAGE_CALL =
+             "revoke_all_media_grants_for_package";
+@@ -333,6 +335,8 @@ public final class MediaStore {
+     public static final String EXTRA_OPEN_ASSET_FILE_REQUEST =
+             "open_asset_file_request";
+ 
++    /** @hide */ public static final String EXTRA_OLD_PATH = "old_path";
++
+     /** @hide */
+     public static final String CREATE_CANCELLATION_SIGNAL_CALL =
+             "create_cancellation_signal_call";
+
+project packages/services/BuiltInPrintService/
+diff --git a/packages/services/BuiltInPrintService/jni/ipphelper/ipphelper.c b/packages/services/BuiltInPrintService/jni/ipphelper/ipphelper.c
+index 8ad0447..c93b789 100644
+--- a/packages/services/BuiltInPrintService/jni/ipphelper/ipphelper.c
++++ b/packages/services/BuiltInPrintService/jni/ipphelper/ipphelper.c
+@@ -1021,7 +1021,7 @@ static void addMediaIfNotDuplicate(
+         int *sizes_idx,
+         media_supported_t *media_supported,
+         media_size_t media_size) {
+-    if (idx >= 0) {
++    if (idx >= 0 && *sizes_idx < PAGE_STATUS_MAX) {
+         // Check if we've already added this media size to the supported list
+         bool isDuplicate = false;
+         for (int j = 0; j < (*sizes_idx); j++) {
+@@ -1154,7 +1154,7 @@ void parse_getMediaSupported(
+     // Append media-supported. media is de-duplicated later in java
+     if ((attrptr = ippFindAttribute(response, "media-supported", IPP_TAG_KEYWORD)) != NULL) {
+         LOGD("media-supported  found; number of values %d", ippGetCount(attrptr));
+-        for (i = 0; i < ippGetCount(attrptr); i++) {
++        for (i = 0; i < ippGetCount(attrptr) && sizes_idx < PAGE_STATUS_MAX; i++) {
+             idx = ipp_find_media_size(ippGetString(attrptr, i, NULL), &media_sizeTemp);
+ 
+             // Modified since anytime the find media size returned 0 it could either mean
+
+project packages/services/Mms/
+diff --git a/packages/services/Mms/src/com/android/mms/service/SendRequest.java b/packages/services/Mms/src/com/android/mms/service/SendRequest.java
+index efb72d0..8fb6dc1 100644
+--- a/packages/services/Mms/src/com/android/mms/service/SendRequest.java
++++ b/packages/services/Mms/src/com/android/mms/service/SendRequest.java
+@@ -213,7 +213,7 @@ public class SendRequest extends MmsRequest {
+             Uri insertUri = Telephony.Mms.Sent.CONTENT_URI;
+             // Ensure that message is updated if the uri points to an existing message in the
+             // telephpny db
+-            if (Flags.messagePromotion() && "mms".equalsIgnoreCase(mPduUri.getAuthority())) {
++            if (Flags.messagePromotion() && "mms".equals(mPduUri.getAuthority())) {
+                 long msgId = ContentUris.parseId(mPduUri);
+                 if (msgId != -1) {
+                     insertUri = ContentUris.withAppendedId(insertUri, msgId);
+
+project packages/services/Telecomm/
+diff --git a/packages/services/Telecomm/src/com/android/server/telecom/CallIntentProcessor.java b/packages/services/Telecomm/src/com/android/server/telecom/CallIntentProcessor.java
+index 7ed83a8..e21e601 100644
+--- a/packages/services/Telecomm/src/com/android/server/telecom/CallIntentProcessor.java
++++ b/packages/services/Telecomm/src/com/android/server/telecom/CallIntentProcessor.java
+@@ -11,6 +11,7 @@ import android.content.ActivityNotFoundException;
+ import android.content.ComponentName;
+ import android.content.Context;
+ import android.content.Intent;
++import android.content.pm.ApplicationInfo;
+ import android.content.pm.PackageManager;
+ import android.content.pm.ResolveInfo;
+ import android.net.Uri;
+@@ -30,6 +31,7 @@ import android.telephony.PhoneNumberUtils;
+ import android.telephony.TelephonyManager;
+ import android.widget.Toast;
+ 
++import java.util.List;
+ import java.util.concurrent.CompletableFuture;
+ 
+ /**
+@@ -262,7 +264,19 @@ public class CallIntentProcessor {
+     private static boolean doesUserHaveDialerRoleHolder(Context context, UserHandle user) {
+         Context userContext = context.createContextAsUser(user, 0);
+         RoleManager roleManager = userContext.getSystemService(RoleManager.class);
+-        return roleManager.getRoleHolders(RoleManager.ROLE_DIALER).size() > 0;
++        List<String> roleHolders = roleManager.getRoleHolders(RoleManager.ROLE_DIALER);
++        if (roleHolders == null || roleHolders.isEmpty()) {
++            return false;
++        }
++
++        String dialerPackage = roleHolders.get(0);
++        try {
++            ApplicationInfo info = userContext.getPackageManager()
++                    .getApplicationInfo(dialerPackage, 0);
++            return info.enabled;
++        } catch (PackageManager.NameNotFoundException e) {
++            return false;
++        }
+     }
+ 
+     /**
+diff --git a/packages/services/Telecomm/src/com/android/server/telecom/InCallController.java b/packages/services/Telecomm/src/com/android/server/telecom/InCallController.java
+index c385b65..997e9da 100644
+--- a/packages/services/Telecomm/src/com/android/server/telecom/InCallController.java
++++ b/packages/services/Telecomm/src/com/android/server/telecom/InCallController.java
+@@ -2600,31 +2600,6 @@ public class InCallController extends CallsManagerListenerBase implements
+                 || hasInteractAcrossProfilesAppOp);
+     }
+ 
+-    /**
+-     * Verifies that the class for a given ServiceInfo exists within its package.
+-     * This prevents a system crash if a service is declared in the manifest but its
+-     * class was not included in the compiled code.
+-     * @param serviceInfo The ServiceInfo of the service to check.
+-     * @param userHandle The user under which to check for the service.
+-     * @return {@code true} if the class exists, {@code false} otherwise.
+-     */
+-    private boolean serviceClassExists(ServiceInfo serviceInfo, UserHandle userHandle) {
+-        Log.i(this, "serviceClassExists check");
+-        try {
+-            Context packageContext = mContext.createPackageContextAsUser(
+-                    serviceInfo.packageName,
+-                    Context.CONTEXT_INCLUDE_CODE | Context.CONTEXT_IGNORE_SECURITY, userHandle);
+-            ClassLoader classLoader = packageContext.getClassLoader();
+-            Class.forName(serviceInfo.name, false, classLoader);
+-            return true;
+-        } catch (NameNotFoundException | ClassNotFoundException e) {
+-            Log.w(this, "Skipping InCallService: class not found for " + serviceInfo.name);
+-            return false;
+-        } catch (Exception e) {
+-            Log.e(this, e, "Error checking for existence of " + serviceInfo.name);
+-            return false;
+-        }
+-    }
+ 
+     private List<InCallServiceInfo> getInCallServiceComponents(UserHandle userHandle,
+             String packageName, ComponentName componentName,
+@@ -2655,12 +2630,6 @@ public class InCallController extends CallsManagerListenerBase implements
+             ServiceInfo serviceInfo = entry.serviceInfo;
+ 
+             if (serviceInfo != null) {
+-                boolean isMetaFlag = serviceInfo.metaData != null &&
+-                        serviceInfo.metaData.getBoolean(
+-                                "android.telecom.CLASS_EXISTENCE_CHECK", false);
+-                if (isMetaFlag && !serviceClassExists(serviceInfo, userHandle)) {
+-                    continue;
+-                }
+                 boolean isExternalCallsSupported = serviceInfo.metaData != null &&
+                         serviceInfo.metaData.getBoolean(
+                                 TelecomManager.METADATA_INCLUDE_EXTERNAL_CALLS, false);
+diff --git a/packages/services/Telecomm/src/com/android/server/telecom/MmiUtils.java b/packages/services/Telecomm/src/com/android/server/telecom/MmiUtils.java
+index 11f6d59..6d7cd1d 100644
+--- a/packages/services/Telecomm/src/com/android/server/telecom/MmiUtils.java
++++ b/packages/services/Telecomm/src/com/android/server/telecom/MmiUtils.java
+@@ -95,6 +95,9 @@ public class MmiUtils {
+     private static boolean isCallForwardingMmiCode(Uri handle) {
+         Matcher m;
+         String dialString = handle.getSchemeSpecificPart();
++        if (dialString != null) {
++            dialString = dialString.trim();
++        }
+         m = sPatternSuppService.matcher(dialString);
+ 
+         if (m.matches()) {
+@@ -119,7 +122,11 @@ public class MmiUtils {
+     private boolean isDangerousVerticalServiceCode(Uri handle) {
+         if (isTelScheme(handle)) {
+             String dialedNumber = handle.getSchemeSpecificPart();
+-            if (dialedNumber.length() >= mMinLenInDangerousSet && dialedNumber.charAt(0) == '*') {
++            if (dialedNumber != null) {
++                dialedNumber = dialedNumber.trim();
++            }
++            if (dialedNumber != null && dialedNumber.length() >= mMinLenInDangerousSet
++                    && dialedNumber.charAt(0) == '*') {
+                 //we only check vertical codes defined by The North American Numbering Plan Admin
+                 //see: https://nationalnanpa.com/number_resource_info/vsc_assignments.html
+                 //only two or 3-digit codes are valid as of today, but the code is generic enough.
+@@ -148,19 +155,25 @@ public class MmiUtils {
+     public boolean isPotentialInCallMMICode(Uri handle) {
+         if (isTelScheme(handle)) {
+             String dialedNumber = handle.getSchemeSpecificPart();
+-            return (dialedNumber.equals("0") ||
++            if (dialedNumber != null) {
++                dialedNumber = dialedNumber.trim();
++            }
++            return (dialedNumber != null && (dialedNumber.equals("0") ||
+                     (dialedNumber.startsWith("1") && dialedNumber.length() <= 2) ||
+                     (dialedNumber.startsWith("2") && dialedNumber.length() <= 2) ||
+                     dialedNumber.equals("3") ||
+                     dialedNumber.equals("4") ||
+-                    dialedNumber.equals("5"));
++                    dialedNumber.equals("5")));
+         }
+         return false;
+     }
+ 
+     public boolean isPotentialMMICode(Uri handle) {
+-        return (handle != null && handle.getSchemeSpecificPart() != null
+-                && handle.getSchemeSpecificPart().contains("#"));
++        if (handle == null || handle.getSchemeSpecificPart() == null) {
++            return false;
++        }
++        String dialString = handle.getSchemeSpecificPart().trim();
++        return dialString.contains("#");
+     }
+ 
+     /**
+diff --git a/packages/services/Telecomm/src/com/android/server/telecom/NewOutgoingCallIntentBroadcaster.java b/packages/services/Telecomm/src/com/android/server/telecom/NewOutgoingCallIntentBroadcaster.java
+index 20f2509..d075f57 100644
+--- a/packages/services/Telecomm/src/com/android/server/telecom/NewOutgoingCallIntentBroadcaster.java
++++ b/packages/services/Telecomm/src/com/android/server/telecom/NewOutgoingCallIntentBroadcaster.java
+@@ -209,12 +209,15 @@ public class NewOutgoingCallIntentBroadcaster {
+                     result.callImmediately = true;
+                     result.requestRedirection = false;
+                 }
+-            } else if (mMmiUtils.isDangerousMmiOrVerticalCode(intent.getData())) {
++            } else if (mMmiUtils.isDangerousMmiOrVerticalCode(Uri.fromParts(
++                    handle.getScheme(), number, null))) {
++
+                 if (!mIsDefaultOrSystemPhoneApp) {
+                     Log.w(this,
+-                            "Potentially dangerous MMI code %s with CALL Intent %s can only be "
+-                                    + "sent if caller is the system or default dialer",
++                            "Potentially dangerous MMI code %s with CALL Intent %s can only be sent if "
++                                    + "caller is the system or default dialer (and not trampolined).",
+                             number, intent);
++
+                     launchSystemDialer(intent.getData());
+                     result.disconnectCause = DisconnectCause.OUTGOING_CANCELED;
+                     return result;
+diff --git a/packages/services/Telecomm/src/com/android/server/telecom/TelecomServiceImpl.java b/packages/services/Telecomm/src/com/android/server/telecom/TelecomServiceImpl.java
+index 283c02f..541b99b 100644
+--- a/packages/services/Telecomm/src/com/android/server/telecom/TelecomServiceImpl.java
++++ b/packages/services/Telecomm/src/com/android/server/telecom/TelecomServiceImpl.java
+@@ -175,6 +175,19 @@ public class TelecomServiceImpl {
+             "android.permission.HANDLE_CALL_INTENT";
+     private static final String ADD_CALL_ERR_MSG = "Call could not be created or found. "
+             + "Retry operation.";
++    // The following extras are used to implement the trampoline, which allows the Telecom UI to
++    // place a call on behalf of another application. When the Telecom UI places a call on behalf
++    // of another application, the original caller's package name and UID are provided via these
++    // extras so that the original application's permissions are checked rather than the Telecom
++    // UI's.
++    //
++    // Only the Telecom UI is allowed to provide these extras, which it does via
++    // TelecomManager#placeCall.
++    public static final String EXTRA_TRAMPOLINE_CALLING_PACKAGE =
++            "android.telecom.extra.TRAMPOLINE_CALLING_PACKAGE";
++    public static final String EXTRA_TRAMPOLINE_CALLING_UID =
++            "android.telecom.extra.TRAMPOLINE_CALLING_UID";
++    private static final int IGNORE_PID = -1;
+     private final PhoneAccountRegistrar mPhoneAccountRegistrar;
+     private final CallIntentProcessor.Adapter mCallIntentProcessorAdapter;
+     private final UserCallIntentProcessorFactory mUserCallIntentProcessorFactory;
+@@ -2324,6 +2337,31 @@ public class TelecomServiceImpl {
+             try {
+                 Log.startSession("TSI.pC", Log.getPackageAbbreviation(callingPackage));
+                 enforceCallingPackage(callingPackage, "placeCall");
++                // The Telecom UI can place a call on behalf of another application.  In that case
++                // the original caller's package name and UID are provided via extras so that the
++                // original application's permissions are checked instead of the Telecom UI's.  The
++                // caller must be the Telecom UI (checked below) in order to provide these extras.
++                // See android.telecom.TelecomManager#placeCall for details on the trampoline.
++                int actualCallingUid = Binder.getCallingUid();
++                String actualCallingPackage = callingPackage;
++                String actualCallingFeatureId = callingFeatureId;
++
++                if (isCallerTelecomUi(callingPackage) && extras != null) {
++                    if (extras.containsKey(EXTRA_TRAMPOLINE_CALLING_PACKAGE)) {
++                        actualCallingPackage = extras.getString(EXTRA_TRAMPOLINE_CALLING_PACKAGE);
++
++                        extras.remove(EXTRA_TRAMPOLINE_CALLING_PACKAGE);
++                        // The calling feature id is not carried through the trampoline, so drop it
++                        // to ensure the original application's default feature is used.
++                        // See android.telecom.TelecomManager#placeCall for details.
++                        actualCallingFeatureId = null;
++
++                        if (extras.containsKey(EXTRA_TRAMPOLINE_CALLING_UID)) {
++                            actualCallingUid = extras.getInt(EXTRA_TRAMPOLINE_CALLING_UID);
++                            extras.remove(EXTRA_TRAMPOLINE_CALLING_UID);
++                        }
++                    }
++                }
+ 
+                 PhoneAccountHandle phoneAccountHandle = null;
+                 if (extras != null) {
+@@ -2354,13 +2392,23 @@ public class TelecomServiceImpl {
+                     mContext.enforceCallingOrSelfPermission(
+                             Manifest.permission.MANAGE_OWN_CALLS,
+                             "Self-managed ConnectionServices require MANAGE_OWN_CALLS permission.");
+-                } else if (!canCallPhone(callingPackage, callingFeatureId,
+-                        "CALL_PHONE permission required to place calls.")) {
+-                    // not self-managed, so CALL_PHONE is required.
+-                    mAnomalyReporter.reportAnomaly(PLACE_CALL_SECURITY_EXCEPTION_ERROR_UUID,
+-                            PLACE_CALL_SECURITY_EXCEPTION_ERROR_MSG);
+-                    throw new SecurityException(
+-                            "CALL_PHONE permission required to place calls.");
++                } else {
++                    boolean canCall;
++                    long token = Binder.clearCallingIdentity();
++                    try {
++                        canCall = canCallPhone(actualCallingPackage,
++                                actualCallingFeatureId, actualCallingUid,
++                                "CALL_PHONE permission required to place calls.");
++                    } finally {
++                        Binder.restoreCallingIdentity(token);
++                    }
++                    if (!canCall) {
++                        // not self-managed, so CALL_PHONE is required.
++                        mAnomalyReporter.reportAnomaly(PLACE_CALL_SECURITY_EXCEPTION_ERROR_UUID,
++                                PLACE_CALL_SECURITY_EXCEPTION_ERROR_MSG);
++                        throw new SecurityException(
++                                "CALL_PHONE permission required to place calls.");
++                    }
+                 }
+ 
+                 // An application can not place a call with a self-managed PhoneAccount that
+@@ -2379,19 +2427,28 @@ public class TelecomServiceImpl {
+                 // call is being made to a non-emergency number, the call will be denied later on
+                 // by {@link UserCallIntentProcessor}.
+ 
+-                final boolean hasCallAppOp = mAppOpsManager.noteOp(AppOpsManager.OPSTR_CALL_PHONE,
+-                        Binder.getCallingUid(), callingPackage, callingFeatureId, null)
+-                        == AppOpsManager.MODE_ALLOWED;
+-
+-                final boolean hasCallPermission = mContext.checkCallingOrSelfPermission(CALL_PHONE)
+-                        == PackageManager.PERMISSION_GRANTED;
+-                // The Emergency Dialer has call privileged permission and uses this to place
+-                // emergency calls.  We ensure permission checks in
+-                // NewOutgoingCallIntentBroadcaster#process pass by sending this to
+-                // Telecom as an ACTION_CALL_PRIVILEGED intent (which makes sense since the
+-                // com.android.phone process has that permission).
+-                final boolean hasCallPrivilegedPermission = mContext.checkCallingOrSelfPermission(
+-                        CALL_PRIVILEGED) == PackageManager.PERMISSION_GRANTED;
++                boolean hasCallAppOp;
++                boolean hasCallPermission;
++                boolean hasCallPrivilegedPermission;
++                long checkToken = Binder.clearCallingIdentity();
++                try {
++                    hasCallAppOp = mAppOpsManager.noteOp(AppOpsManager.OPSTR_CALL_PHONE,
++                            actualCallingUid, actualCallingPackage, actualCallingFeatureId, null)
++                            == AppOpsManager.MODE_ALLOWED;
++                    hasCallPermission = mContext.checkPermission(CALL_PHONE,
++                            IGNORE_PID, actualCallingUid)
++                            == PackageManager.PERMISSION_GRANTED;
++                    // The Emergency Dialer has call privileged permission and uses this to place
++                    // emergency calls.  We ensure permission checks in
++                    // NewOutgoingCallIntentBroadcaster#process pass by sending this to
++                    // Telecom as an ACTION_CALL_PRIVILEGED intent (which makes sense since the
++                    // com.android.phone process has that permission).
++                    hasCallPrivilegedPermission = mContext.checkPermission(
++                            CALL_PRIVILEGED, IGNORE_PID, actualCallingUid)
++                            == PackageManager.PERMISSION_GRANTED;
++                } finally {
++                    Binder.restoreCallingIdentity(checkToken);
++                }
+ 
+                 synchronized (mLock) {
+                     final UserHandle userHandle = Binder.getCallingUserHandle();
+@@ -2405,7 +2462,7 @@ public class TelecomServiceImpl {
+                             intent.putExtras(extras);
+                         }
+                         mUserCallIntentProcessorFactory.create(mContext, userHandle)
+-                                .processIntent(intent, callingPackage, isSelfManagedRequest,
++                                .processIntent(intent, actualCallingPackage, isSelfManagedRequest,
+                                         (hasCallAppOp && hasCallPermission)
+                                                 || hasCallPrivilegedPermission,
+                                         true /* isLocalInvocation */);
+@@ -2419,6 +2476,20 @@ public class TelecomServiceImpl {
+             }
+         }
+ 
++        /**
++         * Determines if the caller is the Telecom UI, which is allowed to place a call on behalf
++         * of another application using the trampoline extras.
++         */
++
++
++
++        private boolean isCallerTelecomUi(String callingPackage) {
++            return mContext.checkCallingOrSelfPermission(CALL_PRIVILEGED)
++                    == PackageManager.PERMISSION_GRANTED
++                    && mTelecomUiPackageName != null
++                    && mTelecomUiPackageName.equals(callingPackage);
++        }
++
+         /**
+          * @see android.telecom.TelecomManager#enablePhoneAccount
+          */
+@@ -4130,26 +4201,29 @@ public class TelecomServiceImpl {
+     }
+ 
+     private boolean canCallPhone(String callingPackage, String message) {
+-        return canCallPhone(callingPackage, null /* featureId */, message);
++        return canCallPhone(callingPackage, null /* featureId */, Binder.getCallingUid(), message);
+     }
+ 
+     private boolean canCallPhone(String callingPackage, String callingFeatureId, String message) {
+-        // The system/default dialer can always read phone state - so that emergency calls will
+-        // still work.
+-        if (isPrivilegedDialerCalling(callingPackage)) {
++        return canCallPhone(callingPackage, callingFeatureId, Binder.getCallingUid(), message);
++    }
++
++    private boolean canCallPhone(String callingPackage, String callingFeatureId, int callingUid,
++            String message) {
++        if (isPrivilegedDialerCalling(callingPackage, callingUid)) {
+             return true;
+         }
+ 
+-        if (mContext.checkCallingOrSelfPermission(CALL_PRIVILEGED)
++        if (mContext.checkPermission(CALL_PRIVILEGED, IGNORE_PID, callingUid)
+                 == PackageManager.PERMISSION_GRANTED) {
+             return true;
+         }
+ 
+         // Accessing phone state is gated by a special permission.
+-        mContext.enforceCallingOrSelfPermission(CALL_PHONE, message);
++        mContext.enforcePermission(CALL_PHONE, IGNORE_PID, callingUid, message);
+ 
+         // Some apps that have the permission can be restricted via app ops.
+-        return mAppOpsManager.noteOp(AppOpsManager.OPSTR_CALL_PHONE, Binder.getCallingUid(),
++        return mAppOpsManager.noteOp(AppOpsManager.OPSTR_CALL_PHONE, callingUid,
+                 callingPackage, callingFeatureId, message)
+                 == AppOpsManager.MODE_ALLOWED;
+     }
+@@ -4221,12 +4295,16 @@ public class TelecomServiceImpl {
+     }
+ 
+     private boolean isPrivilegedDialerCalling(String callingPackage) {
+-        mAppOpsManager.checkPackage(Binder.getCallingUid(), callingPackage);
++        return isPrivilegedDialerCalling(callingPackage, Binder.getCallingUid());
++    }
++
++    private boolean isPrivilegedDialerCalling(String callingPackage, int callingUid) {
++        mAppOpsManager.checkPackage(callingUid, callingPackage);
+ 
+         // Note: Important to clear the calling identity since the code below calls into RoleManager
+         // to check who holds the dialer role, and that requires MANAGE_ROLE_HOLDERS permission
+         // which is a system permission.
+-        int callingUserId = Binder.getCallingUserHandle().getIdentifier();
++        int callingUserId = UserHandle.getUserHandleForUid(callingUid).getIdentifier();
+         long token = Binder.clearCallingIdentity();
+         try {
+             return mDefaultDialerCache.isDefaultOrSystemDialer(
+
+project system/core/
+diff --git a/system/core/libcutils/ashmem-dev.cpp b/system/core/libcutils/ashmem-dev.cpp
+index 63a0cbf..c0d31ea 100644
+--- a/system/core/libcutils/ashmem-dev.cpp
++++ b/system/core/libcutils/ashmem-dev.cpp
+@@ -201,7 +201,17 @@ static bool is_memfd_fd(int fd) {
+         ALOGE("readlink(%s) failed: %m", fd_path.c_str());
+         return false;
+     }
+-    return result.starts_with("/memfd:");
++    if (!result.starts_with("/memfd:")) {
++        return false;
++    }
++
++    int seals = fcntl(fd, F_GET_SEALS);
++    if (seals == -1) {
++        ALOGE("is_memfd_fd(%d): F_GET_SEALS failed: %m", fd);
++        return false;
++    }
++
++    return (seals & (F_SEAL_GROW | F_SEAL_SHRINK)) == (F_SEAL_GROW | F_SEAL_SHRINK);
+ }
+ 
+ int ashmem_valid(int fd) {
+
+project system/fs/fs_mgr/
+diff --git a/system/fs/fs_mgr/libfiemap/image_manager.cpp b/system/fs/fs_mgr/libfiemap/image_manager.cpp
+index 435f7bd..18110b1 100644
+--- a/system/fs/fs_mgr/libfiemap/image_manager.cpp
++++ b/system/fs/fs_mgr/libfiemap/image_manager.cpp
+@@ -742,7 +742,8 @@ bool ImageManager::GetMappedImageDevice(const std::string& name, std::string* de
+ 
+ bool ImageManager::MapAllImages(const std::function<bool(std::set<std::string>)>& init) {
+     if (!MetadataExists(metadata_dir_)) {
+-        return true;
++        LOG(ERROR) << "Metadata directory does not exist: " << metadata_dir_;
++        return false;
+     }
+ 
+     auto metadata = OpenMetadata(metadata_dir_);
+diff --git a/system/fs/fs_mgr/libfstab/fstab.cpp b/system/fs/fs_mgr/libfstab/fstab.cpp
+index e3e5336..ca5c56b 100644
+--- a/system/fs/fs_mgr/libfstab/fstab.cpp
++++ b/system/fs/fs_mgr/libfstab/fstab.cpp
+@@ -22,6 +22,7 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <sys/mount.h>
++#include <sys/stat.h>
+ #include <unistd.h>
+ 
+ #include <algorithm>
+@@ -676,7 +677,8 @@ bool ReadFstabFromFile(const std::string& path, Fstab* fstab) {
+         return false;
+     }
+     if (path != kProcMountsPath && !InRecovery()) {
+-        if (!access(android::gsi::kGsiBootedIndicatorFile, F_OK)) {
++        struct stat sb;
++        if (lstat(android::gsi::kGsiBootedIndicatorFile, &sb) == 0 && S_ISREG(sb.st_mode)) {
+             std::string dsu_slot;
+             if (!android::gsi::GetActiveDsu(&dsu_slot)) {
+                 PERROR << __FUNCTION__ << "(): failed to get active DSU slot";
+@@ -688,8 +690,8 @@ bool ReadFstabFromFile(const std::string& path, Fstab* fstab) {
+                 return false;
+             }
+             TransformFstabForDsu(fstab, dsu_slot, Split(lp_names, ","));
+-        } else if (errno != ENOENT) {
+-            PERROR << __FUNCTION__ << "(): failed to access() DSU booted indicator";
++        } else if (errno != ENOENT && errno != ENOTDIR) {
++            PERROR << __FUNCTION__ << "(): failed to lstat() DSU booted indicator";
+             return false;
+         }
+ 
+
+project system/gsid/
+diff --git a/system/gsid/gsi_service.cpp b/system/gsid/gsi_service.cpp
+index 224f520..ddf5386 100644
+--- a/system/gsid/gsi_service.cpp
++++ b/system/gsid/gsi_service.cpp
+@@ -151,8 +151,13 @@ binder::Status GsiService::openInstall(const std::string& install_dir, int* _aid
+         *_aidl_return = status;
+         return binder::Status::ok();
+     }
+-    std::string message;
+     auto dsu_slot = GetDsuSlot(install_dir_);
++    if (!IsValidSlotName(dsu_slot)) {
++        LOG(ERROR) << "Invalid DSU slot name: " << dsu_slot;
++        *_aidl_return = IGsiService::INSTALL_ERROR_GENERIC;
++        return binder::Status::ok();
++    }
++    std::string message;
+     if (!RemoveFileIfExists(GetCompleteIndication(dsu_slot), &message)) {
+         LOG(ERROR) << message;
+     }
+diff --git a/system/gsid/include/libgsi/libgsi.h b/system/gsid/include/libgsi/libgsi.h
+index b10749b..2500102 100644
+--- a/system/gsid/include/libgsi/libgsi.h
++++ b/system/gsid/include/libgsi/libgsi.h
+@@ -79,6 +79,11 @@ static inline std::string GetDsuMetadataKeyDir(const std::string& dsu_slot) {
+ // install_dir "/data/gsi/dsu/dsu2" has a slot name "dsu2"
+ std::string GetDsuSlot(const std::string& install_dir);
+ 
++// Returns true if the given DSU slot name is valid, i.e. it doesn't contain
++// path separators or characters that could be used for path traversal, and
++// doesn't collide with any of the reserved DSU metadata filenames.
++bool IsValidSlotName(const std::string& name);
++
+ static constexpr char kDsuSlotProp[] = "ro.gsid.dsu_slot";
+ 
+ static constexpr char kGsiBootedProp[] = "ro.gsid.image_running";
+diff --git a/system/gsid/libgsi.cpp b/system/gsid/libgsi.cpp
+index 097fcb6..ef4e8e6 100644
+--- a/system/gsid/libgsi.cpp
++++ b/system/gsid/libgsi.cpp
+@@ -16,9 +16,11 @@
+ 
+ #include "libgsi/libgsi.h"
+ 
++#include <ctype.h>
+ #include <string.h>
+ #include <unistd.h>
+ 
++#include <set>
+ #include <string>
+ 
+ #include <android-base/file.h>
+@@ -37,12 +39,29 @@ using android::base::ReadFileToString;
+ using android::base::Split;
+ using android::base::unique_fd;
+ 
++bool IsValidSlotName(const std::string& name) {
++    if (name.empty() || name == "." || name == "..") {
++        return false;
++    }
++    for (char c : name) {
++        if (!(isalnum(c) || c == '-' || c == '_' || c == '.')) {
++            return false;
++        }
++    }
++    static const std::set<std::string_view, std::less<>> reserved_slot_names = {
++            "booted", "active", "lp_names", "install_status", "one_shot_boot", "avb",
++            "avb_enforce",
++    };
++    return reserved_slot_names.find(name) == reserved_slot_names.end();
++}
++
+ bool IsGsiImage() {
+     return !access(kGsiSpecificInitRcFile, F_OK);
+ }
+ 
+ bool IsGsiRunning() {
+-    return !access(kGsiBootedIndicatorFile, F_OK);
++    struct stat sb;
++    return lstat(kGsiBootedIndicatorFile, &sb) == 0 && S_ISREG(sb.st_mode);
+ }
+ 
+ bool IsGsiInstalled() {
+
+project system/libfmq/
+diff --git a/system/libfmq/include/fmq/MessageQueueBase.h b/system/libfmq/include/fmq/MessageQueueBase.h
+index 19de97c..320ca74 100644
+--- a/system/libfmq/include/fmq/MessageQueueBase.h
++++ b/system/libfmq/include/fmq/MessageQueueBase.h
+@@ -1370,18 +1370,21 @@ size_t MessageQueueBase<MQDescriptorType, T, flavor>::availableToReadBytes() con
+      */
+     uint64_t writePtr = mWritePtr->load(std::memory_order_acquire);
+     uint64_t readPtr = mReadPtr->load(std::memory_order_acquire);
+-    if (writePtr < readPtr) {
++    size_t queueSize = mDesc->getSize();
++    size_t available = writePtr >= readPtr ? writePtr - readPtr : SIZE_MAX;
++    if (writePtr < readPtr || (flavor == kSynchronizedReadWrite && available > queueSize)) {
+         std::string errorMsg =
+                 "The write or read pointer has become corrupted. Reading from the queue is no "
+                 "longer possible. Write pointer: " +
+-                std::to_string(writePtr) + ", read pointer: " + std::to_string(readPtr);
++                std::to_string(writePtr) + ", read pointer: " + std::to_string(readPtr) +
++                ", queue size: " + std::to_string(queueSize);
+         hardware::details::logError(errorMsg);
+         if (mErrorHandler) {
+             mErrorHandler(Error::POINTER_CORRUPTION, std::move(errorMsg));
+         }
+         return 0;
+     }
+-    return writePtr - readPtr;
++    return available;
+ }
+ 
+ template <template <typename, MQFlavor> typename MQDescriptorType, typename T, MQFlavor flavor>
+@@ -1506,6 +1509,12 @@ template <template <typename, MQFlavor> typename MQDescriptorType, typename T, M
+ __attribute__((no_sanitize("integer"))) bool
+ MessageQueueBase<MQDescriptorType, T, flavor>::beginRead(size_t nMessages,
+                                                          MemTransaction* result) const {
++    if (flavor == kSynchronizedReadWrite && nMessages > getQuantumCount()) {
++        hardware::details::logError("Attempting to read " + std::to_string(nMessages) +
++                " from a queue that is only set up for " +
++                std::to_string(getQuantumCount()));
++        return false;
++    }
+     *result = MemTransaction();
+     /*
+      * If it is detected that the data in the queue was overwritten
